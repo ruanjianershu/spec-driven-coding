@@ -1,0 +1,39 @@
+{
+  "name": "sdc-spec",
+  "version": "1.0.0",
+  "description": "SDC - 规范驱动开发工具集。纯声明式 AI 开发技能，支持 Claude Code / CodeX / Hermes Agent 等所有主流 AI 编码工具。",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "type": "module",
+  "bin": {
+    "sdc": "./bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    ".claude-plugin/",
+    ".codex-plugin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "sdc",
+    "spec-driven-coding",
+    "claude-code",
+    "codex",
+    "hermes",
+    "hermes-agent",
+    "ai-coding",
+    "tdd",
+    "code-review",
+    "quality-assurance"
+  ],
+  "author": "ruanjianershu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruanjianershu/spec-driven-coding.git"
+  },
+  "homepage": "https://github.com/ruanjianershu/spec-driven-coding"
+}
