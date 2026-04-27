@@ -1,0 +1,49 @@
+{
+  "name": "SDC - 规范驱动开发",
+  "description": "Spec-Driven-Coding 规范驱动开发工具集。提供 6 个核心命令：/sdc:spec（生成规范）、/sdc:plan（生成计划）、/sdc:implement（自动开发）、/sdc:review（代码审查）、/sdc:test（测试驱动）、/sdc:quality（质量检查）。",
+  "version": "1.0.0",
+  "author": "ruanjianershu",
+  "repository": "https://github.com/ruanjianershu/spec-driven-coding",
+  "skills": [
+    "skills/sdc-spec",
+    "skills/sdc-plan",
+    "skills/sdc-implement",
+    "skills/sdc-review",
+    "skills/sdc-test",
+    "skills/sdc-quality"
+  ],
+  "commands": [
+    {
+      "name": "/sdc:spec",
+      "description": "将模糊需求转化为结构化、可验证的规范文档",
+      "skill": "skills/sdc-spec"
+    },
+    {
+      "name": "/sdc:plan",
+      "description": "将规范转化为分步可执行的实现计划",
+      "skill": "skills/sdc-plan"
+    },
+    {
+      "name": "/sdc:implement",
+      "description": "严格按照计划自动完成开发，TDD 模式",
+      "skill": "skills/sdc-implement"
+    },
+    {
+      "name": "/sdc:review",
+      "description": "资深工程师级别的代码质量审查",
+      "skill": "skills/sdc-review"
+    },
+    {
+      "name": "/sdc:test",
+      "description": "运行完整测试并生成覆盖率报告",
+      "skill": "skills/sdc-test"
+    },
+    {
+      "name": "/sdc:quality",
+      "description": "交付前的最终质量防线 - 全维度检查",
+      "skill": "skills/sdc-quality"
+    }
+  ],
+  "tags": ["开发工具", "质量保障", "测试驱动", "规范", "SDC"],
+  "min_claude_version": "1.8.0"
+}

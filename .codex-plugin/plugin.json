@@ -1,0 +1,58 @@
+{
+  "name": "sdc",
+  "displayName": "SDC - 规范驱动开发",
+  "description": "Spec-Driven-Coding 规范驱动开发工具集。提供 6 个核心命令：/sdc:spec（生成规范）、/sdc:plan（生成计划）、/sdc:implement（自动开发）、/sdc:review（代码审查）、/sdc:test（测试驱动）、/sdc:quality（质量检查）。",
+  "version": "1.0.0",
+  "author": "ruanjianershu",
+  "repository": "https://github.com/ruanjianershu/spec-driven-coding",
+  "homepage": "https://github.com/ruanjianershu/spec-driven-coding",
+  "type": "skill-pack",
+  "skills": [
+    {
+      "id": "sdc-spec",
+      "path": "skills/sdc-spec",
+      "name": "SDC 规范生成",
+      "triggers": ["/sdc:spec", "生成规范", "需求分解"]
+    },
+    {
+      "id": "sdc-plan",
+      "path": "skills/sdc-plan",
+      "name": "SDC 计划生成",
+      "triggers": ["/sdc:plan", "生成计划", "任务拆分"]
+    },
+    {
+      "id": "sdc-implement",
+      "path": "skills/sdc-implement",
+      "name": "SDC 自动开发",
+      "triggers": ["/sdc:implement", "开始实现", "写代码"]
+    },
+    {
+      "id": "sdc-review",
+      "path": "skills/sdc-review",
+      "name": "SDC 代码审查",
+      "triggers": ["/sdc:review", "审查代码", "质量检查"]
+    },
+    {
+      "id": "sdc-test",
+      "path": "skills/sdc-test",
+      "name": "SDC 测试驱动",
+      "triggers": ["/sdc:test", "运行测试", "写测试"]
+    },
+    {
+      "id": "sdc-quality",
+      "path": "skills/sdc-quality",
+      "name": "SDC 全面质量检查",
+      "triggers": ["/sdc:quality", "最终检查", "质量验收"]
+    }
+  ],
+  "commands": {
+    "/sdc:spec": "sdc-spec",
+    "/sdc:plan": "sdc-plan",
+    "/sdc:implement": "sdc-implement",
+    "/sdc:review": "sdc-review",
+    "/sdc:test": "sdc-test",
+    "/sdc:quality": "sdc-quality"
+  },
+  "tags": ["开发工具", "质量保障", "TDD", "规范", "SDC", "代码审查"],
+  "min_codex_version": "0.7.0"
+}
