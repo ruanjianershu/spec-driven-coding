@@ -7,7 +7,8 @@
   },
   "type": "module",
   "bin": {
-    "sdc": "./bin/install.js"
+    "sdc": "./bin/install.js",
+    "sdc-cli": "./sdc-cli.py"
   },
   "files": [
     "bin/",

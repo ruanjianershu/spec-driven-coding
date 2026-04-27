@@ -10,7 +10,8 @@
     "skills/sdc-implement",
     "skills/sdc-review",
     "skills/sdc-test",
-    "skills/sdc-quality"
+    "skills/sdc-quality",
+    "skills/sdc-harness"
   ],
   "commands": [
     {
@@ -42,6 +43,11 @@
       "name": "/sdc:quality",
       "description": "交付前的最终质量防线 - 全维度检查",
       "skill": "skills/sdc-quality"
+    },
+    {
+      "name": "/sdc:harness",
+      "description": "生成 AGENTS.md 项目级 AI 规则，永久封错",
+      "skill": "skills/sdc-harness"
     }
   ],
   "tags": ["开发工具", "质量保障", "测试驱动", "规范", "SDC"],
