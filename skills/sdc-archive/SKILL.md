@@ -17,9 +17,43 @@
 
 归档前必须确认：
 - `/sdc:validate <change-id>` 已通过
+- `/sdc:check <change-id>` 已通过，或有等价的 review/test/security/quality 证据
 - `tasks.md` 中关键任务已完成
 - `spec.md` 是最终版本
 - 测试和质量结论已经记录在 `notes.md`、`reports/` 或 change 目录中
+
+---
+
+## 反合理化表
+
+| 偷懒借口 | 必须反驳 |
+|---------|---------|
+| “代码已经合了，可以归档” | 归档沉淀的是稳定规范，不是代码合并状态；必须有 check 证据 |
+| “spec 差不多就行” | specs 是长期资产，模板内容或过期描述会污染后续需求 |
+| “历史目录没用了，可以删掉” | change 历史是追溯资产，必须移动到 archive 而不是删除 |
+| “任务没全勾也可以归档” | 未完成任务必须关闭、迁移到新 change，或记录明确理由 |
+
+---
+
+## 红旗警告
+
+出现以下情况禁止归档：
+
+- `spec.md` 仍是模板内容
+- `tasks.md` 存在未完成关键任务
+- 没有 `/sdc:check` 或等价检查记录
+- 没有测试/质量结论
+- `.sdc/specs/<change-id>.md` 已存在但用户没有明确允许覆盖
+
+---
+
+## 必须提供的证据
+
+- change-id
+- check 或等价检查记录位置
+- 测试/质量结论位置
+- 沉淀后的 `.sdc/specs/<change-id>.md`
+- 移动后的 `.sdc/changes/archive/<change-id>/`
 
 ---
 

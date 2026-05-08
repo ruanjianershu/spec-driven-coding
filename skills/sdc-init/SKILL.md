@@ -83,6 +83,31 @@
 
 ---
 
+## standards 初始化要求
+
+`.sdc/standards/` 不是装饰目录，初始化后必须包含最小开发规范：
+
+- `coding.md`：命名、函数、错误处理、注释
+- `testing.md`：测试策略、测试要求、运行记录
+- `architecture.md`：模块边界、依赖方向、设计取舍
+- `security.md`：输入输出、敏感信息、依赖安全
+- `git.md`：变更粒度、提交前检查、PR 要求
+- `ai.md`：AI 助手必须做和绝对不要做的规则
+
+后续 `/sdc:harness` 可以从 standards 中提炼 `AGENTS.md`。
+
+---
+
+## 反合理化表
+
+| 偷懒借口 | 必须反驳 |
+|---------|---------|
+| “先不建 standards，后面再说” | standards 是后续 AI 开发的项目宪法，必须在初始化时建立 |
+| “已有 README，不需要 .sdc” | README 面向使用者，`.sdc/` 面向需求迭代和工程执行 |
+| “AGENTS.md 已经够了” | AGENTS.md 是执行护栏，standards 是完整开发规范，两者职责不同 |
+
+---
+
 ## 迭代记录规范
 
 每次新需求建议在 `.sdc/changes/` 下创建一个目录：
