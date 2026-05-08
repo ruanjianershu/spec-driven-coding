@@ -19,7 +19,7 @@
 ### 前置检查（全部必须通过）
 - ✅ 规范文档完成（`/sdc:spec`）
 - ✅ 实现计划完成（`/sdc:plan`）
-- ✅ 代码实现完成（`/sdc:implement`）
+- ✅ 代码实现完成（`/sdc:apply` 或 `/sdc:implement`）
 - ✅ 代码审查完成（`/sdc:review`）
 - ✅ 所有测试通过（`/sdc:test`）
 

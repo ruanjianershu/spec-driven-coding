@@ -1,48 +1,60 @@
 {
   "name": "SDC - 规范驱动开发",
-  "description": "Spec-Driven-Coding 规范驱动开发工具集。提供 6 个核心命令：/sdc:spec（生成规范）、/sdc:plan（生成计划）、/sdc:implement（自动开发）、/sdc:review（代码审查）、/sdc:test（测试驱动）、/sdc:quality（质量检查）。",
+  "description": "Spec-Driven-Coding 规范驱动开发工具集。普通模式只开放少量公共指令，详细模式保留完整细分能力。",
   "version": "1.0.0",
   "author": "ruanjianershu",
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "skills": [
+    "skills/sdc-core",
+    "skills/sdc-init",
+    "skills/sdc-change",
     "skills/sdc-spec",
     "skills/sdc-plan",
+    "skills/sdc-apply",
     "skills/sdc-implement",
     "skills/sdc-review",
     "skills/sdc-test",
     "skills/sdc-quality",
+    "skills/sdc-check",
+    "skills/sdc-validate",
+    "skills/sdc-archive",
     "skills/sdc-harness"
   ],
   "commands": [
     {
-      "name": "/sdc:spec",
-      "description": "将模糊需求转化为结构化、可验证的规范文档",
-      "skill": "skills/sdc-spec"
+      "name": "/sdc",
+      "description": "SDC 主入口：用自然语言路由初始化、新需求、实现、检查和完成",
+      "skill": "skills/sdc-core"
+    },
+    {
+      "name": "/sdc:init",
+      "description": "初始化 .sdc 标准工作区，长期记录需求迭代",
+      "skill": "skills/sdc-init"
+    },
+    {
+      "name": "/sdc:change",
+      "description": "创建一次可追踪的需求变更目录",
+      "skill": "skills/sdc-change"
     },
     {
       "name": "/sdc:plan",
-      "description": "将规范转化为分步可执行的实现计划",
+      "description": "生成或更新规范与分步实现计划",
       "skill": "skills/sdc-plan"
     },
     {
-      "name": "/sdc:implement",
-      "description": "严格按照计划自动完成开发，TDD 模式",
-      "skill": "skills/sdc-implement"
+      "name": "/sdc:apply",
+      "description": "执行当前需求变更，更新任务和实现记录",
+      "skill": "skills/sdc-apply"
     },
     {
-      "name": "/sdc:review",
-      "description": "资深工程师级别的代码质量审查",
-      "skill": "skills/sdc-review"
+      "name": "/sdc:check",
+      "description": "综合执行校验、审查、测试和质量检查",
+      "skill": "skills/sdc-check"
     },
     {
-      "name": "/sdc:test",
-      "description": "运行完整测试并生成覆盖率报告",
-      "skill": "skills/sdc-test"
-    },
-    {
-      "name": "/sdc:quality",
-      "description": "交付前的最终质量防线 - 全维度检查",
-      "skill": "skills/sdc-quality"
+      "name": "/sdc:archive",
+      "description": "归档完成的需求迭代，并沉淀稳定规范",
+      "skill": "skills/sdc-archive"
     },
     {
       "name": "/sdc:harness",

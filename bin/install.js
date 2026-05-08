@@ -16,6 +16,25 @@ const YELLOW = '\x1b[33m';
 const BLUE = '\x1b[34m';
 const RESET = '\x1b[0m';
 
+const PLUGIN_ENTRIES = [
+  'skills',
+  '.claude-plugin',
+  '.codex-plugin',
+  'README.md',
+  'LICENSE',
+  'package.json',
+  'sdc-cli.py',
+  'bin',
+];
+
+const IGNORED_ENTRIES = new Set([
+  '.DS_Store',
+  '.git',
+  '.sdc',
+  'node_modules',
+  '__pycache__',
+]);
+
 function log(color, message) {
   console.log(`${color}${message}${RESET}`);
 }
@@ -28,6 +47,10 @@ function copyDir(src, dest) {
   const entries = fs.readdirSync(src, { withFileTypes: true });
   
   for (const entry of entries) {
+    if (IGNORED_ENTRIES.has(entry.name)) {
+      continue;
+    }
+
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
     
@@ -36,6 +59,30 @@ function copyDir(src, dest) {
     } else {
       fs.copyFileSync(srcPath, destPath);
     }
+  }
+}
+
+function copyIfExists(src, dest) {
+  if (!fs.existsSync(src)) {
+    return;
+  }
+
+  const stat = fs.statSync(src);
+  if (stat.isDirectory()) {
+    copyDir(src, dest);
+  } else {
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(src, dest);
+  }
+}
+
+function copyPlugin(dest) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+
+  for (const entry of PLUGIN_ENTRIES) {
+    copyIfExists(path.join(projectRoot, entry), path.join(dest, entry));
   }
 }
 
@@ -84,14 +131,14 @@ function detectPlatforms() {
 function installToPlatform(platform) {
   log(BLUE, `\n安装到 ${platform.name}...`);
   
-  const destPath = path.join(platform.path, 'sdc-spec');
+  const destPath = path.join(platform.path, 'sdc');
   
   if (platform.type === 'hermes') {
     // Hermes 只需要 skills 目录
     copyDir(path.join(projectRoot, 'skills'), destPath);
   } else {
-    // 其他平台复制整个插件目录
-    copyDir(projectRoot, destPath);
+    // 其他平台复制插件所需文件，避免带入 .git、.DS_Store 等本地文件
+    copyPlugin(destPath);
   }
   
   log(GREEN, `✅ 安装成功！路径: ${destPath}`);
@@ -122,19 +169,33 @@ platforms.forEach((p, i) => {
 });
 
 console.log('\n开始安装...');
-platforms.forEach(installToPlatform);
+let failedCount = 0;
+platforms.forEach((platform) => {
+  try {
+    installToPlatform(platform);
+  } catch (error) {
+    failedCount += 1;
+    log(RED, `❌ 安装到 ${platform.name} 失败：${error.message}`);
+  }
+});
+
+if (failedCount > 0) {
+  log(YELLOW, `\n⚠️  ${failedCount} 个平台安装失败，请检查对应目录权限后重试。`);
+  process.exit(1);
+}
 
 console.log('\n' + '='.repeat(60));
 log(GREEN, '🎉 SDC 安装完成！');
 console.log('='.repeat(60));
 
 console.log('\n📖 使用方法：');
-console.log('  /sdc:spec      - 生成规范文档');
-console.log('  /sdc:plan      - 生成实现计划');
-console.log('  /sdc:implement - 自动开发');
-console.log('  /sdc:review    - 代码审查');
-console.log('  /sdc:test      - 运行测试');
-console.log('  /sdc:quality   - 最终质量检查');
+console.log('  /sdc:init');
+console.log('  /sdc:change 支持用户登录');
+console.log('  /sdc:plan');
+console.log('  /sdc:apply');
+console.log('  /sdc:check');
+console.log('  /sdc:archive <change-id>');
+console.log('\n高级用法：仍可直接调用 /sdc:spec、/sdc:review、/sdc:test、/sdc:quality、/sdc:validate 等细分指令');
 
 console.log('\n🔗 项目地址：https://github.com/ruanjianershu/spec-driven-coding');
 console.log('\n');

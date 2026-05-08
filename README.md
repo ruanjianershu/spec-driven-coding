@@ -1,17 +1,31 @@
 # 🔧 SDC - 规范驱动开发 (Spec-Driven-Coding)
 
-> 像流水线一样做开发。从需求到交付，6 步标准化流程。
+> 一个 `/sdc`，覆盖从需求到交付的完整闭环。
 
 ## ✨ 是什么
 
-SDC 是一套**纯声明式 AI 开发技能集**，提供 6 个标准化命令，让你的 AI 助手：
+SDC 是一套**纯声明式 AI 开发技能集**，用一个主入口 `/sdc` 让你的 AI 助手：
+- 📂 先建立标准 `.sdc/` 工作区，长期记录需求迭代
+- 🧾 像 OpenSpec 一样记录 change、validate、archive 的核心生命周期
+- 📐 生成项目专属开发规范，让后续开发有章可循
 - 📋 先把需求理清楚，再写代码
 - 🗓️ 任务拆到不超过 2 小时，可独立验收
 - 🧪 测试驱动，先写测试再写代码
 - 🔍 像资深工程师一样审查代码
 - ✅ 交付前全维度质量检查
 
-**零代码，零配置，纯文本技能。** 基于 Superpowers 架构，兼容所有主流 AI 编码工具。
+**零代码，零配置，纯文本技能。** 基于 Superpowers 的轻量 skill-pack 思路，吸收 OpenSpec 的核心需求生命周期，但不复制它们的全部技能。
+
+普通模式只需要记住：
+
+```bash
+/sdc:init
+/sdc:change 支持用户登录
+/sdc:plan
+/sdc:apply
+/sdc:check
+/sdc:archive
+```
 
 ---
 
@@ -33,7 +47,7 @@ cd spec-driven-coding
 然后在 Claude Code / CodeX 中选择"加载本地插件"，选择这个目录。
 
 ### 方式 3：手动复制技能
-直接把 `skills/` 目录下的 6 个文件夹复制到你的 AI 工具的 skills 目录。
+直接把 `skills/` 目录复制到你的 AI 工具的 skills 目录。
 
 ---
 
@@ -45,16 +59,23 @@ cd spec-driven-coding
 
 ---
 
-## 📦 6 个核心命令
+## 📦 普通模式
 
-| 命令 | 作用 | 使用场景 |
-|------|------|---------|
-| `/sdc:spec` | 生成结构化规范文档 | 刚拿到模糊需求时 |
-| `/sdc:plan` | 生成分步实现计划 | 规范确认后 |
-| `/sdc:implement` | TDD 模式自动开发 | 计划确认后，自动执行 |
-| `/sdc:review` | 资深工程师级代码审查 | 代码写完后 |
-| `/sdc:test` | 运行测试 + 覆盖率报告 | 审查修复后 |
-| `/sdc:quality` | 交付前全维度质量检查 | 最终交付前 |
+| 命令 | 作用 |
+|------|------|
+| `/sdc:init` | 创建标准 `.sdc/` 工作区 |
+| `/sdc:change <name>` | 创建一次需求迭代 |
+| `/sdc:plan` | 生成或更新 proposal/spec/design/tasks |
+| `/sdc:apply` | 按 tasks 执行当前变更 |
+| `/sdc:check` | 综合执行校验、审查、测试和质量检查 |
+| `/sdc:archive <change-id>` | 归档需求迭代，沉淀稳定规范 |
+| `/sdc:harness` | 生成项目级 AI 规则 |
+
+### 高级指令
+
+如果你需要精确控制某一步，也可以直接使用：
+
+`/sdc`、`/sdc:spec`、`/sdc:implement`、`/sdc:review`、`/sdc:test`、`/sdc:quality`、`/sdc:validate`
 
 ---
 
@@ -63,26 +84,43 @@ cd spec-driven-coding
 ### 场景：开发一个 Todo 应用
 
 ```bash
-# 第一步：生成规范
-/sdc:spec 帮我做一个 Todo 应用，支持增删改查，有用户登录
-
-# 第二步：生成实现计划
-/sdc:plan
-
-# 第三步：自动开发（不需要管，它自己一步步来）
-/sdc:implement
-
-# 第四步：代码审查
-/sdc:review
-
-# 第五步：运行测试
-/sdc:test
-
-# 第六步：最终质量检查
-/sdc:quality
+/sdc:init
+/sdc:change todo-app
+/sdc:plan 做一个 Todo 应用，支持增删改查，有用户登录
+/sdc:apply
+/sdc:check
+/sdc:archive 2026-05-08-todo-app
 ```
 
-就这么简单。**6 步，交付生产级代码。**
+就这么简单。**普通模式 6-7 个公共指令，详细模式保留完整能力。**
+
+---
+
+## 🗂️ SDC 工作区
+
+`/sdc:init` 会生成三类核心资产：
+
+```text
+.sdc/
+├── specs/       # 业务规范：项目应该做什么
+├── changes/     # 需求迭代：这次为什么改、怎么改、如何验收
+└── standards/   # 开发规范：代码、测试、架构、安全、Git、AI 协作规则
+```
+
+其中 `standards/` 是项目专属开发规范：
+
+```text
+.sdc/standards/
+├── README.md
+├── coding.md
+├── testing.md
+├── architecture.md
+├── security.md
+├── git.md
+└── ai.md
+```
+
+`.sdc/standards/` 是完整规范，适合长期维护；`AGENTS.md` 是 AI 执行护栏，可以由 `/sdc:harness` 从 standards 中提炼。
 
 ---
 
@@ -108,7 +146,7 @@ cd spec-driven-coding
 ### 4. 纯声明式
 > 最好的代码，是不需要写的代码。
 
-SDC 核心是 6 个纯文本技能文件，**零运行时代码**。
+SDC 核心是一组纯文本技能文件，**零运行时代码**。
 兼容所有主流 AI 编码工具，没有锁定。
 
 ---
@@ -123,8 +161,9 @@ SDC 核心是 6 个纯文本技能文件，**零运行时代码**。
 ┌─────────────────▼───────────────────────────┐
 │         技能触发匹配（纯文本）                │
 │  ┌───────────────────────────────────────┐ │
-│  │ sdc-spec    sdc-plan    sdc-implement │ │
-│  │ sdc-review  sdc-test    sdc-quality   │ │
+│  │ 普通模式：init change plan apply       │ │
+│  │          check archive harness         │ │
+│  │ 详细模式：spec review test quality...  │ │
 │  └───────────────────────────────────────┘ │
 └─────────────────┬───────────────────────────┘
                   │
@@ -136,6 +175,20 @@ SDC 核心是 6 个纯文本技能文件，**零运行时代码**。
 ---
 
 ## 📋 每个技能的输出保证
+
+### `/sdc:init` 输出包含
+- ✅ 标准 `.sdc/` 工作区结构
+- ✅ 当前迭代目录 `current/`
+- ✅ 长期变更目录 `changes/`
+- ✅ 项目背景文件 `project.md`
+- ✅ 项目开发规范目录 `standards/`
+- ✅ 需求和决策模板
+
+### `/sdc:change` 输出包含
+- ✅ 独立 change 目录
+- ✅ proposal/tasks/design/spec/notes 五件套
+- ✅ 明确的 change-id
+- ✅ 下一步校验建议
 
 ### `/sdc:spec` 输出包含
 - ✅ 5-10 个可独立验收的子任务
@@ -151,6 +204,13 @@ SDC 核心是 6 个纯文本技能文件，**零运行时代码**。
 - ✅ 每个任务的验收标准
 - ✅ 测试先行策略
 - ✅ 明确的交付清单
+
+### `/sdc:apply` 输出包含
+- ✅ 当前 change 和任务
+- ✅ 任务执行记录
+- ✅ 修改文件
+- ✅ 测试结果
+- ✅ 更新 `tasks.md` 和 `notes.md`
 
 ### `/sdc:implement` 输出包含
 - ✅ 每个任务的测试代码
@@ -178,6 +238,25 @@ SDC 核心是 6 个纯文本技能文件，**零运行时代码**。
 - ✅ 冒烟测试记录
 - ✅ 交付清单确认
 - ✅ 明确的"可以交付/不可以交付"结论
+
+### `/sdc:check` 输出包含
+- ✅ `/sdc:validate` 校验结果
+- ✅ `/sdc:review` 代码审查结果
+- ✅ `/sdc:test` 测试结果
+- ✅ `/sdc:quality` 交付质量结论
+
+### `/sdc:validate` 输出包含
+- ✅ 结构完整性检查
+- ✅ 验收标准检查
+- ✅ 任务复选框检查
+- ✅ 模板占位检查
+- ✅ 明确的通过/不通过结论
+
+### `/sdc:archive` 输出包含
+- ✅ change 归档记录
+- ✅ 稳定规范沉淀到 `specs/`
+- ✅ 原始变更历史保留
+- ✅ 归档结论和下一步建议
 
 ---
 

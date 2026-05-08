@@ -8,6 +8,7 @@
   "type": "module",
   "bin": {
     "sdc": "./bin/install.js",
+    "sdc-spec": "./bin/install.js",
     "sdc-cli": "./sdc-cli.py"
   },
   "files": [
@@ -20,6 +21,13 @@
   ],
   "keywords": [
     "sdc",
+    "sdc-core",
+    "sdc-check",
+    "sdc-init",
+    "sdc-change",
+    "sdc-apply",
+    "sdc-validate",
+    "sdc-archive",
     "spec-driven-coding",
     "claude-code",
     "codex",
