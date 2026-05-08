@@ -6,7 +6,27 @@
   "author": "ruanjianershu",
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "homepage": "https://github.com/ruanjianershu/spec-driven-coding",
-  "type": "skill-pack",
+  "interface": {
+    "displayName": "SDC",
+    "shortDescription": "规范驱动开发工作流，整合 OpenSpec 和 Superpowers 的核心能力。",
+    "longDescription": "SDC 是面向 Codex 的 Spec-Driven-Coding skill 集，提供 init、change、plan、apply、check、archive 等精简入口，并保留 review、test、validate 等细分能力供高级场景使用。",
+    "developerName": "ruanjianershu",
+    "category": "Coding",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/ruanjianershu/spec-driven-coding",
+    "privacyPolicyURL": "https://github.com/ruanjianershu/spec-driven-coding",
+    "termsOfServiceURL": "https://github.com/ruanjianershu/spec-driven-coding",
+    "defaultPrompt": [
+      "/sdc:init",
+      "/sdc:plan",
+      "/sdc:check"
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  },
   "skills": "./skills/",
   "commands": {
     "/sdc": "sdc-core",

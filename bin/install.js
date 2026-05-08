@@ -86,6 +86,34 @@ function copyPlugin(dest) {
   }
 }
 
+function installCodexSkills(home) {
+  const installedPaths = [];
+  const skillTargets = [
+    path.join(home, '.codex', 'skills'),
+    path.join(home, '.agents', 'skills'),
+  ];
+  const skillsRoot = path.join(projectRoot, 'skills');
+
+  for (const targetRoot of skillTargets) {
+    fs.mkdirSync(targetRoot, { recursive: true });
+
+    for (const entry of fs.readdirSync(skillsRoot, { withFileTypes: true })) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+
+      const srcPath = path.join(skillsRoot, entry.name);
+      const destPath = path.join(targetRoot, entry.name);
+      fs.rmSync(destPath, { recursive: true, force: true });
+      copyDir(srcPath, destPath);
+    }
+
+    installedPaths.push(targetRoot);
+  }
+
+  return installedPaths;
+}
+
 function detectPlatforms() {
   const home = process.env.HOME || process.env.USERPROFILE;
   const platforms = [];
@@ -139,6 +167,13 @@ function installToPlatform(platform) {
   } else {
     // 其他平台复制插件所需文件，避免带入 .git、.DS_Store 等本地文件
     copyPlugin(destPath);
+  }
+
+  if (platform.type === 'codex') {
+    const home = process.env.HOME || process.env.USERPROFILE;
+    const skillPaths = installCodexSkills(home);
+    console.log('  已同步 Codex 可直接扫描的 skills：');
+    skillPaths.forEach((p) => console.log(`  - ${p}`));
   }
   
   log(GREEN, `✅ 安装成功！路径: ${destPath}`);
