@@ -1,3 +1,8 @@
+---
+name: sdc-plan
+description: "Generate or update proposal, spec, design, and task plan for a change, with test-first strategy and thin slices."
+---
+
 # Skill: SDC 计划生成 /sdc:plan
 
 ## 触发条件

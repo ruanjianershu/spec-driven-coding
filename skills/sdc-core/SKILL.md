@@ -1,3 +1,8 @@
+---
+name: sdc
+description: "SDC main entry. Route natural language requests across init, change, plan, apply, check, archive, and harness for spec-driven coding."
+---
+
 # Skill: SDC 主入口 /sdc
 
 ## 触发条件

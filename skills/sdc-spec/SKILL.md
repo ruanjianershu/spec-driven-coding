@@ -1,3 +1,8 @@
+---
+name: sdc-spec
+description: "Turn vague requirements into structured, verifiable specs with acceptance criteria, test plan, risks, and next steps."
+---
+
 # Skill: SDC 规范生成 /sdc:spec
 
 ## 触发条件

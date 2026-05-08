@@ -1,3 +1,8 @@
+---
+name: sdc-apply
+description: "Apply the current SDC change by executing tasks incrementally, updating notes, files changed, and validation evidence."
+---
+
 # Skill: SDC 执行变更 /sdc:apply
 
 ## 触发条件

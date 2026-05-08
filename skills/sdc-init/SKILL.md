@@ -1,3 +1,8 @@
+---
+name: sdc-init
+description: "Initialize the standard .sdc workspace with specs, changes, standards, decisions, reports, templates, and project context."
+---
+
 # Skill: SDC 工作区初始化 /sdc:init
 
 ## 触发条件

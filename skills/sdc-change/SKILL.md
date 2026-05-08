@@ -1,3 +1,8 @@
+---
+name: sdc-change
+description: "Create a focused requirement change under .sdc/changes/active with proposal, spec, design, tasks, and notes."
+---
+
 # Skill: SDC 需求变更创建 /sdc:change
 
 ## 触发条件

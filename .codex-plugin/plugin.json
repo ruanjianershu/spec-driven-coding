@@ -7,92 +7,7 @@
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "homepage": "https://github.com/ruanjianershu/spec-driven-coding",
   "type": "skill-pack",
-  "skills": [
-    {
-      "id": "sdc-core",
-      "path": "skills/sdc-core",
-      "name": "SDC 主入口",
-      "triggers": ["/sdc", "/sdc 初始化", "/sdc 新需求", "/sdc 检查", "/sdc 完成"]
-    },
-    {
-      "id": "sdc-init",
-      "path": "skills/sdc-init",
-      "name": "SDC 工作区初始化",
-      "triggers": ["/sdc:init", "初始化 SDC", "创建 SDC 工作区"]
-    },
-    {
-      "id": "sdc-change",
-      "path": "skills/sdc-change",
-      "name": "SDC 需求变更创建",
-      "triggers": ["/sdc:change", "创建需求变更", "新建一次迭代"]
-    },
-    {
-      "id": "sdc-spec",
-      "path": "skills/sdc-spec",
-      "name": "SDC 规范生成",
-      "triggers": ["/sdc:spec", "生成规范", "需求分解"]
-    },
-    {
-      "id": "sdc-plan",
-      "path": "skills/sdc-plan",
-      "name": "SDC 计划生成",
-      "triggers": ["/sdc:plan", "生成计划", "任务拆分"]
-    },
-    {
-      "id": "sdc-apply",
-      "path": "skills/sdc-apply",
-      "name": "SDC 执行变更",
-      "triggers": ["/sdc:apply", "执行这个 change", "开始实现"]
-    },
-    {
-      "id": "sdc-implement",
-      "path": "skills/sdc-implement",
-      "name": "SDC 自动开发",
-      "triggers": ["/sdc:implement", "开始实现", "写代码"]
-    },
-    {
-      "id": "sdc-review",
-      "path": "skills/sdc-review",
-      "name": "SDC 代码审查",
-      "triggers": ["/sdc:review", "审查代码", "质量检查"]
-    },
-    {
-      "id": "sdc-test",
-      "path": "skills/sdc-test",
-      "name": "SDC 测试驱动",
-      "triggers": ["/sdc:test", "运行测试", "写测试"]
-    },
-    {
-      "id": "sdc-quality",
-      "path": "skills/sdc-quality",
-      "name": "SDC 全面质量检查",
-      "triggers": ["/sdc:quality", "最终检查", "质量验收"]
-    },
-    {
-      "id": "sdc-check",
-      "path": "skills/sdc-check",
-      "name": "SDC 综合检查",
-      "triggers": ["/sdc:check", "SDC 检查", "验收一下"]
-    },
-    {
-      "id": "sdc-validate",
-      "path": "skills/sdc-validate",
-      "name": "SDC 规范校验",
-      "triggers": ["/sdc:validate", "校验 SDC", "检查需求完整性"]
-    },
-    {
-      "id": "sdc-archive",
-      "path": "skills/sdc-archive",
-      "name": "SDC 需求归档",
-      "triggers": ["/sdc:archive", "归档这个需求", "沉淀到 specs"]
-    },
-    {
-      "id": "sdc-harness",
-      "path": "skills/sdc-harness",
-      "name": "SDC Harness 生成",
-      "triggers": ["/sdc:harness", "生成 AI 规则", "创建 AGENTS.md"]
-    }
-  ],
+  "skills": "./skills/",
   "commands": {
     "/sdc": "sdc-core",
     "/sdc:init": "sdc-init",
@@ -103,6 +18,13 @@
     "/sdc:archive": "sdc-archive",
     "/sdc:harness": "sdc-harness"
   },
-  "tags": ["开发工具", "质量保障", "TDD", "规范", "SDC", "代码审查"],
+  "tags": [
+    "开发工具",
+    "质量保障",
+    "TDD",
+    "规范",
+    "SDC",
+    "代码审查"
+  ],
   "min_codex_version": "0.7.0"
 }

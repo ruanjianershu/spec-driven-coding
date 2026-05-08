@@ -1,3 +1,8 @@
+---
+name: sdc-harness
+description: "Generate AGENTS.md project AI guardrails from project scan and SDC standards to prevent repeated mistakes."
+---
+
 # Skill: SDC Harness 生成 /sdc:harness
 
 ## 触发条件

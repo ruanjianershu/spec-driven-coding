@@ -1,3 +1,8 @@
+---
+name: sdc-review
+description: "Review code like a senior engineer across architecture, quality, security, performance, and maintainability."
+---
+
 # Skill: SDC 代码审查 /sdc:review
 
 ## 触发条件

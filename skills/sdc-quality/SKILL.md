@@ -1,3 +1,8 @@
+---
+name: sdc-quality
+description: "Perform final delivery quality gate across UX, docs, code quality, security, performance, and maintainability."
+---
+
 # Skill: SDC 全面质量检查 /sdc:quality
 
 ## 触发条件

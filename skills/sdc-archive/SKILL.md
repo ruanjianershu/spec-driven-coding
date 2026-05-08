@@ -1,3 +1,8 @@
+---
+name: sdc-archive
+description: "Archive a completed SDC change, preserve history, and promote final spec into .sdc/specs."
+---
+
 # Skill: SDC 需求归档 /sdc:archive
 
 ## 触发条件

@@ -1,3 +1,8 @@
+---
+name: sdc-check
+description: "Combined delivery check that runs validate, review, test, and quality perspectives with evidence gates."
+---
+
 # Skill: SDC 综合检查 /sdc:check
 
 ## 触发条件

@@ -1,3 +1,8 @@
+---
+name: sdc-validate
+description: "Validate SDC current or active change files for structure, acceptance criteria, tasks, tests, and non-template content."
+---
+
 # Skill: SDC 规范校验 /sdc:validate
 
 ## 触发条件

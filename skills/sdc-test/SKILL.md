@@ -1,3 +1,8 @@
+---
+name: sdc-test
+description: "Run and assess tests with coverage, failure details, boundary cases, and improvement suggestions."
+---
+
 # Skill: SDC 测试驱动 /sdc:test
 
 ## 触发条件
