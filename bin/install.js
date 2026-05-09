@@ -88,10 +88,8 @@ function copyPlugin(dest) {
 
 function installCodexSkills(home) {
   const installedPaths = [];
-  const skillTargets = [
-    path.join(home, '.codex', 'skills'),
-    path.join(home, '.agents', 'skills'),
-  ];
+  const skillTargets = [path.join(home, '.codex', 'skills')];
+  const legacyTargetRoot = path.join(home, '.agents', 'skills');
   const skillsRoot = path.join(projectRoot, 'skills');
 
   for (const targetRoot of skillTargets) {
@@ -109,6 +107,14 @@ function installCodexSkills(home) {
     }
 
     installedPaths.push(targetRoot);
+  }
+
+  if (fs.existsSync(legacyTargetRoot)) {
+    for (const entry of fs.readdirSync(legacyTargetRoot, { withFileTypes: true })) {
+      if (entry.isDirectory() && entry.name.startsWith('sdc-')) {
+        fs.rmSync(path.join(legacyTargetRoot, entry.name), { recursive: true, force: true });
+      }
+    }
   }
 
   return installedPaths;
