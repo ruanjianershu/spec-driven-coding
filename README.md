@@ -31,14 +31,19 @@ SDC 是一套**纯声明式 AI 开发技能集**，用一个主入口 `/sdc` 让
 
 ## 🚀 快速开始
 
-### 方式 1：npx 一键安装（推荐 ⭐）
+### 方式 1：npx 一键安装 / 更新（推荐 ⭐）
 ```bash
-npx sdc-spec
+npx sdc-spec@latest
 ```
 
 自动检测你安装的 AI 工具（Claude Code / CodeX / Hermes Agent），一键安装到对应目录。
 
-如果 npm registry 还没有发布最新版本，可以直接从 GitHub 安装最新代码：
+后续更新 SDC 也使用同一个命令：
+```bash
+npx sdc-spec@latest
+```
+
+如果你想绕过 npm registry，直接从 GitHub 安装最新代码：
 ```bash
 npx --package github:ruanjianershu/spec-driven-coding sdc-spec
 ```
