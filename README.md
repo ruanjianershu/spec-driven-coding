@@ -36,11 +36,17 @@ SDC 是一套**纯声明式 AI 开发技能集**，用一个主入口 `/sdc` 让
 npx sdc-spec@latest
 ```
 
-自动检测你安装的 AI 工具（Claude Code / CodeX / Hermes Agent），一键安装到对应目录。
+自动检测你安装的 AI 工具（Claude Code / CodeX / Hermes Agent），一键安装到对应目录。Codex 会安装到 `~/.agents/skills`，安装后需要重启 Codex 才会刷新 skill 列表。
 
 后续更新 SDC 也使用同一个命令：
 ```bash
 npx sdc-spec@latest
+```
+
+如果你希望在终端里长期保留 `sdc` 命令，需要全局安装：
+```bash
+npm install -g sdc-spec@latest
+sdc
 ```
 
 如果你想绕过 npm registry，直接从 GitHub 安装最新代码：

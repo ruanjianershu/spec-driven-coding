@@ -136,17 +136,11 @@ function detectPlatforms() {
     }
   }
   
-  // CodeX
-  const codexPaths = [
-    path.join(home, '.codex', 'plugins'),
-    path.join(home, '.config', 'codex', 'plugins'),
-  ];
-  for (const p of codexPaths) {
-    if (fs.existsSync(p)) {
-      platforms.push({ name: 'CodeX', path: p, type: 'codex' });
-      break;
-    }
-  }
+  // CodeX/Codex: install to the default path even on a fresh machine.
+  // Some Codex builds load custom skills from ~/.agents/skills and may not
+  // create ~/.codex/plugins before the first plugin install.
+  const codexPath = path.join(home, '.codex', 'plugins');
+  platforms.push({ name: 'CodeX', path: codexPath, type: 'codex' });
   
   // Hermes Agent
   const hermesPaths = [
