@@ -89,6 +89,11 @@ function copyPlugin(dest) {
   }
 }
 
+function packageVersion() {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+  return packageJson.version || '1.0.0';
+}
+
 function writeLocalCodexMarketplace(home) {
   const marketplaceRoot = path.join(home, '.codex', 'local-marketplaces', SDC_MARKETPLACE_NAME);
   const marketplaceFile = path.join(marketplaceRoot, '.agents', 'plugins', 'marketplace.json');
@@ -148,6 +153,23 @@ enabled = true
 
   fs.writeFileSync(configPath, `${content.trimEnd()}${block}`);
   return configPath;
+}
+
+function writeCodexPluginCache(home) {
+  const cachePluginRoot = path.join(
+    home,
+    '.codex',
+    'plugins',
+    'cache',
+    SDC_MARKETPLACE_NAME,
+    'sdc'
+  );
+  const versionedPluginRoot = path.join(cachePluginRoot, packageVersion());
+
+  fs.rmSync(cachePluginRoot, { recursive: true, force: true });
+  copyPlugin(versionedPluginRoot);
+
+  return versionedPluginRoot;
 }
 
 function installCodexSkills(home) {
@@ -236,10 +258,13 @@ function installToPlatform(platform) {
   if (platform.type === 'codex') {
     const home = process.env.HOME || process.env.USERPROFILE;
     const marketplaceRoot = writeLocalCodexMarketplace(home);
+    const cachePath = writeCodexPluginCache(home);
     const configPath = enableCodexPlugin(home, marketplaceRoot);
     const skillPaths = installCodexSkills(home);
     console.log('  已注册 Codex 本地插件 marketplace：');
     console.log(`  - ${marketplaceRoot}`);
+    console.log('  已写入 Codex 插件 cache：');
+    console.log(`  - ${cachePath}`);
     console.log(`  已启用 Codex 插件：${SDC_PLUGIN_ID}`);
     console.log(`  - ${configPath}`);
     console.log('  已同步 Codex 可直接扫描的 skills：');
