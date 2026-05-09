@@ -2,7 +2,7 @@
   "name": "sdc",
   "displayName": "SDC - 规范驱动开发",
   "description": "Spec-Driven-Coding 规范驱动开发工具集。普通模式只开放少量公共指令，详细模式保留完整细分能力。",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": "ruanjianershu",
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "homepage": "https://github.com/ruanjianershu/spec-driven-coding",

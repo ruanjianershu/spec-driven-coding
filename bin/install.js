@@ -18,6 +18,7 @@ const RESET = '\x1b[0m';
 
 const PLUGIN_ENTRIES = [
   'skills',
+  'commands',
   '.claude-plugin',
   '.codex-plugin',
   'README.md',
