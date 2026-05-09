@@ -2,7 +2,7 @@
   "name": "sdc",
   "displayName": "SDC - 规范驱动开发",
   "description": "Spec-Driven-Coding 规范驱动开发工具集。普通模式只开放少量公共指令，详细模式保留完整细分能力。",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "author": "ruanjianershu",
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "homepage": "https://github.com/ruanjianershu/spec-driven-coding",
@@ -20,23 +20,23 @@
     "privacyPolicyURL": "https://github.com/ruanjianershu/spec-driven-coding",
     "termsOfServiceURL": "https://github.com/ruanjianershu/spec-driven-coding",
     "defaultPrompt": [
-      "sdc:init",
-      "sdc:plan",
-      "sdc:check"
+      "/sdc:init",
+      "/sdc:plan",
+      "/sdc:check"
     ],
     "brandColor": "#2563EB",
     "screenshots": []
   },
   "skills": "./skills/",
   "commands": {
-    "sdc": "sdc-core",
-    "sdc:init": "sdc-init",
-    "sdc:change": "sdc-change",
-    "sdc:plan": "sdc-plan",
-    "sdc:apply": "sdc-apply",
-    "sdc:check": "sdc-check",
-    "sdc:archive": "sdc-archive",
-    "sdc:harness": "sdc-harness"
+    "/sdc": "sdc-core",
+    "/sdc:init": "sdc-init",
+    "/sdc:change": "sdc-change",
+    "/sdc:plan": "sdc-plan",
+    "/sdc:apply": "sdc-apply",
+    "/sdc:check": "sdc-check",
+    "/sdc:archive": "sdc-archive",
+    "/sdc:harness": "sdc-harness"
   },
   "tags": [
     "开发工具",

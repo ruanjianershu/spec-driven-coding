@@ -7,12 +7,12 @@ description: "SDC main entry. Route natural language requests across init, chang
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `sdc`
-- `sdc 初始化`
-- `sdc 新需求`
-- `sdc 开始实现`
-- `sdc 检查`
-- `sdc 完成`
+- `/sdc`
+- `/sdc 初始化`
+- `/sdc 新需求`
+- `/sdc 开始实现`
+- `/sdc 检查`
+- `/sdc 完成`
 - "用 SDC 做"
 
 ## 核心使命
@@ -23,7 +23,7 @@ SDC 的设计目标是整合和简化：
 - Superpowers 的核心：轻量 skill-pack 和命令触发
 - SDC 自己的核心：spec、plan、implement、review、test、quality、harness
 
-但用户界面只保留一个主入口：`sdc`。
+但用户界面只保留一个主入口：`/sdc`。
 
 ---
 
@@ -31,23 +31,23 @@ SDC 的设计目标是整合和简化：
 
 | 用户意图 | 应执行的 SDC 能力 |
 |---------|------------------|
-| 初始化、第一次使用、建立目录 | `sdc:init` |
-| 新需求、新功能、需求变更 | `sdc:change` + `sdc:spec` + `sdc:plan` |
-| 开始写代码、执行计划 | `sdc:apply` |
-| 检查、验收、能不能交付 | `sdc:validate` + `sdc:review` + `sdc:test` + `sdc:quality` |
-| 完成、归档、沉淀规范 | `sdc:archive` |
-| 记录项目规则、避免重复踩坑 | `sdc:harness` |
+| 初始化、第一次使用、建立目录 | `/sdc:init` |
+| 新需求、新功能、需求变更 | `/sdc:change` + `/sdc:spec` + `/sdc:plan` |
+| 开始写代码、执行计划 | `/sdc:apply` |
+| 检查、验收、能不能交付 | `/sdc:validate` + `/sdc:review` + `/sdc:test` + `/sdc:quality` |
+| 完成、归档、沉淀规范 | `/sdc:archive` |
+| 记录项目规则、避免重复踩坑 | `/sdc:harness` |
 
 ---
 
 ## 推荐用户用法
 
 ```text
-sdc 初始化
-sdc 新需求：支持用户登录
-sdc:apply
-sdc 检查
-sdc 完成
+/sdc 初始化
+/sdc 新需求：支持用户登录
+/sdc:apply
+/sdc 检查
+/sdc 完成
 ```
 
 ---

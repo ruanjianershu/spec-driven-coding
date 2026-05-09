@@ -3,11 +3,11 @@ name: sdc-change
 description: "Create a focused requirement change under .sdc/changes/active with proposal, spec, design, tasks, and notes."
 ---
 
-# Skill: SDC 需求变更创建 sdc:change
+# Skill: SDC 需求变更创建 /sdc:change
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `sdc:change`
+- `/sdc:change`
 - "创建需求变更"
 - "新建一次迭代"
 - "开始一个 change"
@@ -16,7 +16,7 @@ description: "Create a focused requirement change under .sdc/changes/active with
 ## 核心使命
 创建一次独立、可追踪、可验证的需求迭代。它吸收 OpenSpec 的核心 change 思路，但只保留 SDC 需要的最小闭环：为什么改、改什么、怎么做、怎么验收、最后如何归档。
 
-`sdc:change` 不是直接把一句话需求写成文件，而是先帮助用户把模糊想法收敛成可执行 change。允许并鼓励在创建前进行短轮头脑风暴、需求澄清、方案取舍和范围裁剪。
+`/sdc:change` 不是直接把一句话需求写成文件，而是先帮助用户把模糊想法收敛成可执行 change。允许并鼓励在创建前进行短轮头脑风暴、需求澄清、方案取舍和范围裁剪。
 
 ---
 
@@ -89,11 +89,11 @@ description: "Create a focused requirement change under .sdc/changes/active with
 
 ## 执行规则
 
-1. 如果 `.sdc/` 不存在，先执行 `sdc:init`
+1. 如果 `.sdc/` 不存在，先执行 `/sdc:init`
 2. short-name 必须简短、稳定，推荐英文小写和连字符
 3. 一个 change 只表达一次独立需求迭代
 4. 不要把多个互相独立的需求塞进同一个 change
-5. 创建后必须给出下一步：`sdc:spec` 或 `sdc:validate`
+5. 创建后必须给出下一步：`/sdc:spec` 或 `/sdc:validate`
 
 ---
 
@@ -114,7 +114,7 @@ YYYY-MM-DD-short-name
 - .sdc/changes/active/YYYY-MM-DD-short-name/notes.md
 
 ## 下一步
-👉 完善 proposal.md 和 spec.md，然后执行 `sdc:validate`
+👉 完善 proposal.md 和 spec.md，然后执行 `/sdc:validate`
 ```
 
 ---

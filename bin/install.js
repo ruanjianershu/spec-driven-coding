@@ -27,6 +27,9 @@ const PLUGIN_ENTRIES = [
   'bin',
 ];
 
+const SDC_MARKETPLACE_NAME = 'sdc-local';
+const SDC_PLUGIN_ID = 'sdc@sdc-local';
+
 const IGNORED_ENTRIES = new Set([
   '.DS_Store',
   '.git',
@@ -84,6 +87,67 @@ function copyPlugin(dest) {
   for (const entry of PLUGIN_ENTRIES) {
     copyIfExists(path.join(projectRoot, entry), path.join(dest, entry));
   }
+}
+
+function writeLocalCodexMarketplace(home) {
+  const marketplaceRoot = path.join(home, '.codex', 'local-marketplaces', SDC_MARKETPLACE_NAME);
+  const marketplaceFile = path.join(marketplaceRoot, '.agents', 'plugins', 'marketplace.json');
+  const pluginRoot = path.join(marketplaceRoot, 'plugins', 'sdc');
+
+  copyPlugin(pluginRoot);
+  fs.mkdirSync(path.dirname(marketplaceFile), { recursive: true });
+  fs.writeFileSync(marketplaceFile, JSON.stringify({
+    name: SDC_MARKETPLACE_NAME,
+    interface: {
+      displayName: 'SDC Local'
+    },
+    plugins: [
+      {
+        name: 'sdc',
+        source: {
+          source: 'local',
+          path: './plugins/sdc'
+        },
+        policy: {
+          installation: 'AVAILABLE',
+          authentication: 'ON_INSTALL'
+        },
+        category: 'Coding'
+      }
+    ]
+  }, null, 2) + '\n');
+
+  return marketplaceRoot;
+}
+
+function removeTomlSection(content, header) {
+  const escaped = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sectionPattern = new RegExp(`\\n?\\[${escaped}\\][\\s\\S]*?(?=\\n\\[|$)`, 'g');
+  return content.replace(sectionPattern, '').trimEnd();
+}
+
+function enableCodexPlugin(home, marketplaceRoot) {
+  const configPath = path.join(home, '.codex', 'config.toml');
+  fs.mkdirSync(path.dirname(configPath), { recursive: true });
+
+  let content = fs.existsSync(configPath) ? fs.readFileSync(configPath, 'utf8') : '';
+  content = removeTomlSection(content, `marketplaces.${SDC_MARKETPLACE_NAME}`);
+  content = removeTomlSection(content, `plugins."${SDC_PLUGIN_ID}"`);
+
+  const normalizedMarketplaceRoot = marketplaceRoot.replace(/\\/g, '\\\\');
+  const block = `
+
+[marketplaces.${SDC_MARKETPLACE_NAME}]
+last_updated = "${new Date().toISOString()}"
+source_type = "local"
+source = "${normalizedMarketplaceRoot}"
+
+[plugins."${SDC_PLUGIN_ID}"]
+enabled = true
+`;
+
+  fs.writeFileSync(configPath, `${content.trimEnd()}${block}`);
+  return configPath;
 }
 
 function installCodexSkills(home) {
@@ -171,7 +235,13 @@ function installToPlatform(platform) {
 
   if (platform.type === 'codex') {
     const home = process.env.HOME || process.env.USERPROFILE;
+    const marketplaceRoot = writeLocalCodexMarketplace(home);
+    const configPath = enableCodexPlugin(home, marketplaceRoot);
     const skillPaths = installCodexSkills(home);
+    console.log('  已注册 Codex 本地插件 marketplace：');
+    console.log(`  - ${marketplaceRoot}`);
+    console.log(`  已启用 Codex 插件：${SDC_PLUGIN_ID}`);
+    console.log(`  - ${configPath}`);
     console.log('  已同步 Codex 可直接扫描的 skills：');
     skillPaths.forEach((p) => console.log(`  - ${p}`));
   }
@@ -224,14 +294,14 @@ log(GREEN, '🎉 SDC 安装完成！');
 console.log('='.repeat(60));
 
 console.log('\n📖 使用方法：');
-console.log('  注意：在 Codex 中请直接输入普通文本，不要加 /');
-console.log('  sdc:init');
-console.log('  sdc:change 支持用户登录');
-console.log('  sdc:plan');
-console.log('  sdc:apply');
-console.log('  sdc:check');
-console.log('  sdc:archive <change-id>');
-console.log('\n高级用法：仍可直接调用 sdc:spec、sdc:review、sdc:test、sdc:quality、sdc:validate 等细分指令');
+console.log('  /sdc:init');
+console.log('  /sdc:change 支持用户登录');
+console.log('  /sdc:plan');
+console.log('  /sdc:apply');
+console.log('  /sdc:check');
+console.log('  /sdc:archive <change-id>');
+console.log('\n高级用法：仍可直接调用 /sdc:spec、/sdc:review、/sdc:test、/sdc:quality、/sdc:validate 等细分指令');
+console.log('\n⚠️  Codex 安装后请完全重启应用，让 slash commands 重新加载。');
 
 console.log('\n🔗 项目地址：https://github.com/ruanjianershu/spec-driven-coding');
 console.log('\n');

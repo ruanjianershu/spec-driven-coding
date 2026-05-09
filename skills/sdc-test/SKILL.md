@@ -3,11 +3,11 @@ name: sdc-test
 description: "Run and assess tests with coverage, failure details, boundary cases, and improvement suggestions."
 ---
 
-# Skill: SDC 测试驱动 sdc:test
+# Skill: SDC 测试驱动 /sdc:test
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `sdc:test`
+- `/sdc:test`
 - "运行测试"
 - "测试一下"
 - "写测试"
@@ -129,7 +129,7 @@ def test_example():
 - 测试清晰度：✅ 清晰 / ⚠️ 需要改进
 
 ## 🚀 下一步建议
-👉 测试全部通过后，执行 `sdc:quality` 进行最终质量检查
+👉 测试全部通过后，执行 `/sdc:quality` 进行最终质量检查
 ```
 
 ---

@@ -3,11 +3,11 @@ name: sdc-validate
 description: "Validate SDC current or active change files for structure, acceptance criteria, tasks, tests, and non-template content."
 ---
 
-# Skill: SDC 规范校验 sdc:validate
+# Skill: SDC 规范校验 /sdc:validate
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `sdc:validate`
+- `/sdc:validate`
 - "校验 SDC"
 - "检查需求完整性"
 - "能不能开始实现"

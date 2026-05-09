@@ -3,11 +3,11 @@ name: sdc-plan
 description: "Generate or update proposal, spec, design, and task plan for a change, with test-first strategy and thin slices."
 ---
 
-# Skill: SDC 计划生成 sdc:plan
+# Skill: SDC 计划生成 /sdc:plan
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `sdc:plan`
+- `/sdc:plan`
 - "帮我生成实现计划"
 - "下一步怎么做"
 - "怎么拆分任务"
@@ -20,7 +20,7 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 ## 执行步骤
 
 ### 前置检查
-如果还没有生成规范文档，**必须先执行 `sdc:spec`**。不能跳过规范直接写计划。
+如果还没有生成规范文档，**必须先执行 `/sdc:spec`**。不能跳过规范直接写计划。
 
 如果存在 `.sdc/changes/active/<change-id>/`，优先围绕该 change 生成或更新：
 - `proposal.md`
@@ -43,7 +43,7 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 
 ## 红旗警告
 
-出现以下情况不能进入 `sdc:apply`：
+出现以下情况不能进入 `/sdc:apply`：
 
 - 任务没有验收标准
 - 任务之间依赖关系不清楚
@@ -59,7 +59,7 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 - 生成/更新的 `.sdc` 文件路径
 - 任务清单和每个任务的验收标准
 - 测试先行策略
-- 进入 `sdc:apply` 前的阻塞项
+- 进入 `/sdc:apply` 前的阻塞项
 
 ---
 
@@ -119,7 +119,7 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 4. 不追求完美，先跑起来再优化
 
 ## 🚀 下一步建议
-👉 确认无误后，执行 `sdc:apply` 开始执行变更
+👉 确认无误后，执行 `/sdc:apply` 开始执行变更
 ```
 
 ---

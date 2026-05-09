@@ -3,11 +3,11 @@ name: sdc-harness
 description: "Generate AGENTS.md project AI guardrails from project scan and SDC standards to prevent repeated mistakes."
 ---
 
-# Skill: SDC Harness 生成 sdc:harness
+# Skill: SDC Harness 生成 /sdc:harness
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `sdc:harness`
+- `/sdc:harness`
 - "生成 AI 规则"
 - "创建 AGENTS.md"
 - "不要再犯同样的错"
