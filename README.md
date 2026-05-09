@@ -38,6 +38,11 @@ npx sdc-spec
 
 自动检测你安装的 AI 工具（Claude Code / CodeX / Hermes Agent），一键安装到对应目录。
 
+如果 npm registry 还没有发布最新版本，可以直接从 GitHub 安装最新代码：
+```bash
+npx --package github:ruanjianershu/spec-driven-coding sdc-spec
+```
+
 ### 方式 2：本地加载
 ```bash
 git clone https://github.com/ruanjianershu/spec-driven-coding.git
