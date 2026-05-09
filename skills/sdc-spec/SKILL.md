@@ -3,11 +3,11 @@ name: sdc-spec
 description: "Turn vague requirements into structured, verifiable specs with acceptance criteria, test plan, risks, and next steps."
 ---
 
-# Skill: SDC 规范生成 /sdc:spec
+# Skill: SDC 规范生成 sdc:spec
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `/sdc:spec`
+- `sdc:spec`
 - "帮我生成规范"
 - "先理清楚需求"
 - "这个需求怎么做"
@@ -77,7 +77,7 @@ description: "Turn vague requirements into structured, verifiable specs with acc
 | 时间风险 | xxx | 高/中/低 | xxx |
 
 ## 🚀 6. 下一步建议
-👉 执行 `/sdc:plan` 生成详细实现计划
+👉 执行 `sdc:plan` 生成详细实现计划
 ```
 
 ---

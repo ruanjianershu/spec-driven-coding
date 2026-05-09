@@ -3,11 +3,11 @@ name: sdc-init
 description: "Initialize the standard .sdc workspace with specs, changes, standards, decisions, reports, templates, and project context."
 ---
 
-# Skill: SDC 工作区初始化 /sdc:init
+# Skill: SDC 工作区初始化 sdc:init
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `/sdc:init`
+- `sdc:init`
 - "初始化 SDC"
 - "创建 SDC 工作区"
 - "生成需求迭代目录"
@@ -82,8 +82,8 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 | `.sdc/specs/` | 已稳定沉淀的业务规范 |
 | `.sdc/standards/` | 项目长期开发规范，约束代码、测试、架构、安全、Git 和 AI 协作 |
 | `.sdc/decisions/` | 架构、产品、技术关键决策 |
-| `.sdc/reviews/` | `/sdc:review` 的审查报告 |
-| `.sdc/reports/` | `/sdc:test` 和 `/sdc:quality` 的测试/质量报告 |
+| `.sdc/reviews/` | `sdc:review` 的审查报告 |
+| `.sdc/reports/` | `sdc:test` 和 `sdc:quality` 的测试/质量报告 |
 | `.sdc/templates/` | 需求变更和决策模板 |
 
 ---
@@ -99,7 +99,7 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 - `git.md`：变更粒度、提交前检查、PR 要求
 - `ai.md`：AI 助手必须做和绝对不要做的规则
 
-后续 `/sdc:harness` 可以从 standards 中提炼 `AGENTS.md`。
+后续 `sdc:harness` 可以从 standards 中提炼 `AGENTS.md`。
 
 ---
 
@@ -156,7 +156,7 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 4. 迭代完成后归档到 .sdc/changes/archive/YYYY-MM-DD-short-name/
 
 ## 🚀 下一步建议
-👉 执行 `/sdc:spec` 开始记录当前需求
+👉 执行 `sdc:spec` 开始记录当前需求
 ```
 
 ---

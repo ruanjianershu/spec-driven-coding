@@ -3,13 +3,13 @@ name: sdc-implement
 description: "Compatibility detailed command for implementation. Prefer sdc-apply in normal mode."
 ---
 
-# Skill: SDC 自动开发 /sdc:implement
+# Skill: SDC 自动开发 sdc:implement
 
-> 兼容说明：普通模式请优先使用 `/sdc:apply`。`/sdc:implement` 作为详细/兼容指令保留。
+> 兼容说明：普通模式请优先使用 `sdc:apply`。`sdc:implement` 作为详细/兼容指令保留。
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `/sdc:implement`
+- `sdc:implement`
 - "开始实现"
 - "写代码"
 - "开发"
@@ -23,8 +23,8 @@ description: "Compatibility detailed command for implementation. Prefer sdc-appl
 ## 执行步骤
 
 ### 前置检查
-- ✅ 已有规范文档（`/sdc:spec`）
-- ✅ 已有实现计划（`/sdc:plan`）
+- ✅ 已有规范文档（`sdc:spec`）
+- ✅ 已有实现计划（`sdc:plan`）
 - ❌ 缺少任何一个，先补全再开始
 
 ---
@@ -105,7 +105,7 @@ description: "Compatibility detailed command for implementation. Prefer sdc-appl
 ...
 
 ## 🚀 下一步建议
-👉 执行 `/sdc:review` 进行代码质量审查
+👉 执行 `sdc:review` 进行代码质量审查
 ```
 
 ---

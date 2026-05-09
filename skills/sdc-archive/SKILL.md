@@ -3,11 +3,11 @@ name: sdc-archive
 description: "Archive a completed SDC change, preserve history, and promote final spec into .sdc/specs."
 ---
 
-# Skill: SDC 需求归档 /sdc:archive
+# Skill: SDC 需求归档 sdc:archive
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `/sdc:archive`
+- `sdc:archive`
 - "归档这个需求"
 - "完成这个 change"
 - "沉淀到 specs"
@@ -21,8 +21,8 @@ description: "Archive a completed SDC change, preserve history, and promote fina
 ## 归档前置条件
 
 归档前必须确认：
-- `/sdc:validate <change-id>` 已通过
-- `/sdc:check <change-id>` 已通过，或有等价的 review/test/security/quality 证据
+- `sdc:validate <change-id>` 已通过
+- `sdc:check <change-id>` 已通过，或有等价的 review/test/security/quality 证据
 - `tasks.md` 中关键任务已完成
 - `spec.md` 是最终版本
 - 测试和质量结论已经记录在 `notes.md`、`reports/` 或 change 目录中
@@ -46,7 +46,7 @@ description: "Archive a completed SDC change, preserve history, and promote fina
 
 - `spec.md` 仍是模板内容
 - `tasks.md` 存在未完成关键任务
-- 没有 `/sdc:check` 或等价检查记录
+- 没有 `sdc:check` 或等价检查记录
 - 没有测试/质量结论
 - `.sdc/specs/<change-id>.md` 已存在但用户没有明确允许覆盖
 
@@ -91,7 +91,7 @@ description: "Archive a completed SDC change, preserve history, and promote fina
 可以作为稳定规范继续引用。
 
 ## 下一步
-👉 新需求执行 `/sdc:change <short-name>`
+👉 新需求执行 `sdc:change <short-name>`
 ```
 
 ---

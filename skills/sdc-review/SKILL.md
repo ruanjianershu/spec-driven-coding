@@ -3,11 +3,11 @@ name: sdc-review
 description: "Review code like a senior engineer across architecture, quality, security, performance, and maintainability."
 ---
 
-# Skill: SDC 代码审查 /sdc:review
+# Skill: SDC 代码审查 sdc:review
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `/sdc:review`
+- `sdc:review`
 - "帮我审查代码"
 - "代码质量检查"
 - "看看有没有问题"
@@ -129,7 +129,7 @@ description: "Review code like a senior engineer across architecture, quality, s
 3. 最后考虑【改进建议】
 
 ## 🚀 下一步建议
-👉 修复完成后，执行 `/sdc:test` 运行完整测试
+👉 修复完成后，执行 `sdc:test` 运行完整测试
 ```
 
 ---

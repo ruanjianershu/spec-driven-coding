@@ -3,11 +3,11 @@ name: sdc-quality
 description: "Perform final delivery quality gate across UX, docs, code quality, security, performance, and maintainability."
 ---
 
-# Skill: SDC 全面质量检查 /sdc:quality
+# Skill: SDC 全面质量检查 sdc:quality
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `/sdc:quality`
+- `sdc:quality`
 - "最终检查"
 - "可以交付了吗"
 - "质量检查"
@@ -22,11 +22,11 @@ description: "Perform final delivery quality gate across UX, docs, code quality,
 ## 执行步骤
 
 ### 前置检查（全部必须通过）
-- ✅ 规范文档完成（`/sdc:spec`）
-- ✅ 实现计划完成（`/sdc:plan`）
-- ✅ 代码实现完成（`/sdc:apply` 或 `/sdc:implement`）
-- ✅ 代码审查完成（`/sdc:review`）
-- ✅ 所有测试通过（`/sdc:test`）
+- ✅ 规范文档完成（`sdc:spec`）
+- ✅ 实现计划完成（`sdc:plan`）
+- ✅ 代码实现完成（`sdc:apply` 或 `sdc:implement`）
+- ✅ 代码审查完成（`sdc:review`）
+- ✅ 所有测试通过（`sdc:test`）
 
 缺少任何一个，都不能进行质量检查。
 
@@ -143,7 +143,7 @@ description: "Perform final delivery quality gate across UX, docs, code quality,
 
 ## 🚀 下一步建议
 - 如果可以交付：准备发布版本
-- 如果不可以：修复问题后重新执行 `/sdc:quality`
+- 如果不可以：修复问题后重新执行 `sdc:quality`
 ```
 
 ---

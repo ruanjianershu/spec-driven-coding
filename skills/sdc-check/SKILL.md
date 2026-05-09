@@ -3,20 +3,20 @@ name: sdc-check
 description: "Combined delivery check that runs validate, review, test, and quality perspectives with evidence gates."
 ---
 
-# Skill: SDC 综合检查 /sdc:check
+# Skill: SDC 综合检查 sdc:check
 
 ## 触发条件
 当用户输入以下任一内容时，自动触发本技能：
-- `/sdc:check`
+- `sdc:check`
 - "SDC 检查"
 - "检查一下"
 - "验收一下"
 - "能不能交付"
 
 ## 核心使命
-把交付前最常用的检查动作合并成一个公共指令，避免用户分别记住 `/sdc:validate`、`/sdc:review`、`/sdc:test`、`/sdc:quality`。
+把交付前最常用的检查动作合并成一个公共指令，避免用户分别记住 `sdc:validate`、`sdc:review`、`sdc:test`、`sdc:quality`。
 
-`/sdc:check` 是普通模式指令；细分指令仍然存在，作为高级模式使用。
+`sdc:check` 是普通模式指令；细分指令仍然存在，作为高级模式使用。
 
 ---
 
@@ -24,10 +24,10 @@ description: "Combined delivery check that runs validate, review, test, and qual
 
 必须按以下顺序执行：
 
-1. `/sdc:validate` - 校验需求、计划、任务和验收标准是否完整
-2. `/sdc:review` - 审查代码质量、架构、安全和维护性
-3. `/sdc:test` - 运行测试并检查覆盖率
-4. `/sdc:quality` - 做最终交付质量检查
+1. `sdc:validate` - 校验需求、计划、任务和验收标准是否完整
+2. `sdc:review` - 审查代码质量、架构、安全和维护性
+3. `sdc:test` - 运行测试并检查覆盖率
+4. `sdc:quality` - 做最终交付质量检查
 
 如果前一步发现严重问题，后续步骤可以继续收集信息，但最终结论必须标记为“不建议交付”。
 
@@ -35,7 +35,7 @@ description: "Combined delivery check that runs validate, review, test, and qual
 
 ## 三视角检查
 
-`/sdc:check` 必须模拟三个专家视角，而不是只跑命令：
+`sdc:check` 必须模拟三个专家视角，而不是只跑命令：
 
 | 视角 | 检查重点 | 必须产出 |
 |------|---------|---------|
@@ -52,7 +52,7 @@ description: "Combined delivery check that runs validate, review, test, and qual
 | “这个改动很小，不需要测试” | 小改动也可能破坏核心路径；至少要有相关测试或明确说明无法测试的原因 |
 | “看起来没问题” | 没有证据就不算通过，必须提供命令输出、文件位置或检查记录 |
 | “安全风险不大” | 只要涉及外部输入、权限、数据存储或依赖，就必须做安全视角检查 |
-| “先交付，后面再补质量” | `/sdc:check` 是交付门禁，严重问题未解决不能给出可以交付结论 |
+| “先交付，后面再补质量” | `sdc:check` 是交付门禁，严重问题未解决不能给出可以交付结论 |
 
 ---
 
@@ -104,7 +104,7 @@ description: "Combined delivery check that runs validate, review, test, and qual
 👉 【可以交付】 / 【需要修复后重新检查】
 
 ## 下一步
-- 如果通过：执行 `/sdc:archive`
+- 如果通过：执行 `sdc:archive`
 - 如果不通过：先修复上面列出的阻塞问题
 ```
 

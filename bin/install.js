@@ -224,13 +224,14 @@ log(GREEN, '🎉 SDC 安装完成！');
 console.log('='.repeat(60));
 
 console.log('\n📖 使用方法：');
-console.log('  /sdc:init');
-console.log('  /sdc:change 支持用户登录');
-console.log('  /sdc:plan');
-console.log('  /sdc:apply');
-console.log('  /sdc:check');
-console.log('  /sdc:archive <change-id>');
-console.log('\n高级用法：仍可直接调用 /sdc:spec、/sdc:review、/sdc:test、/sdc:quality、/sdc:validate 等细分指令');
+console.log('  注意：在 Codex 中请直接输入普通文本，不要加 /');
+console.log('  sdc:init');
+console.log('  sdc:change 支持用户登录');
+console.log('  sdc:plan');
+console.log('  sdc:apply');
+console.log('  sdc:check');
+console.log('  sdc:archive <change-id>');
+console.log('\n高级用法：仍可直接调用 sdc:spec、sdc:review、sdc:test、sdc:quality、sdc:validate 等细分指令');
 
 console.log('\n🔗 项目地址：https://github.com/ruanjianershu/spec-driven-coding');
 console.log('\n');
