@@ -88,8 +88,8 @@ function copyPlugin(dest) {
 
 function installCodexSkills(home) {
   const installedPaths = [];
-  const skillTargets = [path.join(home, '.codex', 'skills')];
-  const legacyTargetRoot = path.join(home, '.agents', 'skills');
+  const skillTargets = [path.join(home, '.agents', 'skills')];
+  const legacyTargetRoot = path.join(home, '.codex', 'skills');
   const skillsRoot = path.join(projectRoot, 'skills');
 
   for (const targetRoot of skillTargets) {
