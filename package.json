@@ -1,6 +1,6 @@
 {
   "name": "sdc-spec",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "SDC - 规范驱动开发工具集。纯声明式 AI 开发技能，支持 Claude Code / CodeX / Hermes Agent 等所有主流 AI 编码工具。",
   "engines": {
     "node": ">=14.0.0"
@@ -13,10 +13,15 @@
   },
   "files": [
     "bin/",
+    ".claude/",
     "commands/",
     "skills/",
     ".claude-plugin/",
     ".codex-plugin/",
+    "docs/",
+    "SECURITY.md",
+    "PRIVACY.md",
+    "CHANGELOG.md",
     "README.md",
     "LICENSE"
   ],

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "sdc-local",
+  "description": "Local SDC marketplace for a lightweight spec-driven coding workflow.",
+  "owner": {
+    "name": "ruanjianershu",
+    "url": "https://github.com/ruanjianershu"
+  },
+  "plugins": [
+    {
+      "name": "sdc",
+      "description": "A lightweight spec-driven coding workflow for Claude Code: init project standards, capture changes, plan implementation, apply tasks, check delivery quality, and archive stable specs.",
+      "version": "1.0.9",
+      "source": "./",
+      "author": {
+        "name": "ruanjianershu",
+        "url": "https://github.com/ruanjianershu"
+      },
+      "category": "development",
+      "homepage": "https://github.com/ruanjianershu/spec-driven-coding",
+      "tags": [
+        "sdc",
+        "spec-driven-coding",
+        "tdd",
+        "quality"
+      ]
+    }
+  ]
+}

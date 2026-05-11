@@ -36,13 +36,28 @@ SDC 是一套**纯声明式 AI 开发技能集**，用一个主入口 `/sdc` 让
 npx sdc-spec@latest
 ```
 
-自动检测你安装的 AI 工具（Claude Code / CodeX / Hermes Agent），一键安装到对应目录。Codex 会自动注册本地 marketplace，并启用 `sdc@sdc-local` 插件。
+自动检测你安装的 AI 工具（Claude Code / CodeX / Hermes Agent），一键安装到对应目录。
 
-> Codex 安装后需要完全重启应用，`/sdc:*` slash commands 才会刷新到命令列表。
+安装器会为 Claude Code 注册本地 marketplace 并启用 `sdc@sdc-local` 插件；为 Codex 注册本地 marketplace、启用插件并同步 skills。
+
+> Claude Code 安装后需要完全重启应用，`/sdc:*` slash commands 才会刷新到命令列表。
+> SDC 会在 Claude 插件缓存中生成标准 `.claude/skills/` 结构，兼容新版 Claude Code 的 skill 扫描规则。
+>
+> Codex 当前应把 SDC 当作 **skill plugin** 使用，而不是 slash command plugin。Codex CLI 可以加载 SDC plugin/skills，但当前不支持插件自定义 `/sdc:*` slash commands。
 
 后续更新 SDC 也使用同一个命令：
 ```bash
 npx sdc-spec@latest
+```
+
+一键卸载：
+```bash
+npx sdc-spec@latest uninstall
+```
+
+如果你已经全局安装，也可以使用：
+```bash
+sdc uninstall
 ```
 
 如果你希望在终端里长期保留 `sdc` 命令，需要全局安装：
@@ -62,22 +77,112 @@ git clone https://github.com/ruanjianershu/spec-driven-coding.git
 cd spec-driven-coding
 ```
 
-然后在 Claude Code / CodeX 中选择"加载本地插件"，选择这个目录。
+Claude Code 推荐通过 marketplace 安装：
+
+```bash
+claude plugin marketplace add "$(pwd)" --scope user
+claude plugin install sdc@sdc-local --scope user
+```
+
+Codex 可通过 `npx sdc-spec@latest` 完成本地 marketplace 和 skills 同步。
 
 ### 方式 3：手动复制技能
 直接把 `skills/` 目录复制到你的 AI 工具的 skills 目录。
 
 ---
 
-### 📌 关于 `/plugin add` 命令
+## Codex 使用方式
 
-目前 `/plugin add ruanjianershu/spec-driven-coding` 还不能直接使用，因为这需要平台官方 marketplace 收录。
+SDC 在 Codex 中的定位是 **skill plugin**：
 
-我们正在申请收录，敬请期待！
+- 不依赖 `/sdc:init` 这类 slash command
+- 通过 SDC skills 让 Codex 理解并执行规范驱动开发流程
+- 安装器会注册本地 Codex marketplace、启用 `sdc@sdc-local` 插件，并同步 skills 到 Codex 可扫描目录
+
+### Codex CLI
+
+安装：
+
+```bash
+npx sdc-spec@latest
+```
+
+安装后完全重启 Codex CLI。使用时推荐直接用自然语言触发：
+
+```text
+用 sdc init 初始化项目
+用 SDC 创建一个登录需求变更
+用 SDC plan 生成实现计划
+用 SDC apply 执行当前任务
+用 SDC check 检查是否可以交付
+用 SDC archive 归档这个变更
+```
+
+如果你的 Codex CLI 支持 `/skills`，也可以在 `/skills` 中选择 SDC 相关 skills，例如：
+
+```text
+sdc:sdc-init
+sdc:sdc-change
+sdc:sdc-plan
+sdc:sdc-apply
+sdc:sdc-check
+sdc:sdc-archive
+```
+
+注意：Codex CLI 当前不会把 SDC 插件中的 `commands/*.md` 注册成 `/sdc:init`、`/sdc:plan` 这类 slash commands。看到 skill 存在、但 `/sdc:init` 不存在，是当前 Codex CLI 的预期行为，不代表 SDC 安装失败。
+
+### Codex App
+
+安装：
+
+```bash
+npx sdc-spec@latest
+```
+
+然后完全退出并重新打开 Codex App。打开项目后，可以这样使用：
+
+```text
+用 SDC 初始化这个项目，创建 .sdc 工作区和开发规范
+用 SDC 为“支持用户登录”创建一次 change
+用 SDC 基于当前 change 生成 plan
+用 SDC 执行 apply
+用 SDC 做 check，给出验证、审查、测试和质量结论
+```
+
+在 Codex App 中，SDC 的能力来自已安装的 plugin skills，而不是应用内 slash command。只要当前会话的 skills/plugin 列表中能看到 `SDC` 或 `sdc:*` skills，就表示 Codex 已经可以使用 SDC。
 
 ---
 
-## 📦 普通模式
+### 📌 关于 `/plugin add` 命令
+
+目前 `/plugin install sdc@claude-plugins-official` 还不能直接使用，因为这需要 Claude Code 官方 marketplace 收录。
+
+我们正在申请收录，敬请期待！
+
+如果 SDC 被 Claude Code 官方市场接受，用户将可以直接安装：
+
+```text
+/plugin install sdc@claude-plugins-official
+```
+
+安装后 reload plugins，即可使用 `/sdc:init`、`/sdc:plan`、`/sdc:check` 等 Claude Code slash commands。
+
+### 官方市场提交准备
+
+SDC 已补齐官方市场审核需要的基础材料：
+
+- [安全说明](SECURITY.md)
+- [隐私说明](PRIVACY.md)
+- [变更记录](CHANGELOG.md)
+- [官方提交说明](docs/official-submission.md)
+- [Claude Code 市场说明](docs/claude-code-marketplace.md)
+- [发布检查清单](docs/release-checklist.md)
+
+---
+
+## 📦 Claude Code 普通模式
+
+下列 slash commands 适用于 Claude Code。Codex 当前请使用 `/skills` 或自然语言调用同名 SDC skills。
 
 | 命令 | 作用 |
 |------|------|
