@@ -1,20 +1,29 @@
-# 🔧 SDC - 规范驱动开发 (Spec-Driven-Coding)
+# 🔧 SDC - Spec-Driven Coding for AI Agents
 
-> 一个 `/sdc`，覆盖从需求到交付的完整闭环。
+> 用少量入口，把 AI 编码从临场发挥收敛成 `spec -> plan -> tasks -> apply -> check -> archive` 的可追溯闭环。
 
 ## ✨ 是什么
 
-SDC 是一套**纯声明式 AI 开发技能集**，用一个主入口 `/sdc` 让你的 AI 助手：
+SDC 是一套**纯声明式 AI 开发技能集**。它不是把 slash command 做得越多越好，而是用少量稳定入口，让 AI 助手在每次需求迭代中做到：
+
 - 📂 先建立标准 `.sdc/` 工作区，长期记录需求迭代
 - 🧾 像 OpenSpec 一样记录 change、validate、archive 的核心生命周期
 - 📐 生成项目专属开发规范，让后续开发有章可循
-- 📋 先把需求理清楚，再写代码
-- 🗓️ 任务拆到不超过 2 小时，可独立验收
+- 📋 先把需求转成 SCN/REQ/AC，再写代码
+- 🗓️ 任务拆成可验证的 T### 薄切片
 - 🧪 测试驱动，先写测试再写代码
-- 🔍 像资深工程师一样审查代码
-- ✅ 交付前全维度质量检查
+- 🔍 用 `/sdc:check` 合并 validate、review、test、quality
+- ✅ 完成后 archive，沉淀为稳定项目规范
 
-**零代码，零配置，纯文本技能。** 基于 Superpowers 的轻量 skill-pack 思路，吸收 OpenSpec 的核心需求生命周期，但不复制它们的全部技能。
+v1.1 的核心不是增加更多指令，而是强化内部纪律：
+
+```text
+治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
+事实优先级：spec.md > design.md/plan.md > tasks.md > code
+追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
+```
+
+**零服务，零遥测，纯文本技能。** SDC 基于 Superpowers 的轻量 skill-pack 思路，吸收 OpenSpec 的核心需求生命周期，并加入 SDD/Karpathy-style 的“先思考、薄切片、TDD、证据链”工程纪律。
 
 普通模式只需要记住：
 
@@ -27,6 +36,44 @@ SDC 是一套**纯声明式 AI 开发技能集**，用一个主入口 `/sdc` 让
 /sdc:archive
 ```
 
+`/sdc:harness` 可选，用于从 `.sdc/standards/` 生成项目级 `AGENTS.md` 执行护栏。
+
+---
+
+## 🧭 实际工作流
+
+一次标准 SDC 迭代会留下完整证据链：
+
+```text
+1. init      创建 .sdc/ 工作区、constitution、standards、templates
+2. change    创建 .sdc/changes/active/<change-id>/
+3. plan      生成 proposal/spec/design/tasks，并建立 SCN -> REQ -> AC -> T### 追溯
+4. apply     按 T### 薄切片执行，记录 notes 和验证证据
+5. check     合并 validate/review/test/quality，并支持 bug/impact/repo 分析模式
+6. archive   将完成的 change 沉淀到 .sdc/specs/ 和 archive/
+```
+
+Claude Code 用户可以直接使用 slash commands：
+
+```text
+/sdc:init
+/sdc:change login-flow
+/sdc:plan
+/sdc:apply
+/sdc:check
+/sdc:archive 2026-05-15-login-flow
+```
+
+Codex 用户使用自然语言或 `/skills` 触发同名 SDC skills：
+
+```text
+用 SDC 初始化这个项目
+用 SDC 为登录流程创建 change 并生成 plan
+用 SDC apply 执行当前任务
+用 SDC check 检查是否可以交付
+用 SDC archive 归档这个变更
+```
+
 ---
 
 ## 🚀 快速开始
@@ -36,7 +83,7 @@ SDC 是一套**纯声明式 AI 开发技能集**，用一个主入口 `/sdc` 让
 npx sdc-spec@latest
 ```
 
-自动检测你安装的 AI 工具（Claude Code / CodeX / Hermes Agent），一键安装到对应目录。
+自动检测你安装的 AI 工具（Claude Code / Codex / Hermes Agent），一键安装到对应目录。
 
 安装器会为 Claude Code 注册本地 marketplace 并启用 `sdc@sdc-local` 插件；为 Codex 注册本地 marketplace、启用插件并同步 skills。
 
@@ -209,25 +256,39 @@ SDC 已补齐官方市场审核需要的基础材料：
 ```bash
 /sdc:init
 /sdc:change todo-app
-/sdc:plan 做一个 Todo 应用，支持增删改查，有用户登录
+/sdc:plan
 /sdc:apply
 /sdc:check
-/sdc:archive 2026-05-08-todo-app
+/sdc:archive 2026-05-15-todo-app
 ```
 
-就这么简单。**普通模式 6-7 个公共指令，详细模式保留完整能力。**
+执行后，项目里会留下：
+
+```text
+.sdc/changes/archive/2026-05-15-todo-app/
+.sdc/specs/2026-05-15-todo-app.md
+```
+
+普通模式只暴露少量公共入口；详细模式保留 `spec`、`validate`、`review`、`test`、`quality` 等细分能力。
 
 ---
 
 ## 🗂️ SDC 工作区
 
-`/sdc:init` 会生成三类核心资产：
+`/sdc:init` 会生成项目长期使用的 SDC 工作区：
 
 ```text
 .sdc/
-├── specs/       # 业务规范：项目应该做什么
-├── changes/     # 需求迭代：这次为什么改、怎么改、如何验收
-└── standards/   # 开发规范：代码、测试、架构、安全、Git、AI 协作规则
+├── constitution.md  # 最高工程裁决规则
+├── project.md       # 项目背景、技术栈、约束和验证命令
+├── current/         # 当前需求快捷工作区
+├── changes/         # 需求迭代：这次为什么改、怎么改、如何验收
+├── specs/           # 稳定业务规范：项目应该做什么
+├── standards/       # 开发规范：代码、测试、架构、安全、Git、AI 协作规则
+├── decisions/       # 架构/产品/技术关键决策
+├── reviews/         # 审查报告
+├── reports/         # bug、impact、repo-analysis 等分析报告
+└── templates/       # spec、plan、tasks、stop-line 等模板
 ```
 
 其中 `standards/` 是项目专属开发规范：
@@ -245,6 +306,8 @@ SDC 已补齐官方市场审核需要的基础材料：
 
 `.sdc/standards/` 是完整规范，适合长期维护；`AGENTS.md` 是 AI 执行护栏，可以由 `/sdc:harness` 从 standards 中提炼。
 
+更多 v1.1 纪律内核说明见 [docs/sdc-discipline-core.md](docs/sdc-discipline-core.md)。
+
 ---
 
 ## 🎯 设计理念
@@ -253,7 +316,7 @@ SDC 已补齐官方市场审核需要的基础材料：
 > 任何模糊的需求，最终都会变成 Bug。
 
 先把需求拆成**可验证**的子任务，每个任务都有明确的验收标准。
-不要相信"我要一个类似微信的东西"这种鬼话。
+不要把一句模糊描述直接交给 AI 去自由发挥。
 
 ### 2. 测试驱动
 > 没有测试的代码，都是遗留代码。
@@ -279,10 +342,13 @@ SDC 的公共 Skill 内置四类纪律机制：
 
 | 机制 | 作用 |
 |------|------|
+| 裁决链 | `.sdc/constitution.md > AGENTS.md`，`spec > design/plan > tasks > code` |
+| 追溯链 | `SCN -> REQ -> AC -> T### -> 验证证据` |
+| 停线报告 | 文档、代码、任务或验收冲突时先停线，不猜测推进 |
 | 反合理化表 | 对抗 AI “这个很简单不用测”“看起来没问题”等偷懒借口 |
 | 红旗警告 | 明确出现哪些迹象必须暂停、修正或阻止归档 |
 | 证据门槛 | 要求输出测试、审查、文件路径、检查结论等具体证据 |
-| 多视角检查 | `/sdc:check` 同时从 reviewer、tester、security 三个视角检查 |
+| 多视角检查 | `/sdc:check` 同时覆盖 delivery、bug、impact、repo 分析模式 |
 
 ---
 
@@ -313,39 +379,46 @@ SDC 的公共 Skill 内置四类纪律机制：
 
 ### `/sdc:init` 输出包含
 - ✅ 标准 `.sdc/` 工作区结构
+- ✅ `.sdc/constitution.md` 最高裁决规则
 - ✅ 当前迭代目录 `current/`
 - ✅ 长期变更目录 `changes/`
 - ✅ 项目背景文件 `project.md`
 - ✅ 项目开发规范目录 `standards/`
-- ✅ 需求和决策模板
+- ✅ 需求、任务、停线、bug、impact、repo-analysis 模板
 
 ### `/sdc:change` 输出包含
 - ✅ 独立 change 目录
 - ✅ proposal/tasks/design/spec/notes 五件套
 - ✅ 明确的 change-id
+- ✅ 初始 SCN/REQ/AC 或待确认项
 - ✅ 下一步校验建议
 
 ### `/sdc:spec` 输出包含
-- ✅ 5-10 个可独立验收的子任务
-- ✅ 技术选型建议和理由
-- ✅ 可量化的验收标准
-- ✅ 完整的测试计划
-- ✅ 至少 3 个风险评估
+- ✅ Glossary / 统一语言
+- ✅ 业务场景 `SCN-*`
+- ✅ 需求规则 `REQ-*`
+- ✅ 验收标准 `AC-*`
+- ✅ 验证策略、风险、假设和待确认项
+- ✅ 追溯关系矩阵
 - ✅ 明确的下一步建议
 
 ### `/sdc:plan` 输出包含
+- ✅ 设计摘要和影响范围
+- ✅ `SCN/REQ/AC -> T###` 追溯矩阵
 - ✅ 按依赖排序的任务列表
 - ✅ 每个任务不超过 2 小时
-- ✅ 每个任务的验收标准
+- ✅ 每个任务的 `REQ/AC/Phase/Size/Verify/Source`
 - ✅ 测试先行策略
 - ✅ 明确的交付清单
 
 ### `/sdc:apply` 输出包含
 - ✅ 当前 change 和任务
+- ✅ 当前任务对应的 `REQ-* / AC-*`
 - ✅ 任务执行记录
 - ✅ 修改文件
 - ✅ 测试结果
 - ✅ 更新 `tasks.md` 和 `notes.md`
+- ✅ 必要时输出 Stop-Line Report
 
 ### `/sdc:implement` 输出包含
 - ✅ 每个任务的测试代码
@@ -375,21 +448,24 @@ SDC 的公共 Skill 内置四类纪律机制：
 - ✅ 明确的"可以交付/不可以交付"结论
 
 ### `/sdc:check` 输出包含
-- ✅ `/sdc:validate` 校验结果
-- ✅ `/sdc:review` 代码审查结果
-- ✅ `/sdc:test` 测试结果
-- ✅ `/sdc:quality` 交付质量结论
+- ✅ delivery 模式：validate/review/test/quality 结论
+- ✅ bug 模式：根因候选、证据链和修复建议（默认只分析）
+- ✅ impact 模式：影响范围、回归风险、测试矩阵和回滚建议
+- ✅ repo 模式：存量项目结构、事实证据、风险和 SDC 建议
+- ✅ 明确的可以交付/需要修复/仅分析结论
 
 ### `/sdc:validate` 输出包含
 - ✅ 结构完整性检查
-- ✅ 验收标准检查
-- ✅ 任务复选框检查
+- ✅ `.sdc/constitution.md` 检查
+- ✅ SCN/REQ/AC 追溯检查
+- ✅ 任务强格式检查
 - ✅ 模板占位检查
 - ✅ 明确的通过/不通过结论
 
 ### `/sdc:archive` 输出包含
 - ✅ change 归档记录
 - ✅ 稳定规范沉淀到 `specs/`
+- ✅ `REQ/AC/T###` 最终覆盖摘要
 - ✅ 原始变更历史保留
 - ✅ 归档结论和下一步建议
 
@@ -403,6 +479,8 @@ SDC 的公共 Skill 内置四类纪律机制：
 | 必须包含具体可执行的步骤 | 输出无效，重做 |
 | 必须有明确的下一步建议 | 输出无效，重做 |
 | 不能有"你懂的"这种废话 | 输出无效，重做 |
+| 不能跳过 `spec -> plan -> tasks -> verify` | 变更不可追溯 |
+| 发现裁决链冲突必须停线 | 继续执行会污染规范 |
 
 ---
 
@@ -427,6 +505,8 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 ## 🙏 致谢
 
 - 灵感来自 [Superpowers](https://github.com/obra/superpowers) - 168k+ stars 的纯声明式 AI 技能框架
+- 借鉴 OpenSpec 的 change / validate / archive 生命周期
+- 借鉴 SDDInAction 和 Karpathy-style skills 的“先思考、薄切片、TDD、证据链”工程纪律
 - 感谢所有贡献者的努力
 
 ---

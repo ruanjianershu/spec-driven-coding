@@ -13,7 +13,15 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 - "怎么拆分任务"
 
 ## 核心使命
-将规范文档转化为**分步可执行**的实现计划。每一步都应该是一个"热情但没品位、没上下文、讨厌写测试的初级工程师"也能看懂并执行的程度。
+将规范文档转化为**分步可执行、可追溯、可验证**的实现计划。
+
+`/sdc:plan` 负责把 `SCN-* / REQ-* / AC-*` 落到 `design.md` 和 `tasks.md`，形成：
+
+```text
+SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
+```
+
+每一步都应该是一个没有上下文的执行者也能看懂并完成的薄切片，但不能把未知需求伪装成计划。
 
 ---
 
@@ -22,11 +30,44 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 ### 前置检查
 如果还没有生成规范文档，**必须先执行 `/sdc:spec`**。不能跳过规范直接写计划。
 
+计划前必须先读取并判断：
+- `.sdc/constitution.md`
+- `.sdc/current/spec.md` 或 `.sdc/changes/active/<change-id>/spec.md`
+- 已存在的 `proposal.md`、`design.md`、`tasks.md`（如有）
+
+如果 spec 缺少 `SCN-*`、`REQ-*`、`AC-*`、验收场景或关键约束，必须先停线补规格，而不是继续生成实现计划。
+
 如果存在 `.sdc/changes/active/<change-id>/`，优先围绕该 change 生成或更新：
 - `proposal.md`
 - `spec.md`
 - `design.md`
 - `tasks.md`
+
+### 计划内容要求
+
+`design.md` 必须包含：
+- 方案摘要
+- 影响范围和不改范围
+- 关键取舍
+- 数据、接口、状态或交互变化（按项目类型选择）
+- 风险、回滚和迁移说明
+- `REQ-* / AC-*` 到设计决策的映射
+
+`tasks.md` 必须使用强格式：
+
+```markdown
+- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] 编写失败测试：登录失败时显示错误
+  - Depends on: none
+  - Verify: npm test -- auth
+  - Source: .sdc/changes/active/<change-id>/spec.md#AC-01
+```
+
+任务拆分规则：
+- `Size` 只能是 `S` 或 `M`，不能出现 `L`
+- 测试任务必须排在对应实现任务之前
+- 每个任务必须引用至少一个 `REQ-*` 和一个 `AC-*`
+- 每个任务必须说明依赖、验证命令或验证方式、来源文件
+- 不允许出现“优化一下”“处理一下”“完善一下”这类不可验收任务
 
 ---
 
@@ -38,6 +79,7 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 | “可以边写边想” | 计划的价值就是减少实现时猜测；不清楚就先澄清 |
 | “任务可以大一点，AI 会处理” | 大任务会降低可验证性；必须拆成不超过 2 小时的薄切片 |
 | “测试后面再补” | 测试策略必须在 plan 阶段确定，否则 apply 阶段会走最短路径 |
+| “先按感觉拆任务” | 任务必须能追溯到 REQ/AC，否则实现会脱离需求 |
 
 ---
 
@@ -45,11 +87,14 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 
 出现以下情况不能进入 `/sdc:apply`：
 
-- 任务没有验收标准
+- `spec.md` 没有 `SCN-* / REQ-* / AC-*`
+- 任务没有引用 `REQ-* / AC-*`
+- 任务没有验收标准、来源或验证方式
 - 任务之间依赖关系不清楚
-- `spec.md` 没有测试计划
+- `spec.md` 没有验证策略
 - `design.md` 没有说明关键取舍或影响范围
 - 计划包含“优化一下”“处理一下”这类不可验收任务
+- 计划把未知需求直接写成实现决定
 
 ---
 
@@ -60,6 +105,7 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 - 任务清单和每个任务的验收标准
 - 测试先行策略
 - 进入 `/sdc:apply` 前的阻塞项
+- `SCN/REQ/AC -> T###` 追溯关系
 
 ---
 
@@ -74,24 +120,29 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 ## 🎯 项目概述
 （一句话说明这个项目是做什么的）
 
+## 🧭 规格追溯
+| Scenario | Requirement | Acceptance | Task |
+|----------|-------------|------------|------|
+| SCN-01 | REQ-01 | AC-01 | T001, T002 |
+
+## 🏗️ 设计摘要
+- 影响范围：
+- 不改范围：
+- 关键取舍：
+- 风险/回滚：
+
 ## 📊 任务拆解
 （按依赖关系排序，每个任务 **不超过 2 小时**）
 
-### 第 1 天：基础搭建
-- [ ] 任务 1.1：初始化项目结构（30 分钟）
-  - 验收：能跑起来 hello world
-  - 前置：无
-  
-- [ ] 任务 1.2：配置基础依赖（30 分钟）
-  - 验收：所有依赖安装成功
-  - 前置：1.1
-
-### 第 2 天：核心功能
-- [ ] 任务 2.1：实现 xxx 功能（2 小时）
-  - 验收：通过全部测试用例
-  - 前置：1.2
-
-...
+### Phase 1：测试与最小实现
+- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] 编写失败测试：...
+  - Depends on: none
+  - Verify: ...
+  - Source: ...
+- [ ] T002 [REQ-01] [AC-01] [Phase 1] [Size: M] 实现最小代码：...
+  - Depends on: T001
+  - Verify: ...
+  - Source: ...
 
 ## 🧪 测试先行策略
 ### 每个任务必须先写测试，再写代码
@@ -128,15 +179,15 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 
 | 序号 | 规则 | 违反后果 |
 |------|------|---------|
-| 1 | 每个任务必须有**明确的验收标准** | 输出无效，重做 |
+| 1 | 每个任务必须有 `T### [REQ-*] [AC-*] [Phase] [Size]` | 输出无效，重做 |
 | 2 | 每个任务必须有**明确的前置依赖** | 输出无效，重做 |
-| 3 | 每个任务的工作量**不超过 2 小时** | 输出无效，重做 |
-| 4 | 必须包含**测试先行策略** | 输出无效，重做 |
-| 5 | 必须有**明确的交付清单** | 输出无效，重做 |
+| 3 | 每个任务的工作量**不超过 2 小时**，不能出现 `Size: L` | 输出无效，重做 |
+| 4 | 必须包含**测试先行策略**，测试任务优先 | 输出无效，重做 |
+| 5 | 必须有**明确的交付清单和追溯矩阵** | 输出无效，重做 |
 
 ---
 
 ## 💡 设计理念
 > 好的计划不是写得越细越好，而是**刚好够让执行者不需要问问题**。
 > 
-> 如果执行者还需要问"这个怎么做"，说明计划写得还不够清楚。
+> 如果执行者还需要问"这个怎么做"，说明计划写得还不够清楚；如果计划无法追溯到验收标准，说明计划不该被执行。

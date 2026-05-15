@@ -18,6 +18,8 @@ description: "Create a focused requirement change under .sdc/changes/active with
 
 `/sdc:change` 不是直接把一句话需求写成文件，而是先帮助用户把模糊想法收敛成可执行 change。允许并鼓励在创建前进行短轮头脑风暴、需求澄清、方案取舍和范围裁剪。
 
+v1.1 起，change 创建阶段要为后续追溯预留结构：`SCN-* -> REQ-* -> AC-* -> T###`。不要求一开始完整，但必须避免只创建空白模板。
+
 ---
 
 ## 标准输出/落盘结构
@@ -38,7 +40,7 @@ description: "Create a focused requirement change under .sdc/changes/active with
 | 文件 | 作用 |
 |------|------|
 | `proposal.md` | 背景、目标、非目标、验收标准、风险 |
-| `tasks.md` | 可执行任务清单，每项必须可验收 |
+| `tasks.md` | 可执行任务清单，每项必须关联 REQ/AC 并可验收 |
 | `design.md` | 关键技术设计、数据变化、替代方案 |
 | `spec.md` | 最终需求规范，完成后可沉淀到 `.sdc/specs/` |
 | `notes.md` | 实现过程、问题、验证记录 |
@@ -79,7 +81,10 @@ description: "Create a focused requirement change under .sdc/changes/active with
 - 目标：
 - 非目标：
 - 范围：
-- 验收标准：
+- 初始场景（SCN）：
+- 初始需求（REQ）：
+- 初始验收标准（AC）：
+- 风险/假设：
 - 建议 Change ID：
 
 确认后我会创建 SDC change 文件。
@@ -93,7 +98,9 @@ description: "Create a focused requirement change under .sdc/changes/active with
 2. short-name 必须简短、稳定，推荐英文小写和连字符
 3. 一个 change 只表达一次独立需求迭代
 4. 不要把多个互相独立的需求塞进同一个 change
-5. 创建后必须给出下一步：`/sdc:spec` 或 `/sdc:validate`
+5. 初始 `spec.md` 至少要有 SCN/REQ/AC 占位和待确认项
+6. 初始 `tasks.md` 必须使用 `T### [REQ-*] [AC-*] [Phase] [Size]` 格式，待计划任务可标记为 Draft
+7. 创建后必须给出下一步：`/sdc:spec` 或 `/sdc:plan`
 
 ---
 
@@ -129,3 +136,4 @@ YYYY-MM-DD-short-name
 | 必须有验收标准 | 无法验证 |
 | 必须给出下一步 | 输出无效 |
 | 模糊需求必须先澄清或记录假设 | 后续计划不可执行 |
+| spec/tasks 不能只有空模板 | 后续无法追溯 |

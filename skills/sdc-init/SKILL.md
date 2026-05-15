@@ -18,6 +18,8 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 
 这个技能不是生成一次性文档，而是建立项目的“需求记忆区”。以后所有需求迭代都应该进入 `.sdc/`。
 
+SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决链，`spec.md > design.md/plan.md > tasks.md > code` 是事实裁决链。初始化必须把这两条链路写入项目资产。
+
 ---
 
 ## 执行步骤
@@ -38,10 +40,12 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 ```text
 .sdc/
 ├── README.md
+├── constitution.md
 ├── project.md
 ├── current/
 │   ├── spec.md
 │   ├── plan.md
+│   ├── tasks.md
 │   └── apply.md
 ├── changes/
 │   ├── active/
@@ -62,10 +66,20 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 ├── reviews/
 │   └── README.md
 ├── reports/
+│   ├── bug/
+│   ├── impact/
+│   ├── repo-analysis/
 │   └── README.md
 ├── templates/
+│   ├── spec.md
+│   ├── plan.md
+│   ├── tasks.md
 │   ├── change.md
-│   └── decision.md
+│   ├── decision.md
+│   ├── stop-line-report.md
+│   ├── bug-analysis.md
+│   ├── change-impact.md
+│   └── repo-analysis.md
 └── .gitignore
 ```
 
@@ -76,6 +90,7 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 | 路径 | 作用 |
 |------|------|
 | `.sdc/project.md` | 项目长期背景、用户、技术栈、约束和验证命令 |
+| `.sdc/constitution.md` | 项目不可协商的最高工程原则，定义治理裁决链和事实裁决链 |
 | `.sdc/current/` | 当前正在推进的一次需求迭代的快捷工作区 |
 | `.sdc/changes/active/` | 正在推进的需求变更，每个变更一个子目录 |
 | `.sdc/changes/archive/` | 已完成归档的需求变更 |
@@ -83,8 +98,42 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 | `.sdc/standards/` | 项目长期开发规范，约束代码、测试、架构、安全、Git 和 AI 协作 |
 | `.sdc/decisions/` | 架构、产品、技术关键决策 |
 | `.sdc/reviews/` | `/sdc:review` 的审查报告 |
-| `.sdc/reports/` | `/sdc:test` 和 `/sdc:quality` 的测试/质量报告 |
-| `.sdc/templates/` | 需求变更和决策模板 |
+| `.sdc/reports/` | 测试、质量、Bug 分析、影响面分析、棕地仓库分析报告 |
+| `.sdc/templates/` | spec/plan/tasks/change/decision/熔断/bug/impact/repo-analysis 模板 |
+
+---
+
+## constitution.md 初始化要求
+
+必须创建 `.sdc/constitution.md`，内容至少包含：
+
+```markdown
+# SDC Project Constitution
+
+## 1. Governance Priority
+constitution.md > AGENTS.md
+
+## 2. Fact Priority
+spec.md > design.md/plan.md > tasks.md > code
+
+## 3. Core Chain
+spec -> plan -> tasks -> code -> verify -> archive
+
+## 4. Stop-The-Line Rules
+Stop and produce a Stop-Line Report when:
+- spec/plan/tasks are missing, conflicting, or not verifiable
+- implementation requires changing business behavior, public contract, acceptance criteria, or key technical decision
+- current task requires scope expansion
+- validation cannot prove the acceptance criteria
+
+## 5. Traceability Rules
+- specs must define SCN/REQ/AC identifiers
+- tasks must reference SCN/REQ/AC or ARCH identifiers
+- tests must reference AC identifiers
+- implementation notes must record validation evidence
+```
+
+如果项目已有 `AGENTS.md`，不得覆盖；只在输出中提醒后续可执行 `/sdc:harness` 将 constitution 与 standards 提炼到 `AGENTS.md`。
 
 ---
 
@@ -131,6 +180,14 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 - short-name 使用英文小写和连字符
 - 一个目录只记录一次独立需求迭代
 
+每个 active change 的 `tasks.md` 必须采用强追踪格式：
+
+```markdown
+- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] 编写失败测试。依赖：无。文件：`tests/...`。验证：`...`。完成判据：测试失败且直接覆盖 AC-01。来源：`spec.md#AC-01`
+```
+
+禁止生成 `[Size: L]` 任务；大任务必须拆成 S/M。
+
 ---
 
 ## 输出格式
@@ -170,6 +227,8 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 | 3 | 必须包含 `changes/` | 无法记录长期迭代 |
 | 4 | 必须说明每个目录职责 | 用户不知道怎么用 |
 | 5 | 必须给出下一步命令 | 输出无效 |
+| 6 | 必须创建 `constitution.md` | 缺少最高裁决链 |
+| 7 | 必须创建 `current/tasks.md` 和 task 模板 | 无法强追踪执行 |
 
 ---
 

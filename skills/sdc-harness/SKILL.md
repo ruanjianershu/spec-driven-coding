@@ -16,17 +16,29 @@ description: "Generate AGENTS.md project AI guardrails from project scan and SDC
 把"这次犯的错"变成"以后永远不会再犯"。
 每发现一个 AI 经常踩的坑，就立即把它封死在 Harness 里。
 
+`/sdc:harness` 生成的是执行护栏，不替代 `.sdc/constitution.md` 和 `.sdc/standards/`。
+
+护栏优先级：
+
+```text
+.sdc/constitution.md > AGENTS.md > 对话即时要求
+```
+
+如果项目还没有 `.sdc/constitution.md`，应先建议或执行 `/sdc:init`，再生成 AGENTS.md。
+
 ---
 
 ## 执行步骤
 
 ### 第一步：项目扫描（自动）
 先分析当前项目：
-1. 有什么编程语言？
-2. 有什么构建工具？（npm, pip, cargo, make 等）
-3. 有什么测试框架？
-4. 有什么常见的坑？
-5. 已经犯过什么错？（看 .sdc/history 或用户描述）
+1. `.sdc/constitution.md` 是否存在，治理优先级是什么？
+2. `.sdc/standards/` 中已有开发、测试、架构、安全、Git、AI 协作规则是什么？
+3. 有什么编程语言？
+4. 有什么构建工具？（npm, pip, cargo, make 等）
+5. 有什么测试框架？
+6. 有什么常见的坑？
+7. 已经犯过什么错？（看 `.sdc/history`、`.sdc/reports` 或用户描述）
 
 ---
 
@@ -38,8 +50,19 @@ description: "Generate AGENTS.md project AI guardrails from project scan and SDC
 ```markdown
 # 🤖 AGENTS.md - 本项目 AI 助手必须遵守的规则
 
-> 本文件是项目级的权威规则，优先级高于任何对话中的提示。
+> 本文件是项目级执行护栏。最高治理文件是 `.sdc/constitution.md`。
 > 所有 AI 助手必须阅读并严格遵守。
+
+---
+
+## 0. 裁决链
+
+| 类型 | 优先级 |
+|------|--------|
+| 治理规则 | `.sdc/constitution.md` > `AGENTS.md` > 对话即时要求 |
+| 事实来源 | `spec.md` > `design.md/plan.md` > `tasks.md` > code |
+
+如果发现冲突，必须停止执行并输出 Stop-Line Report。
 
 ---
 
@@ -136,6 +159,11 @@ echo "✅ All checks passed!"
 #### 3. 更新 .sdc/config（技能配置）
 告诉所有 SDC 技能："以后先读 AGENTS.md"
 
+如果项目已经有 `.sdc/standards/ai.md`，同步写入：
+- `AGENTS.md` 只放执行护栏
+- `.sdc/standards/` 保留完整开发规范
+- `.sdc/constitution.md` 保留最高裁决规则
+
 ---
 
 ### 第三步：输出使用说明
@@ -170,7 +198,8 @@ echo "✅ All checks passed!"
 | 1 | 必须包含"✅ 必须做"和"❌ 绝对不要做" | 输出无效，重做 |
 | 2 | 必须包含"验证命令"表格 | 输出无效，重做 |
 | 3 | 必须包含"历史错误"部分（即使是空的） | 输出无效，重做 |
-| 4 | 格式必须清晰易读，AI 一眼能看懂 | 输出无效，重做 |
+| 4 | 必须包含"0. 裁决链" | 输出无效，重做 |
+| 5 | 格式必须清晰易读，AI 一眼能看懂 | 输出无效，重做 |
 
 ---
 

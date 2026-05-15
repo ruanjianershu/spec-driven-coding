@@ -8,8 +8,9 @@ SDC CLI - 规范驱动开发 薄运行层
   sdc change <name> # 创建一次需求迭代
   sdc validate [target] # 校验 current 或某个 change
   sdc archive <change> # 归档完成的需求迭代
-  sdc spec          # 打开规范文档（你在 Claude 里写完粘贴进来）
+  sdc spec          # 打开规范文档（你在 AI 助手中写完粘贴进来）
   sdc plan          # 打开计划文档
+  sdc tasks         # 打开任务文档
   sdc apply         # 执行/记录当前需求迭代
   sdc implement     # apply 的兼容别名
   sdc check [target] # 综合检查 current 或某个 change
@@ -31,6 +32,7 @@ SDC_DIR = Path(".sdc")
 FILES = {
     "spec": "current/spec.md",
     "plan": "current/plan.md",
+    "tasks": "current/tasks.md",
     "apply": "current/apply.md",
     "implement": "current/apply.md",
     "review": "reviews/current-review.md",
@@ -46,6 +48,9 @@ DIRS = [
     "current",
     "decisions",
     "reports",
+    "reports/bug",
+    "reports/impact",
+    "reports/repo-analysis",
     "reviews",
     "specs",
     "standards",
@@ -60,6 +65,7 @@ INIT_FILES = {
 ## 目录
 
 - `project.md` - 项目长期背景、目标用户、技术约束和验证命令
+- `constitution.md` - 项目最高工程裁决规则
 - `current/` - 当前正在推进的一次需求迭代
 - `changes/active/` - 正在推进的需求变更，每个变更一个子目录
 - `changes/archive/` - 已完成归档的需求变更
@@ -67,8 +73,8 @@ INIT_FILES = {
 - `standards/` - 项目长期开发规范，约束人和 AI 怎么写代码
 - `decisions/` - 架构决策记录
 - `reviews/` - 代码审查记录
-- `reports/` - 测试、质量和交付报告
-- `templates/` - 需求迭代模板
+- `reports/` - 测试、质量、bug、impact、repo-analysis 和交付报告
+- `templates/` - 需求迭代、停线和分析模板
 
 ## 推荐流程
 
@@ -83,6 +89,48 @@ INIT_FILES = {
 - `specs/` - 业务规范：项目应该做什么
 - `changes/` - 需求迭代：这次为什么改、怎么改、如何验收
 - `standards/` - 开发规范：代码、测试、架构、安全、Git 和 AI 协作规则
+
+## SDC v1.1 纪律内核
+
+```text
+治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
+事实优先级：spec.md > design.md/plan.md > tasks.md > code
+追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
+```
+""",
+    "constitution.md": """# SDC Project Constitution
+
+## 1. Governance Priority
+
+`.sdc/constitution.md > AGENTS.md > conversation instructions`
+
+If these sources conflict, stop and produce a Stop-Line Report.
+
+## 2. Fact Priority
+
+`spec.md > design.md/plan.md > tasks.md > code`
+
+Code is evidence of current behavior, but it does not automatically override the agreed spec.
+
+## 3. Core Chain
+
+`spec -> plan -> tasks -> code -> verify -> archive`
+
+## 4. Stop-The-Line Rules
+
+Stop and produce a Stop-Line Report when:
+
+- spec, design, or tasks are missing, conflicting, or not verifiable
+- implementation requires changing business behavior, public contract, acceptance criteria, or key technical decisions
+- current task requires scope expansion
+- validation cannot prove the acceptance criteria
+
+## 5. Traceability Rules
+
+- specs must define `SCN-*`, `REQ-*`, and `AC-*` identifiers
+- tasks must reference `REQ-*` and `AC-*`
+- tests or validation notes must reference `AC-*`
+- implementation notes must record validation evidence
 """,
     "project.md": """# Project Context
 
@@ -119,27 +167,56 @@ INIT_FILES = {
 
 > 当前需求规范。由 `/sdc:spec` 生成或维护。
 
-## 需求背景
+## 0. 文档元信息
 
-## 需求分解
+## 1. Glossary / 统一语言
 
-## 验收标准
+## 2. 背景与目标
 
-## 测试计划
+## 3. 场景与需求
 
-## 风险评估
+### SCN-01
+
+### REQ-01
+
+## 4. Acceptance Criteria / 验收标准
+
+### AC-01
+
+Given ...
+When ...
+Then ...
+
+## 5. 验证策略
+
+## 6. 风险、假设与待确认项
+
+## 7. 追溯关系矩阵
 """,
     "current/plan.md": """# Current Plan
 
 > 当前实现计划。由 `/sdc:plan` 生成或维护。
 
-## 任务拆解
+## 设计摘要
+
+## 影响范围
 
 ## 依赖关系
 
 ## 测试先行策略
 
 ## 交付清单
+""",
+    "current/tasks.md": """# Current Tasks
+
+> 当前任务清单。任务必须能追溯到 REQ/AC。
+
+## Tasks
+
+- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] Draft task
+  - Depends on: none
+  - Verify: TODO
+  - Source: current/spec.md#AC-01
 """,
     "current/apply.md": """# Current Apply Log
 
@@ -296,8 +373,10 @@ archive/YYYY-MM-DD-short-name/
 ## 必须做
 
 - 开始新需求前确认 `.sdc/` 是否存在
+- 先读 `.sdc/constitution.md`，再读 `AGENTS.md`
 - 新需求进入 `.sdc/changes/active/`
 - 实现前先看 `proposal.md`、`spec.md`、`design.md`、`tasks.md`
+- 保持 `SCN-* -> REQ-* -> AC-* -> T### -> 验证证据` 追溯链
 - 完成前执行 `/sdc:check`
 - 归档时执行 `/sdc:archive`
 
@@ -305,6 +384,7 @@ archive/YYYY-MM-DD-short-name/
 
 - 不要跳过需求记录直接改代码
 - 不要把模板内容当作有效规范
+- 不要在 spec/design/tasks/code 冲突时继续猜测
 - 不要覆盖已有 `.sdc/` 文件
 - 不要删除 change 历史
 - 不要忽略 `.sdc/standards/` 中的项目规范
@@ -323,7 +403,13 @@ YYYY-MM-DD-short-title.md
 """,
     "reports/README.md": """# Reports
 
-保存 `/sdc:test` 和 `/sdc:quality` 的测试、覆盖率、质量检查和交付报告。
+保存 `/sdc:check` 产生的测试、覆盖率、质量检查、bug 分析、impact 分析和 repo-analysis 报告。
+
+## 子目录
+
+- `bug/` - 缺陷分析报告，只分析不直接改代码
+- `impact/` - 变更影响面和上线风险分析
+- `repo-analysis/` - 存量项目结构、风险和改造建议
 """,
     "templates/change.md": """# Change Proposal
 
@@ -333,9 +419,17 @@ YYYY-MM-DD-short-title.md
 
 ## 非目标
 
-## 需求分解
+## 初始场景
 
-## 验收标准
+- SCN-01:
+
+## 初始需求
+
+- REQ-01:
+
+## 初始验收标准
+
+- AC-01:
 
 ## 任务清单
 
@@ -345,14 +439,17 @@ YYYY-MM-DD-short-title.md
 
 ## 实现任务
 
-- [ ] 1. 任务描述
-  - 验收：可验证结果
-  - 前置：无
+- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] Draft task
+  - Depends on: none
+  - Verify: TODO
+  - Source: spec.md#AC-01
 
 ## 验证任务
 
-- [ ] 运行测试
-- [ ] 完成质量检查
+- [ ] T900 [REQ-01] [AC-01] [Phase Verify] [Size: S] Run validation
+  - Depends on: T001
+  - Verify: TODO
+  - Source: spec.md#AC-01
 """,
     "templates/design.md": """# Design
 
@@ -360,23 +457,107 @@ YYYY-MM-DD-short-title.md
 
 ## 方案
 
+## 影响范围
+
+## 不改范围
+
 ## 数据和接口变化
 
+## REQ/AC 到设计决策的映射
+
 ## 风险
+
+## 回滚方案
 
 ## 替代方案
 """,
     "templates/spec.md": """# Spec
 
-## 需求背景
+## 0. 文档元信息
 
-## 需求分解
+## 1. Glossary / 统一语言
 
-## 验收标准
+## 2. 背景与目标
 
-## 测试计划
+## 3. 场景与需求
 
-## 风险评估
+### SCN-01
+
+### REQ-01
+
+## 4. Acceptance Criteria / 验收标准
+
+### AC-01
+
+Given ...
+When ...
+Then ...
+
+## 5. 验证策略
+
+## 6. 风险、假设与待确认项
+
+## 7. 追溯关系矩阵
+""",
+    "templates/stop-line-report.md": """# Stop-Line Report
+
+## Trigger
+
+## Evidence
+
+## Conflicting Files
+
+## Affected REQ/AC
+
+## Options
+
+## Recommended Next Step
+""",
+    "templates/bug-analysis.md": """# Bug Analysis
+
+## Symptom
+
+## Reproduction
+
+## Evidence
+
+## Related Spec / Plan / Tasks
+
+## Root Cause Candidates
+
+## Affected REQ/AC
+
+## Recommended Fix
+""",
+    "templates/change-impact.md": """# Change Impact Analysis
+
+## Change Summary
+
+## Direct Impact
+
+## Indirect Impact
+
+## Affected REQ/AC/T###
+
+## Test Matrix
+
+## Rollback Plan
+""",
+    "templates/repo-analysis.md": """# Repo Analysis
+
+## Tech Stack
+
+## Entry Points
+
+## Build and Test Commands
+
+## Core Modules
+
+## Business Capability Map
+
+## Risks
+
+## Recommended SDC Assets
 """,
     "templates/decision.md": """# Decision Record
 
@@ -404,7 +585,7 @@ TEMPLATE = """# SDC {name} 文档
 
 > 创建时间：{time}
 
-请在这里粘贴从 Claude / Hermes 生成的内容：
+请在这里粘贴从 AI 助手生成的内容：
 
 ---
 
@@ -458,8 +639,38 @@ def has_real_content(filepath):
         for line in text.splitlines()
         if line.strip() and not line.strip().startswith(">") and not line.strip().startswith("#")
     ]
-    placeholders = ("（", ")", "TODO", "todo")
+    placeholders = ("（", "）", "TODO", "todo", "Draft task", "...")
     return any(not any(marker in line for marker in placeholders) for line in lines)
+
+
+def validate_task_trace(errors, filepath):
+    text = read_text(filepath)
+    if "- [ ]" not in text and "- [x]" not in text:
+        errors.append(f"{filepath} 缺少任务复选框")
+        return
+
+    if "TODO" in text or "Draft task" in text:
+        errors.append(f"{filepath} 仍包含任务模板占位内容")
+
+    task_lines = [line.strip() for line in text.splitlines() if line.strip().startswith("- [")]
+    task_pattern = re.compile(r"- \[[ xX]\] T\d{3} \[REQ-[^\]]+\] \[AC-[^\]]+\] \[Phase [^\]]+\] \[Size: ([SM])\]")
+    for line in task_lines:
+        match = task_pattern.search(line)
+        if not match:
+            errors.append(f"{filepath} 任务格式无效: {line}")
+        if "[Size: L]" in line:
+            errors.append(f"{filepath} 任务不能使用 Size L: {line}")
+
+    for marker in ("Depends on:", "Verify:", "Source:"):
+        if marker not in text:
+            errors.append(f"{filepath} 缺少任务字段: {marker}")
+
+
+def validate_spec_trace(errors, filepath):
+    text = read_text(filepath)
+    for marker in ("SCN-", "REQ-", "AC-"):
+        if marker not in text:
+            errors.append(f"{filepath} 缺少追溯标识: {marker}")
 
 
 def write_if_missing(relative_path, content):
@@ -549,6 +760,7 @@ def cmd_change(name):
     print(f"   目录: {directory.absolute()}")
     print()
     print("下一步:")
+    print(f"  {BLUE}sdc spec{ENDC}              - 先完善 SCN/REQ/AC")
     print(f"  {BLUE}sdc plan {change_id}{ENDC}   - 生成/完善计划")
     print(f"  {BLUE}sdc check {change_id}{ENDC}  - 综合检查")
 
@@ -576,23 +788,30 @@ def cmd_validate(target="current"):
     errors = []
     warnings = []
 
+    validate_file(errors, warnings, SDC_DIR / "constitution.md", [
+        "## 1. Governance Priority",
+        "## 2. Fact Priority",
+        "## 5. Traceability Rules",
+    ])
+
     if target == "current":
         base = SDC_DIR / "current"
-        validate_file(errors, warnings, base / "spec.md", ["## 需求分解", "## 验收标准", "## 测试计划"])
-        validate_file(errors, warnings, base / "plan.md", ["## 任务拆解", "## 测试先行策略", "## 交付清单"])
+        validate_file(errors, warnings, base / "spec.md", ["## 1. Glossary / 统一语言", "## 4. Acceptance Criteria / 验收标准", "## 7. 追溯关系矩阵"])
+        validate_file(errors, warnings, base / "plan.md", ["## 设计摘要", "## 测试先行策略", "## 交付清单"])
+        validate_file(errors, warnings, base / "tasks.md", ["## Tasks"])
         validate_file(errors, warnings, base / "apply.md", ["## 已完成任务", "## 修改文件", "## 测试结果"])
+        validate_spec_trace(errors, base / "spec.md")
+        validate_task_trace(errors, base / "tasks.md")
     else:
         base = change_path(target)
         if not base.exists():
             errors.append(f"需求迭代不存在: {base}")
         else:
-            validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 验收标准"])
+            validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
             validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
-            validate_file(errors, warnings, base / "spec.md", ["## 需求分解", "## 验收标准", "## 测试计划"])
-
-            tasks_text = read_text(base / "tasks.md")
-            if "- [ ]" not in tasks_text and "- [x]" not in tasks_text:
-                errors.append(f"{base / 'tasks.md'} 缺少任务复选框")
+            validate_file(errors, warnings, base / "spec.md", ["## 1. Glossary / 统一语言", "## 4. Acceptance Criteria / 验收标准", "## 7. 追溯关系矩阵"])
+            validate_spec_trace(errors, base / "spec.md")
+            validate_task_trace(errors, base / "tasks.md")
 
     print()
     print_color(HEADER, f"🔍 SDC 校验结果: {target}")
@@ -638,11 +857,26 @@ def cmd_archive(change_id):
         print_color(RED, f"❌ spec.md 仍是模板或缺少有效内容，不能归档: {spec}")
         return
 
+    trace_errors = []
+    validate_spec_trace(trace_errors, spec)
+    if trace_errors:
+        print_color(RED, "❌ spec.md 追溯链不完整，不能归档")
+        for item in trace_errors:
+            print(f"  - {item}")
+        return
+
     tasks = source / "tasks.md"
     if tasks.exists():
         tasks_text = read_text(tasks)
         if "- [ ]" in tasks_text and "- [x]" not in tasks_text:
             print_color(RED, f"❌ tasks.md 中没有已完成任务，不能归档: {tasks}")
+            return
+        trace_errors = []
+        validate_task_trace(trace_errors, tasks)
+        if trace_errors:
+            print_color(RED, "❌ tasks.md 追溯链不完整，不能归档")
+            for item in trace_errors:
+                print(f"  - {item}")
             return
 
     specs_dir = SDC_DIR / "specs"
@@ -669,6 +903,12 @@ def cmd_archive(change_id):
 ## 交付结论
 
 （填写可以交付 / 已上线 / 已废弃）
+
+## 追溯摘要
+
+- REQ/AC/T### 覆盖：
+- 验证证据：
+- 遗留项：
 """)
 
     print_color(GREEN, "✅ SDC 需求迭代已归档")
@@ -687,9 +927,10 @@ def cmd_check(target="current"):
     """综合检查入口：CLI 层先执行结构校验，并提示后续人工/AI 检查。"""
     cmd_validate(target)
     print_color(HEADER, "🔎 后续检查")
-    print("  - 代码审查: /sdc:review")
-    print("  - 测试验证: /sdc:test")
-    print("  - 质量门禁: /sdc:quality")
+    print("  - delivery: validate + review + test + quality")
+    print("  - bug: 只分析根因和证据，不直接改代码")
+    print("  - impact: 分析影响范围、测试矩阵和回滚方案")
+    print("  - repo: 分析存量项目结构、风险和 SDC 资产建议")
     print("  - AI 中可直接使用: /sdc:check")
     print()
 
@@ -777,6 +1018,8 @@ def main():
         cmd_edit("spec")
     elif cmd == "plan":
         cmd_edit("plan")
+    elif cmd == "tasks":
+        cmd_edit("tasks")
     elif cmd == "implement":
         cmd_edit("implement")
     elif cmd == "review":
@@ -797,9 +1040,20 @@ def main():
             with open(agents_file, "w") as f:
                 f.write(f"""# 🤖 AGENTS.md - 本项目 AI 助手必须遵守的规则
 
-> 本文件是项目级的权威规则，优先级高于任何对话中的提示。
+> 本文件是项目级执行护栏。最高治理文件是 `.sdc/constitution.md`。
 > 所有 AI 助手必须阅读并严格遵守。
 > 创建时间：{datetime.now().isoformat()}
+
+---
+
+## 0. 裁决链
+
+| 类型 | 优先级 |
+|------|--------|
+| 治理规则 | `.sdc/constitution.md` > `AGENTS.md` > 对话即时要求 |
+| 事实来源 | `spec.md` > `design.md/plan.md` > `tasks.md` > code |
+
+如果发现冲突，必须停止执行并输出 Stop-Line Report。
 
 ---
 
@@ -807,7 +1061,7 @@ def main():
 
 | 规则 | 验证方式 |
 |------|---------|
-| (请在 Claude 中运行 /sdc:harness 自动生成) | |
+| (请在 AI 助手中运行 /sdc:harness 自动生成) | |
 
 ---
 
@@ -815,7 +1069,7 @@ def main():
 
 | 禁止事项 | 原因 |
 |---------|------|
-| (请在 Claude 中运行 /sdc:harness 自动生成) | |
+| (请在 AI 助手中运行 /sdc:harness 自动生成) | |
 
 ---
 
@@ -823,7 +1077,7 @@ def main():
 
 | 操作 | 命令 |
 |------|------|
-| (请在 Claude 中运行 /sdc:harness 自动生成) | |
+| (请在 AI 助手中运行 /sdc:harness 自动生成) | |
 
 ---
 

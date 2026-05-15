@@ -21,9 +21,18 @@ description: "SDC main entry. Route natural language requests across init, chang
 SDC 的设计目标是整合和简化：
 - OpenSpec 的核心：change、validate、archive
 - Superpowers 的核心：轻量 skill-pack 和命令触发
-- SDC 自己的核心：spec、plan、implement、review、test、quality、harness
+- SDDInAction / Karpathy-style skills 的核心：先想清楚、薄切片、TDD、停线、证据链
+- SDC 自己的核心：spec、plan、apply、check、archive、harness
 
 但用户界面只保留一个主入口：`/sdc`。
+
+SDC 内部必须遵守：
+
+```text
+治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
+事实优先级：spec.md > design.md/plan.md > tasks.md > code
+追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
+```
 
 ---
 
@@ -34,7 +43,10 @@ SDC 的设计目标是整合和简化：
 | 初始化、第一次使用、建立目录 | `/sdc:init` |
 | 新需求、新功能、需求变更 | `/sdc:change` + `/sdc:spec` + `/sdc:plan` |
 | 开始写代码、执行计划 | `/sdc:apply` |
-| 检查、验收、能不能交付 | `/sdc:validate` + `/sdc:review` + `/sdc:test` + `/sdc:quality` |
+| 检查、验收、能不能交付 | `/sdc:check` |
+| 分析 bug、失败原因、日志问题 | `/sdc:check` 的 bug 模式 |
+| 分析影响范围、上线风险 | `/sdc:check` 的 impact 模式 |
+| 分析存量仓库、接手项目 | `/sdc:check` 的 repo 模式 |
 | 完成、归档、沉淀规范 | `/sdc:archive` |
 | 记录项目规则、避免重复踩坑 | `/sdc:harness` |
 
@@ -60,6 +72,8 @@ SDC 的设计目标是整合和简化：
 4. apply 前必须有 spec、design 和 tasks
 5. 完成前必须 validate/check 通过
 6. 归档时必须沉淀到 `.sdc/specs/`
+7. spec/design/tasks/code 冲突时必须停线，不要继续猜测
+8. check 承担 validate/review/test/quality，以及 bug/impact/repo 分析入口
 
 ---
 

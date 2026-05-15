@@ -18,6 +18,26 @@ description: "Combined delivery check that runs validate, review, test, and qual
 
 `/sdc:check` 是普通模式指令；细分指令仍然存在，作为高级模式使用。
 
+`/sdc:check` 同时承载三类高级分析模式，但不新增公共指令：
+- `bug`：缺陷分析，只分析不改代码
+- `impact`：变更影响分析
+- `repo` / `brownfield`：存量项目结构与风险分析
+
+---
+
+## 模式选择
+
+根据用户意图选择模式：
+
+| 用户意图 | 模式 | 结果 |
+|---------|------|------|
+| “检查/验收/能不能交付” | delivery | validate + review + test + quality |
+| “分析 bug/为什么失败/定位问题” | bug | 只分析，不修改代码 |
+| “这个改动影响哪里/会破坏什么” | impact | 输出影响范围和风险 |
+| “分析这个仓库/接手项目/梳理结构” | repo | 输出仓库事实、架构、风险和建议 |
+
+如果用户没有明确说要修复，`bug` 模式不得修改代码；如果分析结论需要修复，给出下一步 `/sdc:change` 或 `/sdc:apply` 建议。
+
 ---
 
 ## 检查顺序
@@ -30,6 +50,57 @@ description: "Combined delivery check that runs validate, review, test, and qual
 4. `/sdc:quality` - 做最终交付质量检查
 
 如果前一步发现严重问题，后续步骤可以继续收集信息，但最终结论必须标记为“不建议交付”。
+
+---
+
+## Bug 分析模式
+
+适用于“报错了”“为什么失败”“定位这个 bug”等请求。
+
+必须检查：
+- 现象和复现步骤
+- 相关日志、测试失败、错误栈
+- 对应 `spec.md / design.md / tasks.md / notes.md`
+- 代码证据和最近修改
+- 该问题属于需求缺失、设计不一致、实现错误、测试错误、环境问题还是文档过期
+
+输出必须包含：
+- 根因候选，按可信度排序
+- 证据链：日志/命令/文件位置
+- 受影响的 `REQ-* / AC-*`（如果存在）
+- 是否需要同步 spec/design/tasks
+- 修复建议，但不直接改代码
+
+---
+
+## Impact 分析模式
+
+适用于“这个变更会影响什么”“改这里安全吗”“上线风险是什么”。
+
+必须输出：
+- 直接影响文件、模块、接口、数据、配置
+- 间接影响路径和回归风险
+- 需要新增或更新的 `REQ-* / AC-* / T###`
+- 建议测试矩阵
+- 回滚或降级方案
+
+---
+
+## Repo / Brownfield 分析模式
+
+适用于“分析项目”“接手仓库”“从代码反推现状”。
+
+原则：
+- 代码是证据，不自动等于业务真相
+- 文档是线索，不自动等于当前事实
+- 必须给出文件位置或命令证据
+
+必须输出：
+- 技术栈、入口、构建和测试命令
+- 核心模块和依赖关系
+- 业务能力初步地图
+- 质量风险和维护风险
+- 建议生成或更新的 `.sdc/specs`、`.sdc/standards`、`AGENTS.md`
 
 ---
 
@@ -53,6 +124,7 @@ description: "Combined delivery check that runs validate, review, test, and qual
 | “看起来没问题” | 没有证据就不算通过，必须提供命令输出、文件位置或检查记录 |
 | “安全风险不大” | 只要涉及外部输入、权限、数据存储或依赖，就必须做安全视角检查 |
 | “先交付，后面再补质量” | `/sdc:check` 是交付门禁，严重问题未解决不能给出可以交付结论 |
+| “只是分析 bug，顺手改了吧” | Bug 分析模式只分析不修改；修复必须进入 change/apply |
 
 ---
 
@@ -61,10 +133,12 @@ description: "Combined delivery check that runs validate, review, test, and qual
 出现以下任一情况，最终结论必须是【需要修复后重新检查】：
 
 - `spec.md`、`tasks.md` 或 `notes.md` 仍是模板内容
+- `SCN-* / REQ-* / AC-* / T###` 无法形成追溯链
 - 没有运行测试，也没有说明无法运行的原因
 - 修改了与当前 change 无关的大量文件
 - 发现硬编码密钥、未校验输入、权限绕过或敏感日志
 - 任务未完成却准备 archive
+- bug 分析阶段直接修改代码
 
 ---
 
@@ -75,6 +149,7 @@ description: "Combined delivery check that runs validate, review, test, and qual
 - review/test/security/quality 的结论
 - 实际运行的测试或验证命令；如果未运行，说明阻塞原因
 - 阻塞问题列表和下一步修复建议
+- 对应模式的证据链和追溯链
 
 ---
 
@@ -85,8 +160,12 @@ description: "Combined delivery check that runs validate, review, test, and qual
 ==================================================
 
 ## 校验结果
-- 结论：通过 / 不通过
+- 模式：delivery / bug / impact / repo
+- 结论：通过 / 不通过 / 仅分析
 - 关键问题：...
+
+## 追溯链
+- SCN/REQ/AC/T### 覆盖情况：...
 
 ## 代码审查
 - 严重问题：x 个
@@ -118,3 +197,4 @@ description: "Combined delivery check that runs validate, review, test, and qual
 | 严重问题不能给出可以交付结论 | 结论错误 |
 | 必须有明确下一步 | 用户不知道怎么继续 |
 | 必须说明阻塞问题 | 输出无效 |
+| bug 模式不得修改代码 | 分析与执行混淆 |

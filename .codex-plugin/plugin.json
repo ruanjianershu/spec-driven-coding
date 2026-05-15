@@ -2,14 +2,14 @@
   "name": "sdc",
   "displayName": "SDC - 规范驱动开发",
   "description": "Spec-Driven-Coding 规范驱动开发工具集。普通模式只开放少量公共指令，详细模式保留完整细分能力。",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "author": "ruanjianershu",
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "homepage": "https://github.com/ruanjianershu/spec-driven-coding",
   "interface": {
     "displayName": "SDC",
-    "shortDescription": "规范驱动开发工作流，整合 OpenSpec 和 Superpowers 的核心能力。",
-    "longDescription": "SDC 是面向 Codex 的 Spec-Driven-Coding skill 集，提供 init、change、plan、apply、check、archive 等精简入口，并保留 review、test、validate 等细分能力供高级场景使用。",
+    "shortDescription": "规范驱动开发工作流，用少量入口保留 SCN/REQ/AC 追溯和 SDD 工程纪律。",
+    "longDescription": "SDC 是面向 Codex 的 Spec-Driven-Coding skill 集，提供 init、change、plan、apply、check、archive 等精简入口，并在内部保留裁决链、SCN/REQ/AC 追溯链、停线报告、review、test、validate 等细分能力供高级场景使用。",
     "developerName": "ruanjianershu",
     "category": "Coding",
     "capabilities": [
@@ -20,9 +20,9 @@
     "privacyPolicyURL": "https://github.com/ruanjianershu/spec-driven-coding",
     "termsOfServiceURL": "https://github.com/ruanjianershu/spec-driven-coding",
     "defaultPrompt": [
-      "/sdc:init",
-      "/sdc:plan",
-      "/sdc:check"
+      "用 SDC 初始化这个项目",
+      "用 SDC 为当前需求生成 plan",
+      "用 SDC check 检查是否可以交付"
     ],
     "brandColor": "#2563EB",
     "screenshots": []
@@ -42,6 +42,7 @@
     "开发工具",
     "质量保障",
     "TDD",
+    "追溯",
     "规范",
     "SDC",
     "代码审查"

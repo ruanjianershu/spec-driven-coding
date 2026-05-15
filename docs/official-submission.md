@@ -6,7 +6,7 @@ For Claude Code specific marketplace behavior, install commands, and user-facing
 
 ## Short Description
 
-SDC is a lightweight spec-driven coding workflow for Claude Code. It helps developers initialize project standards, capture requirement changes, plan implementation, apply tasks, run delivery checks, and archive stable specs in local project files.
+SDC is a lightweight spec-driven coding workflow for Claude Code. It helps developers initialize project standards, capture requirement changes, preserve traceability, apply tasks, run delivery checks, and archive stable specs in local project files.
 
 ## Long Description
 
@@ -14,9 +14,9 @@ SDC packages a complete spec-driven development lifecycle into a small set of Cl
 
 - initialize a `.sdc/` workspace
 - create structured requirement changes
-- turn requirements into verifiable plans
+- turn requirements into traceable `SCN -> REQ -> AC -> task -> evidence` plans
 - execute implementation tasks incrementally
-- run combined validation, review, test, and quality checks
+- run combined validation, review, test, quality, bug, impact, and repo checks
 - archive completed changes into stable project specs
 - generate project-level AI guardrails
 

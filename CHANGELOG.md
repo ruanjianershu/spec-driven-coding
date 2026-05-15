@@ -2,6 +2,15 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.0
+
+- Added the SDC discipline core: governance priority, fact priority, traceability chain, and Stop-Line Report rules.
+- Upgraded `/sdc:init` to generate `.sdc/constitution.md`, current tasks, reports, and templates for bug, impact, repo analysis, and stop-line reports.
+- Upgraded `/sdc:spec`, `/sdc:plan`, `/sdc:apply`, `/sdc:validate`, `/sdc:check`, `/sdc:archive`, and `/sdc:harness` to preserve `SCN -> REQ -> AC -> T### -> evidence` traceability.
+- Extended `/sdc:check` with delivery, bug, impact, and repo/brownfield modes without adding new public commands.
+- Added documentation for the v1.1 discipline core and updated README usage expectations.
+- Included docs, security, privacy, and changelog files in local plugin copies created by the installer.
+
 ## 1.0.9
 
 - Added Claude Code compatible `.claude/skills/` layout generation during install.
@@ -29,4 +38,3 @@ All notable changes to SDC are documented here.
 - Introduced SDC core skills: init, change, spec, plan, apply, check, validate, review, test, quality, archive, and harness.
 - Added `.sdc/` workspace initialization workflow.
 - Added project standards generation under `.sdc/standards/`.
-

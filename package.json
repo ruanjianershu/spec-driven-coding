@@ -1,7 +1,7 @@
 {
   "name": "sdc-spec",
-  "version": "1.0.9",
-  "description": "SDC is a lightweight spec-driven coding workflow for Claude Code and Codex: init project standards, capture changes, plan implementation, apply tasks, check delivery quality, and archive stable specs.",
+  "version": "1.1.0",
+  "description": "SDC is a lightweight spec-driven coding workflow for Claude Code and Codex: init standards, capture changes, preserve SCN/REQ/AC traceability, apply tasks, check quality, and archive stable specs.",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -40,6 +40,8 @@
     "hermes",
     "hermes-agent",
     "ai-coding",
+    "sdd",
+    "traceability",
     "tdd",
     "code-review",
     "quality-assurance"
