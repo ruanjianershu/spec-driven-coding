@@ -6,172 +6,75 @@ description: "Run and assess tests with coverage, failure details, boundary case
 # Skill: SDC 测试驱动 /sdc:test
 
 ## 触发条件
+
 当用户输入以下任一内容时，自动触发本技能：
+
 - `/sdc:test`
 - "运行测试"
 - "测试一下"
 - "写测试"
 
 ## 核心使命
-确保所有测试通过，并且测试真正在验证东西（不是为了凑覆盖率）。
-**测试的目标是找 Bug，不是证明没有 Bug。**
 
-## Role Prompt Contract
+证明当前 change 满足 acceptance criteria、边界条件、回归路径和失败模式。测试的目标是发现问题，而不是只追求覆盖率数字。
 
-### Role
-You are a test strategist and validation executor. Your job is to prove the change against acceptance criteria, boundary cases, regressions, and failure modes.
+## Reference Loading
 
-### Operating Contract
-- Map tests to REQ/AC and the current task scope.
-- Prefer behavior tests over implementation-detail tests.
-- Run relevant tests when possible; when not possible, explain the blocker and provide a concrete fallback validation path.
-- Do not treat coverage percentage as proof that the requirement is validated.
+Load only what is needed:
 
-### Evidence Rules
-- Use test files, test output, coverage reports, failure logs, acceptance criteria, and regression paths.
-- Distinguish passing tests, missing tests, flaky tests, and unexecuted tests.
-- Boundary, error, security, and compatibility cases need explicit coverage or risk notes.
-
-### Output Contract
-- Report commands run, pass/fail summary, covered ACs, uncovered risks, failures, and recommended test additions.
-- Include enough failure detail to reproduce or debug.
-- If tests are insufficient, say the change is not fully validated.
-
----
+- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-test`.
+- Test gate: `../sdc-shared/delivery-gates.md`.
+- Traceability and evidence rules: `../sdc-shared/workflow-standards.md`.
 
 ## 执行步骤
 
-### 前置检查
-- ✅ 代码已经实现
-- ✅ 代码审查已经完成
+1. 读取当前 spec/tasks/notes，识别 REQ/AC。
+2. 确认已有测试覆盖哪些 AC。
+3. 根据项目实际工具运行相关测试。
+4. 如果不能运行测试，说明阻塞原因和替代验证路径。
+5. 分析失败、缺失覆盖、边界、错误、安全、兼容性和回归风险。
+6. 给出需要新增或修正的测试建议。
 
----
+## 测试层级
 
-### 测试层级（必须全部覆盖）
+按项目实际情况覆盖：
 
-#### 1. 单元测试（最基础）
-```
-测试目标：验证单个函数/类的行为
-测试原则：
-  □ 每个测试只验证一件事
-  □ 测试之间互相独立
-  □ 测试描述清晰（看名字就知道测什么）
-  □ 覆盖正常路径
-  □ 覆盖异常路径
-  □ 覆盖边界条件
-  □ 不测试实现细节（只测试行为）
-```
+- Unit：单函数/类行为，边界和错误分支。
+- Integration：模块协作、API 契约、数据流转、外部依赖替身。
+- End-to-end / smoke：用户主路径或关键 CLI/API 流程。
+- Regression：老系统或历史行为保护。
 
-#### 2. 集成测试（验证配合）
-```
-测试目标：验证模块之间的配合
-测试原则：
-  □ 覆盖主要的业务流程
-  □ 验证 API 契约
-  □ 验证数据流转
-  □ 模拟外部依赖
-```
+## 输出格式
 
-#### 3. 端到端测试（真实场景）
-```
-测试目标：模拟真实用户的操作
-测试原则：
-  □ 覆盖核心用户场景
-  □ 不依赖具体实现
-  □ 测试数据隔离
-```
-
----
-
-### 测试编写规范
-
-#### 好的测试的三个特征：
-1. **快**：全部测试跑完不超过 1 分钟
-2. **可靠**：每次运行结果都一样（不会随机失败）
-3. **清晰**：失败了一眼就知道哪里错了
-
-#### 测试命名规范：
-```
-# 不好的名字
-def test1():
-def test_function():
-
-# 好的名字
-def test_divide_by_zero_should_raise_error():
-def test_user_login_with_wrong_password():
-def test_empty_list_should_return_zero_length():
-```
-
-#### 测试结构（AAA 模式）：
-```python
-def test_example():
-    # Arrange - 准备数据
-    calculator = Calculator()
-    
-    # Act - 执行操作
-    result = calculator.add(2, 3)
-    
-    # Assert - 验证结果
-    assert result == 5
-```
-
----
-
-### 输出格式
-
-```
+```text
 🧪 SDC 测试报告
-{'=' * 50}
+==================================================
 
-## 📊 测试概览
-- 单元测试：xx 个，通过 xx 个
-- 集成测试：xx 个，通过 xx 个
-- 端到端测试：xx 个，通过 xx 个
-- 总覆盖率：xx%
+## 测试命令
+- ...
 
-## ❌ 失败的测试
-| 测试名称 | 错误信息 |
-|---------|---------|
-| test_xxx | xxx |
+## 结果概览
+- 通过：
+- 失败：
+- 未运行：
 
-## ⚠️ 覆盖率不足的文件
-| 文件 | 覆盖率 | 未覆盖行数 |
-|------|--------|-----------|
-| xxx.py | xx% | 第 xx-xx 行 |
+## AC 覆盖
+| AC | 测试/验证 | 结果 | 缺口 |
 
-## 💡 测试改进建议
-1. 建议增加 xxx 场景的测试
-2. 建议优化 xxx 测试的执行速度
-3. ...
+## 失败详情
+| 测试 | 错误 | 复现方式 |
 
-## ✅ 测试质量评估
-- 测试速度：⚡ 快 / 🐢 适中 / 🐌 慢
-- 测试稳定性：✅ 可靠 / ⚠️ 有随机失败风险
-- 测试清晰度：✅ 清晰 / ⚠️ 需要改进
+## 风险与建议
+- ...
 
-## 🚀 下一步建议
-👉 测试全部通过后，执行 `/sdc:quality` 进行最终质量检查
+## 结论
+👉 已充分验证 / 未充分验证
 ```
 
----
+## 质量红线
 
-## 🚦 质量红线（必须严格遵守）
-
-| 序号 | 规则 | 违反后果 |
-|------|------|---------|
-| 1 | 测试必须**全部通过** | 不能进入下一步 |
-| 2 | 覆盖率必须 **> 80%** | 补写测试 |
-| 3 | 必须覆盖**异常和边界情况** | 补写测试 |
-| 4 | 不能有**只为凑覆盖率的测试** | 删除重写 |
-| 5 | 测试失败必须给出**清晰的错误信息** | 重写测试 |
-
----
-
-## 💡 设计理念
-> 没有测试的代码，都是遗留代码。
-> 
-> 测试不是负担，是保险。
-> 今天写测试多花 10 分钟，明天改 Bug 就能少花 10 小时。
-> 
-> 覆盖率不是目标，只是一个指标。
-> 100% 覆盖率不代表没有 Bug，但是 0% 覆盖率肯定有 Bug。
+- 测试失败不能进入下一阶段。
+- 未运行测试必须说明原因和风险。
+- AC 未覆盖必须明确标出。
+- 覆盖率不能替代行为验证。
+- 必须覆盖关键异常和边界情况，或说明无法覆盖的风险。

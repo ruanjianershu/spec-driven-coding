@@ -8,145 +8,58 @@ description: "Compatibility detailed command for implementation. Prefer sdc-appl
 > 兼容说明：普通模式请优先使用 `/sdc:apply`。`/sdc:implement` 作为详细/兼容指令保留。
 
 ## 触发条件
+
 当用户输入以下任一内容时，自动触发本技能：
+
 - `/sdc:implement`
 - "开始实现"
 - "写代码"
 - "开发"
 
 ## 核心使命
-严格按照实现计划，**自动、一步一步**地完成所有代码开发。
-过程中不需要用户干预，遇到问题自己解决。
 
-## Role Prompt Contract
+兼容旧版或详细指令入口。实际执行规则与 `/sdc:apply` 一致：按 confirmed artifacts 和 tasks 逐步实现，不做大范围自主改写。
 
-### Role
-You are a compatibility implementation executor. This skill exists for detailed or legacy command compatibility; in normal SDC mode, prefer `sdc-apply`.
+## Reference Loading
 
-### Operating Contract
-- Follow the same governance, fact priority, task order, TDD, and stop-line rules as `sdc-apply`.
-- Do not implement without confirmed spec, plan/design, tasks, and required brownfield impact evidence.
-- Work task by task; avoid broad autonomous rewrites.
-- Stop when implementation requires scope, contract, data, security, or architecture changes not covered by the artifacts.
+Load only what is needed:
 
-### Evidence Rules
-- Use confirmed `.sdc` artifacts, tests, build output, diffs, and notes as evidence.
-- Existing code may guide style and integration but cannot override confirmed requirements.
-- Claims of completion require validation output and updated task status.
+- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-implement`.
+- Apply rules: `../sdc-shared/workflow-standards.md` and `../sdc-shared/artifact-schemas.md`.
+- Brownfield boundary: `../sdc-shared/legacy-impact-gate.md`.
 
-### Output Contract
-- Report task ids, changed files, tests written/run, validation results, and SDC records updated.
-- If blocked, output a Stop-Line Report instead of continuing.
-- Recommend switching to `/sdc:apply` for normal-mode execution.
+## 执行规则
 
----
+1. 优先建议用户使用 `/sdc:apply`。
+2. 必须有 confirmed spec、plan/design、tasks，以及 Brownfield/Legacy 所需的 `impact.md`。
+3. 按任务顺序执行，优先测试，再最小实现。
+4. 每完成一个任务，更新任务状态、notes 和验证证据。
+5. 遇到范围、契约、数据、安全、架构或影响边界问题，输出 Stop-Line Report。
 
-## 执行步骤
+## 输出格式
 
-### 前置检查
-- ✅ 已有规范文档（`/sdc:spec`）
-- ✅ 已有实现计划（`/sdc:plan`）
-- ❌ 缺少任何一个，先补全再开始
+```text
+🚀 SDC Implement
+==================================================
 
----
+## 兼容提示
+普通模式建议改用 `/sdc:apply`
 
-### 开发模式（严格遵守）
+## 当前任务
+- ...
 
-#### 模式 A：测试驱动开发（TDD）
-```
-循环（直到所有任务完成）：
-  1. 从计划中取下一个任务
-  2. 写测试用例（描述期望的行为）
-  3. 运行测试 → 红（肯定失败）
-  4. 写代码让测试通过
-  5. 运行测试 → 绿（必须全部通过）
-  6. 重构代码（保持测试通过）
-  7. 标记任务完成
-  8. 自动进入下一个
+## 修改文件
+- ...
+
+## 验证结果
+- ...
+
+## 下一步
+👉 ...
 ```
 
-#### 模式 B：遇到问题的处理流程
-```
-遇到 Bug / 编译错误：
-  1. 自己分析原因（不要问用户）
-  2. 尝试 3 种不同的解决方法
-  3. 如果还不行，记录错误日志
-  4. 跳过这个任务，继续下一个
-  5. 最后汇总所有遇到的问题
-```
+## 质量红线
 
----
-
-### 输出格式（每个任务完成后）
-
-```
-✅ 任务 x.x 完成
-{'=' * 50}
-
-## 📝 任务描述
-（任务的原始描述）
-
-## 🧪 测试用例
-（写的测试代码，粘贴在这里）
-
-## 💻 实现代码
-（实现的代码，粘贴在这里）
-
-## ✅ 测试结果
-测试通过：x / x
-覆盖率：xx%
-
-## ⚠️ 遇到的问题
-（如果有问题，记录在这里）
-
-## 🚀 下一步
-自动进入：任务 x.x
-```
-
----
-
-### 最终完成输出
-
-```
-🎉 所有任务完成！
-{'=' * 50}
-
-## 📊 完成统计
-- 总任务数：xx
-- 已完成：xx
-- 有问题的：xx
-
-## 🧪 测试报告
-- 单元测试：xx 个通过
-- 覆盖率：xx%
-
-## 📦 交付文件
-- 文件 1：路径
-- 文件 2：路径
-...
-
-## 🚀 下一步建议
-👉 执行 `/sdc:review` 进行代码质量审查
-```
-
----
-
-## 🚦 质量红线（必须严格遵守）
-
-| 序号 | 规则 | 违反后果 |
-|------|------|---------|
-| 1 | 每个任务必须**先写测试，再写代码** | 代码无效，重写 |
-| 2 | 测试必须**全部通过**才能进入下一个任务 | 停止，修复测试 |
-| 3 | 遇到问题**不能问用户**，自己解决 | 违反，记录警告 |
-| 4 | 必须**完整记录**所有修改的文件 | 输出无效，重做 |
-| 5 | 必须给出**测试结果和覆盖率** | 输出无效，重做 |
-
----
-
-## 💡 设计理念
-> 编程是**思考的过程**，不是打字的过程。
-> 
-> 思考清楚了，代码自然就出来了。
-> 没想清楚就写代码，那是在写 Bug。
-> 
-> 测试不是负担，是你思考的草稿。
+- 不能绕过 `/sdc:apply` 的治理、事实优先级、TDD、停线规则。
+- 不能“自己解决”需要用户确认的高影响决策。
+- 不能跳过验证或不更新 SDC 记录。

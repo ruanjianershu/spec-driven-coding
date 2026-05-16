@@ -112,6 +112,11 @@ function ensureClaudeSkillLayout(pluginRoot) {
   fs.rmSync(claudeSkillsRoot, { recursive: true, force: true });
   fs.mkdirSync(claudeSkillsRoot, { recursive: true });
 
+  const shared = path.join(sourceRoot, 'sdc-shared');
+  if (fs.existsSync(shared)) {
+    copyDir(shared, path.join(claudeSkillsRoot, 'sdc-shared'));
+  }
+
   const aliases = {
     sdc: 'sdc-core',
     init: 'sdc-init',

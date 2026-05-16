@@ -6,293 +6,111 @@ description: "Generate or update proposal, spec, design, and task plan for a cha
 # Skill: SDC 计划生成 /sdc:plan
 
 ## 触发条件
+
 当用户输入以下任一内容时，自动触发本技能：
+
 - `/sdc:plan`
 - "帮我生成实现计划"
 - "下一步怎么做"
 - "怎么拆分任务"
 
 ## 核心使命
-将规范文档转化为**分步可执行、可追溯、可验证**的实现计划。
 
-`/sdc:plan` 负责把 `SCN-* / REQ-* / AC-*` 落到 `design.md` 和 `tasks.md`，形成：
+将 confirmed spec 和必要的 impact analysis 转化为分步可执行、可追溯、可验证的实现计划。
+
+计划必须形成：
 
 ```text
-SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
+SCN-* -> REQ-* -> AC-* -> T### -> validation evidence
 ```
 
-每一步都应该是一个没有上下文的执行者也能看懂并完成的薄切片，但不能把未知需求伪装成计划。
+默认只展开第一个可交付 MVP slice，避免一次生成过大的任务清单。
 
-SDC v1.1.1 要求 plan 阶段执行 Technical Consent Gate：未确认的技术、架构、状态机、权限模型、自动化策略不能被写成最终设计或 apply 任务。
+## Reference Loading
 
-SDC v1.1.3 要求 Brownfield/Legacy 项目执行 Change Impact Gate：需求确认后必须先完成当前 change 的 `impact.md`，再生成最终 `design.md` 和 `tasks.md`。
+Load only what is needed:
 
-## Role Prompt Contract
+- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-plan`.
+- Decision, task, and stop-line rules: `../sdc-shared/workflow-standards.md`.
+- Plan/design/task schema: `../sdc-shared/artifact-schemas.md`.
+- Brownfield impact rules: `../sdc-shared/legacy-impact-gate.md`.
 
-### Role
-You are an implementation architect and thin-slice task planner. Your job is to convert confirmed requirements and confirmed impact analysis into a small, test-first execution plan.
+## 前置检查
 
-### Operating Contract
-- Do not plan from vague preferences, unresolved requirements, or unconfirmed technical choices.
-- For Brownfield/Legacy projects, require `impact.md` before final design/tasks.
-- Default to the first deliverable MVP slice; expand only when explicitly requested.
-- Convert only confirmed facts into implementation tasks; convert reasonable inferences into investigation tasks.
+计划前必须读取：
 
-### Evidence Rules
-- Use `spec.md`, `impact.md`, `proposal.md`, existing `design.md`, and project standards as planning evidence.
-- Treat unconfirmed stack, architecture, permission, state, data, security, and rollout choices as blockers.
-- Every task must map to at least one REQ and AC and include dependency, verification, and source.
+- `.sdc/constitution.md`
+- `.sdc/project.md`
+- 当前 change 的 `spec.md`
+- 当前 change 的 `proposal.md`
+- 当前 change 的 `impact.md`（Brownfield/Legacy 必须）
+- 已存在的 `design.md`、`tasks.md`（如有）
 
-### Output Contract
-- Produce `design.md` and `tasks.md` with traceability, test-first order, risk/rollback notes, and delivery boundaries.
-- Use only `Size: S` or `Size: M`; never emit large vague tasks.
-- If blocked, output a Stop-Line Report with options and the exact confirmation needed.
+如果 spec 缺少 SCN/REQ/AC、验收场景或关键约束，必须停线回到 `/sdc:spec`。
 
----
+如果存在未确认高影响决策，必须输出 Stop-Line Report，不能写成最终 design/tasks。
+
+如果是 Brownfield/Legacy 项目且缺少有效 `impact.md`，必须先回到 Legacy Impact Gate。
 
 ## 执行步骤
 
-### 前置检查
-如果还没有生成规范文档，**必须先执行 `/sdc:spec`**。不能跳过规范直接写计划。
+1. 确认 spec 状态和 Decision Ledger。
+2. 确认 Brownfield/Legacy impact 是否适用且已完成。
+3. 提炼设计摘要、影响范围、不改范围、风险和回滚。
+4. 将 REQ/AC 映射到设计决策。
+5. 拆出 5-12 个当前 MVP slice 的薄任务。
+6. 测试任务排在实现任务前。
+7. 每个任务写清 Depends on、Verify、Source。
+8. 更新 `design.md` 和 `tasks.md`。
 
-计划前必须先读取并判断：
-- `.sdc/constitution.md`
-- `.sdc/current/spec.md` 或 `.sdc/changes/active/<change-id>/spec.md`
-- 当前 change 的 `impact.md`（Brownfield/Legacy 项目必须）
-- 已存在的 `proposal.md`、`design.md`、`tasks.md`（如有）
+## Technical Consent Gate
 
-如果 spec 缺少 `SCN-*`、`REQ-*`、`AC-*`、验收场景或关键约束，必须先停线补规格，而不是继续生成实现计划。
+以下事项必须 Confirmed、由权威项目文档支持，或被 constitution 授权：
 
-如果 spec 中存在 `Proposed`、`Assumed`、`TBD`、`Conflict` 的高影响决策，不能生成最终 plan。必须输出 Stop-Line Report，要求用户确认或更新 spec。
+- 技术栈、框架、数据库、ORM。
+- 架构、模块边界、部署形态。
+- 认证、权限、审批、状态机。
+- 自动化行为、定时任务、提醒规则。
+- 数据规则、删除/保留、锁策略、迁移。
+- 安全策略、审计、敏感信息处理。
 
-如果项目是 Brownfield/Legacy，且当前 change 没有 `impact.md` 或 `impact.md` 仍是空模板，不能生成最终 plan。必须先执行 Change Impact Gate。
+宽泛偏好不能直接推导为具体技术方案。
 
-如果 `impact.md` 中存在会影响范围、验收、契约、数据、权限、安全或上线风险的待确认问题，不能生成最终 plan。必须输出 Stop-Line Report，要求回到 `/sdc:change` 或 `/sdc:spec` 确认。
+## 输出格式
 
-如果存在 `.sdc/changes/active/<change-id>/`，优先围绕该 change 生成或更新：
-- `proposal.md`
-- `spec.md`
-- `design.md`
-- `tasks.md`
-
-### Technical Consent Gate
-
-以下事项必须有用户确认、项目文档依据或 constitution 授权，才能写入最终 `design.md` 和 `tasks.md`：
-- 技术栈：语言、框架、数据库、ORM、前端框架、消息队列
-- 架构：单体/微服务、DDD 分层、模块边界、部署形态
-- 认证与权限：JWT、OAuth、SSO、RBAC/ABAC、多级审批
-- 状态机：状态列表、自动流转、超时处理、取消/回滚规则
-- 自动化行为：提醒时间、提醒对象、通知渠道、定时任务
-- 数据规则：唯一约束、锁策略、数据保留、删除策略
-- 安全策略：权限边界、审计、敏感信息处理
-
-如果用户只说“前后端分离”“需要审批”“需要提醒”等宽泛偏好，必须：
-1. 输出 2-3 个候选方案和取舍
-2. 标记每个方案为 `Proposed`
-3. 提出最多 3 个需要用户确认的问题
-4. 停止生成最终任务清单
-
-Stop-Line Report 示例：
-
-```markdown
-## Stop-Line Report
-- Trigger: 技术栈/架构未确认
-- Evidence: spec.md 只确认“前后端分离”，未确认 Spring/Vue/MyBatis/JWT
-- Affected REQ/AC: REQ-xx / AC-xx
-- Options: A/B/C
-- Recommended next step: 用户确认技术栈后重新执行 `/sdc:plan`
-```
-
-### Change Impact Gate / Legacy
-
-对 Brownfield/Legacy 项目，plan 必须基于已确认需求和 `impact.md` 生成。
-
-`impact.md` 需要回答：
-- 本次 change 从哪些入口进入系统
-- 直接必须修改哪些文件、函数、配置、接口或数据结构
-- 哪些模块只是级联影响或高风险怀疑点
-- API、数据库、消息、缓存、配置、Feature Flag、权限模型是否受影响
-- 安全、审计、日志、指标、告警或排障入口是否需要同步
-- 必须新增或调整哪些测试和回归路径
-- 推荐实施顺序、回滚边界和待确认问题
-
-plan 只能把 `impact.md` 中“必须修改”和“已确认事实”转化为任务；`合理推断` 可以转化为调查任务；`待确认问题` 不能转化为实现任务。
-
-### MVP Slice Gate
-
-默认只规划第一个可交付 MVP slice，除非用户明确要求完整大计划。
-
-规则：
-- 第一版任务建议 5-12 个 T###，覆盖一个端到端主路径
-- 如果完整计划超过 20 个任务，必须先给阶段性路线图，再询问是否展开
-- 不要一次性生成 50+ apply 任务；这通常说明范围过大或没有分 slice
-- 完整路线图可以存在，但 apply 任务必须聚焦当前 slice
-
-### 计划内容要求
-
-`design.md` 必须包含：
-- 方案摘要
-- 影响范围和不改范围
-- 关键取舍
-- 数据、接口、状态或交互变化（按项目类型选择）
-- Brownfield/Legacy 项目的 `impact.md` 摘要和影响边界
-- 风险、回滚和迁移说明
-- `REQ-* / AC-*` 到设计决策的映射
-
-`tasks.md` 必须使用强格式：
-
-```markdown
-- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] 编写失败测试：登录失败时显示错误
-  - Depends on: none
-  - Verify: npm test -- auth
-  - Source: .sdc/changes/active/<change-id>/spec.md#AC-01
-```
-
-任务拆分规则：
-- `Size` 只能是 `S` 或 `M`，不能出现 `L`
-- 测试任务必须排在对应实现任务之前
-- 每个任务必须引用至少一个 `REQ-*` 和一个 `AC-*`
-- 每个任务必须说明依赖、验证命令或验证方式、来源文件
-- 不允许出现“优化一下”“处理一下”“完善一下”这类不可验收任务
-
----
-
-## 反合理化表
-
-| 偷懒借口 | 必须反驳 |
-|---------|---------|
-| “需求很简单，不需要 proposal” | 任何长期维护代码的变更都需要记录背景、目标、非目标和验收标准 |
-| “可以边写边想” | 计划的价值就是减少实现时猜测；不清楚就先澄清 |
-| “任务可以大一点，AI 会处理” | 大任务会降低可验证性；必须拆成不超过 2 小时的薄切片 |
-| “测试后面再补” | 测试策略必须在 plan 阶段确定，否则 apply 阶段会走最短路径 |
-| “先按感觉拆任务” | 任务必须能追溯到 REQ/AC，否则实现会脱离需求 |
-| “用户说前后端分离，所以我选 Spring Boot + Vue” | 宽泛偏好不是具体技术栈确认；必须走 Technical Consent Gate |
-| “先生成完整 50 个任务更全面” | 大计划会制造失控感；默认只展开当前 MVP slice |
-
----
-
-## 红旗警告
-
-出现以下情况不能进入 `/sdc:apply`：
-
-- `spec.md` 没有 `SCN-* / REQ-* / AC-*`
-- 任务没有引用 `REQ-* / AC-*`
-- 任务没有验收标准、来源或验证方式
-- 任务之间依赖关系不清楚
-- `spec.md` 没有验证策略
-- `design.md` 没有说明关键取舍或影响范围
-- 计划包含“优化一下”“处理一下”这类不可验收任务
-- 计划把未知需求直接写成实现决定
-- `design.md` 包含未确认的技术栈、架构、状态机或自动化行为
-- `tasks.md` 一次性生成过大任务清单且未拆 MVP slice
-
----
-
-## 必须提供的证据
-
-- 当前 change-id 或 current 目标
-- 生成/更新的 `.sdc` 文件路径
-- 任务清单和每个任务的验收标准
-- 测试先行策略
-- 进入 `/sdc:apply` 前的阻塞项
-- `SCN/REQ/AC -> T###` 追溯关系
-- Brownfield/Legacy 项目的 `impact.md` 结论和停线项
-
----
-
-### 输出实现计划
-
-按照以下**精确格式**输出：
-
-```
+```text
 📋 SDC 实现计划
-{'=' * 50}
+==================================================
 
-## 🎯 项目概述
-（一句话说明这个项目是做什么的）
+## 规格追溯
+| SCN | REQ | AC | Task |
 
-## 🧭 规格追溯
-| Scenario | Requirement | Acceptance | Task |
-|----------|-------------|------------|------|
-| SCN-01 | REQ-01 | AC-01 | T001, T002 |
-
-## 🏗️ 设计摘要
+## 设计摘要
 - 影响范围：
 - 不改范围：
 - 关键取舍：
 - 风险/回滚：
 
-## 🧭 遗留项目影响面
-- impact.md：已读取 / 不适用
-- 直接修改点：
-- 级联影响：
-- 待确认问题：
+## 遗留项目影响面
+- 适用：
+- impact.md：
+- 阻塞项：
 
-## 🧾 决策确认
-| 决策 | 状态 | 依据 | 是否阻塞 |
-|------|------|------|----------|
+## 任务拆解
+- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] ...
+  - Depends on:
+  - Verify:
+  - Source:
 
-## 📊 任务拆解
-（按依赖关系排序，每个任务 **不超过 2 小时**）
-
-### Phase 1：测试与最小实现
-- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] 编写失败测试：...
-  - Depends on: none
-  - Verify: ...
-  - Source: ...
-- [ ] T002 [REQ-01] [AC-01] [Phase 1] [Size: M] 实现最小代码：...
-  - Depends on: T001
-  - Verify: ...
-  - Source: ...
-
-## 🧪 测试先行策略
-### 每个任务必须先写测试，再写代码
-1. 写测试用例（描述期望的行为）
-2. 运行测试 → 肯定失败（红）
-3. 写代码让测试通过（绿）
-4. 重构代码保持测试通过
-
-## 📦 交付清单
-- [ ] 可运行的代码
-- [ ] 单元测试（覆盖率 > 80%）
-- [ ] README 文档
-- [ ] 部署脚本（如有）
-
-## 📄 SDC 记录
-- proposal.md：已创建 / 已更新 / 不适用
-- spec.md：已创建 / 已更新 / 不适用
-- design.md：已创建 / 已更新 / 不适用
-- tasks.md：已创建 / 已更新 / 不适用
-
-## ⚠️ 注意事项
-1. 严格按照 YAGNI 原则（不要写现在不需要的代码）
-2. 严格遵守 DRY 原则（不要重复自己）
-3. 每个提交都要有测试
-4. 不追求完美，先跑起来再优化
-
-## 🚀 下一步建议
-👉 确认无误后，执行 `/sdc:apply` 开始执行变更
+## 下一步
+👉 执行 `/sdc:apply`
 ```
 
----
+## 质量红线
 
-## 🚦 质量红线（必须严格遵守）
-
-| 序号 | 规则 | 违反后果 |
-|------|------|---------|
-| 1 | 每个任务必须有 `T### [REQ-*] [AC-*] [Phase] [Size]` | 输出无效，重做 |
-| 2 | 每个任务必须有**明确的前置依赖** | 输出无效，重做 |
-| 3 | 每个任务的工作量**不超过 2 小时**，不能出现 `Size: L` | 输出无效，重做 |
-| 4 | 必须包含**测试先行策略**，测试任务优先 | 输出无效，重做 |
-| 5 | 必须有**明确的交付清单和追溯矩阵** | 输出无效，重做 |
-| 6 | 未确认技术/架构决策必须停线 | AI 越权决策 |
-| 7 | 默认只展开当前 MVP slice | 任务爆炸，难以执行 |
-| 8 | 遗留项目缺少 `impact.md` 不能进入最终 plan | 可能误伤老系统 |
-| 9 | `impact.md` 的待确认问题不能被写成实现任务 | 影响面脑补 |
-
----
-
-## 💡 设计理念
-> 好的计划不是写得越细越好，而是**刚好够让执行者不需要问问题**。
-> 
-> 如果执行者还需要问"这个怎么做"，说明计划写得还不够清楚；如果计划无法追溯到验收标准，说明计划不该被执行。
+- 每个任务必须有 `T### [REQ-*] [AC-*] [Phase] [Size]`。
+- `Size` 只能是 S/M。
+- 测试任务必须先于对应实现任务。
+- 未确认技术/架构/状态机/权限决策必须停线。
+- 默认只展开当前 MVP slice。
+- 遗留项目缺少有效 `impact.md` 不能进入最终 plan。

@@ -33,6 +33,7 @@ Expected:
 - `sdc@sdc-local` appears in `claude plugin list`
 - plugin version matches the release version
 - Claude plugin cache contains `.claude/skills/init/SKILL.md`
+- Claude plugin cache contains `.claude/skills/sdc-shared/role-contracts.md`
 - Claude plugin cache contains `commands/init.md`
 
 ## Manual Smoke Test
@@ -57,4 +58,3 @@ git push origin main --tags
 ```
 
 Only publish after the npm dry run and Claude validator pass.
-

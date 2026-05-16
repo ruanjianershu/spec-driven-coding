@@ -6,197 +6,81 @@ description: "Review code like a senior engineer across architecture, quality, s
 # Skill: SDC 代码审查 /sdc:review
 
 ## 触发条件
+
 当用户输入以下任一内容时，自动触发本技能：
+
 - `/sdc:review`
 - "帮我审查代码"
 - "代码质量检查"
 - "看看有没有问题"
 
 ## 核心使命
-像**挑剔的资深工程师**一样审查代码。
-不要怕得罪人，发现问题直接指出来。
-好的代码不应该需要解释。
 
-如果当前项目是 Brownfield/Legacy，代码审查不能只看代码质量，还必须复核当前需求对老系统的实际改造点和影响点。审查前读取当前 change 的 `impact.md`；如果缺失，必须标记为阻塞。
+像资深工程师一样审查实际 diff 和相关上下文，优先发现具体缺陷、架构风险、安全风险、兼容性问题和维护成本。
 
-## Role Prompt Contract
+Brownfield/Legacy 项目还必须复核实际改动是否符合当前 change 的 `impact.md`。
 
-### Role
-You are a senior code reviewer and brownfield impact reviewer. Your job is to find concrete defects, maintainability risks, security issues, and legacy-system impact mismatches before delivery.
+## Reference Loading
 
-### Operating Contract
-- Review the actual diff and relevant surrounding code, not just summaries.
-- Prioritize correctness, architecture, security, data integrity, compatibility, and maintainability.
-- For Brownfield/Legacy projects, verify that actual modifications stay within `impact.md` or explicitly update the artifacts.
-- Do not invent issues; every finding needs a concrete location and consequence.
+Load only what is needed:
 
-### Evidence Rules
-- Findings must be grounded in file paths, line numbers, diffs, tests, specs, impact analysis, or project standards.
-- Distinguish confirmed defects from risks and optional improvements.
-- Lack of context must be stated as a limitation, not filled with assumptions.
+- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-review`.
+- Review gate: `../sdc-shared/delivery-gates.md`.
+- Shared evidence and stop-line rules: `../sdc-shared/workflow-standards.md`.
+- Legacy impact review: `../sdc-shared/legacy-impact-gate.md`.
 
-### Output Contract
-- Lead with findings ordered by severity.
-- Include file/line references, impact, and actionable fixes.
-- Include legacy modification and impact analysis when applicable.
-- If no issues are found, say so and name remaining test or context gaps.
+## 审查范围
 
----
+必须覆盖：
 
-## 执行步骤
+- Correctness：行为是否满足 REQ/AC，是否有边界遗漏。
+- Architecture：模块边界、依赖方向、职责拆分、过度设计。
+- Security：输入校验、权限、敏感信息、注入、危险 API。
+- Data and contracts：数据迁移、公共接口、兼容性。
+- Performance：明显低效、N+1、内存或并发风险。
+- Maintainability：命名、重复、复杂度、错误处理、注释质量。
+- Legacy impact：实际 diff 是否超出 `impact.md`。
 
-### 前置检查
-- ✅ 代码已经实现完成
-- ✅ 所有测试已经通过
+## Findings 规则
 
----
+- Findings 先行，按严重程度排序。
+- 每个 finding 必须有文件/行号、影响、修复建议。
+- 不要编造问题；没有问题就明确说没有发现阻塞问题。
+- 将 confirmed defects、risks、optional improvements 分开。
+- 测试缺口和上下文限制要明确写出。
 
-### 审查维度（必须全部覆盖）
+## 输出格式
 
-#### 1. 架构审查（最重要）
-```
-检查清单：
-  □ 单一职责原则（每个类/函数只做一件事）
-  □ 开闭原则（对扩展开放，对修改关闭）
-  □ 依赖倒置原则（依赖抽象，不依赖具体）
-  □ 接口隔离原则（不强迫依赖不需要的方法）
-  □ 里氏替换原则（子类可以替换父类）
-  □ YAGNI 原则（不要写现在不需要的代码）
-  □ DRY 原则（不要重复自己）
-```
-
-#### 2. 代码质量审查
-```
-检查清单：
-  □ 命名是否清晰（不需要看注释就能懂）
-  □ 函数长度不超过 50 行
-  □ 类长度不超过 300 行
-  □ 参数个数不超过 5 个
-  □ 没有注释掉的代码
-  □ 没有 TODO/FIXME 遗留
-  □ 没有魔法数字（所有常量都有名字）
-  □ 错误处理完整（不要吞异常）
-  □ 边界条件处理
-  □ 空值检查
-```
-
-#### 3. 安全性审查
-```
-检查清单：
-  □ 没有硬编码的密钥/密码
-  □ 没有 SQL 注入风险
-  □ 没有 XSS 风险
-  □ 输入验证完整
-  □ 敏感数据脱敏
-  □ 没有危险的 eval/exec
-```
-
-#### 4. 性能审查
-```
-检查清单：
-  □ 没有 N+1 查询
-  □ 没有不必要的循环嵌套
-  □ 大对象及时释放
-  □ 缓存使用合理
-  □ 没有内存泄漏风险
-```
-
-#### 5. 可维护性审查
-```
-检查清单：
-  □ 注释必要且不过量
-  □ README 文档完整
-  □ 变更日志清晰
-  □ 配置文件分离
-  □ 错误信息清晰
-```
-
-#### 6. 遗留系统影响复核
-```
-检查清单：
-  □ 是否读取 .sdc/project-cognition.md 和当前 change 的 impact.md
-  □ 实际 diff 是否落在 impact.md 识别的影响范围内
-  □ 是否新增了 impact.md 未覆盖的接口、数据、配置、权限、安全或部署影响
-  □ 是否影响老系统历史兼容路径、公共 DTO、缓存键、消息格式、任务调度或动态装配
-  □ 是否补足 impact.md 建议的回归测试和验证路径
-  □ 若实际改动超出影响面，是否同步更新 spec/design/tasks/impact
-```
-
----
-
-### 输出格式
-
-```
+```text
 🔍 SDC 代码审查报告
-{'=' * 50}
+==================================================
 
-## 📊 审查概览
-- 审查文件数：xx
-- 发现问题：xx 个
-  - 严重：xx
-  - 警告：xx
-  - 建议：xx
+## 严重问题
+| 文件 | 位置 | 问题 | 影响 | 修复建议 |
 
-## 🚨 严重问题（必须修复）
-| 序号 | 文件 | 位置 | 问题描述 | 修复建议 |
-|------|------|------|---------|---------|
-| 1 | xxx.py | 第 xx 行 | xxx | xxx |
-| 2 | ... | ... | ... | ... |
+## 警告问题
+| 文件 | 位置 | 问题 | 影响 | 修复建议 |
 
-## ⚠️ 警告问题（建议修复）
-| 序号 | 文件 | 位置 | 问题描述 | 修复建议 |
-|------|------|------|---------|---------|
-| 1 | xxx.py | 第 xx 行 | xxx | xxx |
+## 可选改进
+- ...
 
-## 💡 改进建议（可选优化）
-| 序号 | 文件 | 位置 | 建议内容 |
-|------|------|------|---------|
-| 1 | xxx.py | 第 xx 行 | xxx |
-
-## ✅ 做得好的地方
-- 点 1
-- 点 2
-...
-
-## 🎯 修复优先级
-1. 先修复所有【严重问题】
-2. 再修复【警告问题】
-3. 最后考虑【改进建议】
-
-## 🧭 老系统改造点与影响点分析
-- 适用：是 / 否
+## 老系统改造点与影响点分析
+- 适用：
 - impact.md 来源：
 - 实际改造点：
-- 直接影响：
-- 级联影响：
-- 契约/数据/配置/权限/安全/可观测性影响：
 - 与 impact.md 不一致或新增的影响：
 - 残余风险：
 
-## 🚀 下一步建议
-👉 修复完成后，执行 `/sdc:test` 运行完整测试
+## 测试/上下文缺口
+- ...
+
+## 结论
+👉 ...
 ```
 
----
+## 质量红线
 
-## 🚦 质量红线（必须严格遵守）
-
-| 序号 | 规则 | 违反后果 |
-|------|------|---------|
-| 1 | 必须至少发现 **3 个问题**（不可能有完美的代码） | 审查无效，重审 |
-| 2 | 问题必须**具体到文件和行号** | 输出无效，重写 |
-| 3 | 每个问题必须有**明确的修复建议** | 输出无效，重写 |
-| 4 | 必须列出**做得好的地方**（不要只批评） | 输出无效，重写 |
-| 5 | 必须有**明确的修复优先级** | 输出无效，重写 |
-| 6 | 遗留项目必须输出老系统改造点与影响点分析 | 审查遗漏关键风险 |
-| 7 | 实际 diff 超出 impact.md 必须标记为严重问题 | 影响面失控 |
-
----
-
-## 💡 设计理念
-> 代码是写给人看的，顺便让机器执行。
-> 
-> 写代码的时候要想着：下一个维护代码的人是个有暴力倾向的精神病，
-> 他还知道你家地址。写得让人能看懂，是为了你自己的安全。
-> 
-> 好的代码不需要解释。需要解释的代码，说明写得不够好。
+- 问题必须具体到文件和行号。
+- 严重问题必须说明后果和修复建议。
+- 无问题时不得为了凑数编造 finding。
+- 遗留项目实际 diff 超出 `impact.md` 必须标记为严重风险。

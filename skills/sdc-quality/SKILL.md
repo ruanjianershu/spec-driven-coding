@@ -6,186 +6,77 @@ description: "Perform final delivery quality gate across UX, docs, code quality,
 # Skill: SDC 全面质量检查 /sdc:quality
 
 ## 触发条件
+
 当用户输入以下任一内容时，自动触发本技能：
+
 - `/sdc:quality`
 - "最终检查"
 - "可以交付了吗"
 - "质量检查"
 
 ## 核心使命
-交付前的**最后一道防线**。
-模拟真实用户从头到尾走一遍流程，确保能正常使用。
-任何环节有问题，都不能交付。
 
-## Role Prompt Contract
+交付前的最后质量门禁。它不只看代码是否能跑，还要判断用户是否能使用、文档是否清楚、风险是否可接受、验证证据是否充分。
 
-### Role
-You are a final delivery quality assessor. Your job is to evaluate the user-facing, operational, documentation, security, performance, and maintainability readiness of the completed change.
+## Reference Loading
 
-### Operating Contract
-- Verify the whole delivery path, not just isolated code.
-- Require prior spec, plan, apply, review, and test evidence.
-- Treat broken setup, unclear docs, unsafe defaults, missing validation, or untested critical paths as delivery blockers.
-- Do not lower the bar because the code "mostly works".
+Load only what is needed:
 
-### Evidence Rules
-- Use runnable commands, screenshots where relevant, docs, test output, security observations, performance evidence, and manual verification notes.
-- Separate confirmed quality failures from recommendations.
-- If an area cannot be verified, state the limitation and its delivery risk.
+- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-quality`.
+- Quality gate: `../sdc-shared/delivery-gates.md`.
+- Evidence and stop-line rules: `../sdc-shared/workflow-standards.md`.
 
-### Output Contract
-- Report readiness by dimension: UX, docs, code quality, security, performance, maintainability, validation evidence, and blockers.
-- Give a clear ship/no-ship conclusion.
-- List the smallest fixes needed to move from blocked to shippable.
+## 前置检查
 
----
+确认已有或等价具备：
 
-## 执行步骤
+- spec evidence。
+- plan/design evidence。
+- apply/implementation notes。
+- review evidence。
+- test evidence。
 
-### 前置检查（全部必须通过）
-- ✅ 规范文档完成（`/sdc:spec`）
-- ✅ 实现计划完成（`/sdc:plan`）
-- ✅ 代码实现完成（`/sdc:apply` 或 `/sdc:implement`）
-- ✅ 代码审查完成（`/sdc:review`）
-- ✅ 所有测试通过（`/sdc:test`）
+缺少关键证据时，不能给出可交付结论。
 
-缺少任何一个，都不能进行质量检查。
+## 检查维度
 
----
+- UX / user flow：核心流程可用，错误信息清晰。
+- Documentation：安装、更新、使用、配置、FAQ 或限制说明足够。
+- Code quality：格式、调试代码、TODO、硬编码路径、可维护性。
+- Security：敏感信息、输入输出、权限、依赖风险。
+- Performance：启动、核心路径、资源使用的明显风险。
+- Operability：配置、日志、部署/发布、回滚或降级。
+- Validation evidence：测试、手动验证、截图或命令输出。
 
-### 质量检查维度（必须全部覆盖）
+## 输出格式
 
-#### 1. 用户体验检查（最重要）
-```
-检查清单：
-  □ README 文档完整，新用户照着就能跑起来
-  □ 安装步骤清晰，没有"你懂的"步骤
-  □ 错误信息友好，用户知道怎么解决
-  □ 有示例代码 / 截图 / 演示
-  □ 有常见问题 FAQ
-```
-
-#### 2. 文档完整性检查
-```
-检查清单：
-  □ README.md：项目介绍、安装、使用、贡献指南
-  □ CHANGELOG.md：版本变更记录
-  □ LICENSE：开源协议
-  □ CONTRIBUTING.md：贡献指南（如有）
-  □ API 文档：所有公开接口都有文档
-  □ 配置说明：所有配置项都有解释
-```
-
-#### 3. 代码质量最终检查
-```
-检查清单：
-  □ 没有调试代码（console.log, print, debugger）
-  □ 没有注释掉的代码
-  □ 没有 TODO/FIXME 遗留
-  □ 没有硬编码的路径 / 密钥
-  □ 代码格式化统一
-  □ 没有大文件提交（> 1MB）
-```
-
-#### 4. 安全性最终检查
-```
-检查清单：
-  □ 依赖没有已知的安全漏洞
-  □ 没有硬编码的敏感信息
-  □ 输入验证完整
-  □ 输出转义完整
-  □ 认证授权逻辑正确
-```
-
-#### 5. 性能基线检查
-```
-检查清单：
-  □ 启动时间 < 3 秒
-  □ 主要接口响应时间 < 200ms
-  □ 内存占用合理
-  □ 没有明显的内存泄漏
-```
-
-#### 6. 可维护性检查
-```
-检查清单：
-  □ 代码结构清晰
-  □ 命名规范统一
-  □ 注释必要且不过量
-  □ 配置和代码分离
-  □ 日志完整且有用
-```
-
----
-
-### 输出格式
-
-```
+```text
 ✅ SDC 最终质量检查报告
-{'=' * 50}
+==================================================
 
-## 📊 检查概览
-- 检查项总数：xx 项
-- 通过：xx 项
-- 不通过：xx 项
-- 质量评分：xx / 100
+## 检查概览
+- 结论：可以交付 / 需要修复后重新检查
+- 主要阻塞：
 
-## 🎯 通过的检查项
-- ✅ 检查项 1
-- ✅ 检查项 2
-...
+## 维度结果
+| 维度 | 结果 | 证据 | 风险 |
 
-## ❌ 不通过的检查项（必须修复）
-| 检查项 | 问题描述 | 严重程度 |
-|--------|---------|---------|
-| xxx | xxx | 严重 / 中等 |
+## 冒烟测试 / 用户主路径
+- ...
 
-## ⚠️ 待优化项（建议改进）
-| 检查项 | 问题描述 |
-|--------|---------|
-| xxx | xxx |
+## 必须修复
+| 问题 | 严重程度 | 最小修复 |
 
-## 🧪 冒烟测试结果
-（从头到尾走一遍核心流程的记录）
-1. 步骤 1：✅ 通过
-2. 步骤 2：✅ 通过
-3. 步骤 3：❌ 失败，原因：xxx
-...
+## 建议优化
+- ...
 
-## 📦 交付清单确认
-- [ ] 可运行的代码
-- [ ] 完整的测试套件
-- [ ] 完整的文档
-- [ ] 部署脚本
-- [ ] 配置示例
-
-## 🎯 最终结论
-👉 【可以交付】 / 【需要修复后重新检查】
-
-## 🚀 下一步建议
-- 如果可以交付：准备发布版本
-- 如果不可以：修复问题后重新执行 `/sdc:quality`
+## 下一步
+👉 ...
 ```
 
----
+## 质量红线
 
-## 🚦 质量红线（必须严格遵守）
-
-| 序号 | 规则 | 违反后果 |
-|------|------|---------|
-| 1 | 任何【严重】问题，**都不能交付** | 结论：不可以交付 |
-| 2 | 必须进行**完整的冒烟测试** | 检查无效，重做 |
-| 3 | 必须给出**明确的交付结论** | 输出无效，重做 |
-| 4 | 必须检查**所有维度**，不能遗漏 | 检查无效，重做 |
-| 5 | README 必须**照着就能跑起来** | 不通过，重写文档 |
-
----
-
-## 💡 设计理念
-> 质量不是检查出来的，是整个过程中做出来的。
-> 
-> 你不会在最后一分钟才想起要做质量检查。
-> 如果前面每一步都做好了，质量检查只是走个流程确认一下。
-> 
-> 交付的不是代码，是产品。
-> 用户不关心你的代码写得多漂亮，只关心能不能用，好不好用。
+- 任何严重问题都不能交付。
+- 必须说明验证证据。
+- 无法验证的关键路径必须标为风险。
+- 必须给出明确 ship / no-ship 结论。

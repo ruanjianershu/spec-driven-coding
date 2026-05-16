@@ -7,7 +7,7 @@
 SDC 是一套**纯声明式 AI 开发技能集**。它不是把 slash command 做得越多越好，而是用少量稳定入口，让 AI 助手在每次需求迭代中做到：
 
 - 📂 先建立标准 `.sdc/` 工作区，长期记录需求迭代
-- 🎭 每个 skill 内置英文 Role Prompt Contract，调用时明确专家角色、工作契约、证据规则和输出契约
+- 🎭 使用英文 shared references 承载角色契约、门禁规则和工件标准，`SKILL.md` 保持短小清晰
 - 🧭 存量/遗留项目先建立项目整体认知，再处理具体变更
 - 🧾 像 OpenSpec 一样记录 change、validate、archive 的核心生命周期
 - 📐 生成项目专属开发规范，让后续开发有章可循
@@ -30,13 +30,13 @@ v1.1 的核心不是增加更多指令，而是强化内部纪律：
 
 **零服务，零遥测，纯文本技能。** SDC 基于 Superpowers 的轻量 skill-pack 思路，吸收 OpenSpec 的核心需求生命周期，并加入 SDD/Karpathy-style 的“先思考、薄切片、TDD、证据链”工程纪律。
 
-v1.1.4 起，每个 SDC skill 都补充了英文 `Role Prompt Contract`：
+v1.1.4 起，SDC 补充了英文 `Role Prompt Contract`。当前结构会把这些标准规则统一维护在共享 reference 中：
 
 ```text
 Role -> Operating Contract -> Evidence Rules -> Output Contract
 ```
 
-这让 SDC 更接近 SDDInAction 的角色化任务 Prompt：每次 skill 被调用时，AI 不只知道流程，还会知道自己扮演什么专家、必须依据什么证据、什么时候停线、输出必须包含什么。
+这让每个 `SKILL.md` 只保留触发条件、核心使命、执行骨架和需要读取的 reference；复杂规则按需加载，避免把所有上下文一次性塞进 skill。
 
 普通模式只需要记住：
 
@@ -408,7 +408,7 @@ SDC 的公共 Skill 内置四类纪律机制：
 | 探索门禁 | 不确定需求先进入 Discovery Gate，确认 MVP 后再生成 spec |
 | 确认门禁 | 高影响产品/技术决策必须进入 Decision Ledger，确认后才能 apply |
 | 遗留门禁 | init 建项目整体认知；change 需求确认后做 impact，再 plan/apply |
-| 角色契约 | 每个 skill 都有英文 Role Prompt Contract，约束角色、工作方式、证据和输出 |
+| 角色契约 | `skills/sdc-shared/role-contracts.md` 统一维护英文 Role Prompt Contract，约束角色、工作方式、证据和输出 |
 | 禁止静默默认值 | AI 可以提出 Proposed/Assumed，但不能把默认值写成事实 |
 | 停线报告 | 文档、代码、任务或验收冲突时先停线，不猜测推进 |
 | 反合理化表 | 对抗 AI “这个很简单不用测”“看起来没问题”等偷懒借口 |

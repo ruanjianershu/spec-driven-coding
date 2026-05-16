@@ -13,7 +13,7 @@ SDC is a lightweight spec-driven coding workflow for Claude Code. It uses role p
 SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills:
 
 - initialize a `.sdc/` workspace
-- use per-skill role prompt contracts for expert behavior, evidence rules, and output discipline
+- use shared English role prompt contracts for expert behavior, evidence rules, and output discipline
 - create structured requirement changes
 - explore uncertain requirements through Discovery Gate
 - brainstorm and confirm high-impact product or technical decisions

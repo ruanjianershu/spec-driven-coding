@@ -26,7 +26,7 @@ Detailed skills such as `sdc:spec`, `sdc:validate`, `sdc:review`, `sdc:test`, an
 
 ## Role Prompt Contracts
 
-SDC v1.1.4 adds an English Role Prompt Contract to every skill. This borrows the useful part of SDDInAction-style prompts: each skill should tell the agent who it is, how it must operate, what counts as evidence, and what the output must contain.
+SDC v1.1.4 adds English Role Prompt Contracts for every skill. The current layout keeps those contracts in `skills/sdc-shared/role-contracts.md` so each `SKILL.md` stays short while the agent can still load the exact contract it needs.
 
 Every skill contract uses this shape:
 
@@ -37,7 +37,7 @@ Evidence Rules
 Output Contract
 ```
 
-These contracts do not add new public commands. They make each existing skill more reliable when loaded by Codex, Claude Code, or another skill-aware agent.
+These contracts do not add new public commands. They make each existing skill more reliable when loaded by Codex, Claude Code, or another skill-aware agent, while preserving progressive disclosure.
 
 The contract has four goals:
 

@@ -6,7 +6,9 @@ description: "SDC main entry. Route natural language requests across init, chang
 # Skill: SDC 主入口 sdc
 
 ## 触发条件
+
 当用户输入以下任一内容时，自动触发本技能：
+
 - `/sdc`
 - `/sdc 初始化`
 - `/sdc 新需求`
@@ -16,96 +18,54 @@ description: "SDC main entry. Route natural language requests across init, chang
 - "用 SDC 做"
 
 ## 核心使命
+
 提供一个统一、简单的 SDC 入口。用户不需要记住所有细分命令，只要描述当前想做什么，本技能负责路由到合适的 SDC 阶段。
 
-SDC 的设计目标是整合和简化：
-- OpenSpec 的核心：change、validate、archive
-- Superpowers 的核心：轻量 skill-pack 和命令触发
-- SDDInAction / Karpathy-style skills 的核心：先想清楚、薄切片、TDD、停线、证据链
-- SDC 自己的核心：spec、plan、apply、check、archive、harness
-
-但用户界面只保留一个主入口：`/sdc`。
-
-## Role Prompt Contract
-
-### Role
-You are the SDC workflow router and governance steward. Your job is to understand the user's intent, select the smallest correct SDC capability, and keep the workflow simple without weakening the evidence gates.
-
-### Operating Contract
-- Prefer the public SDC path first: init, change, plan, apply, check, archive, harness.
-- Route uncertain requirements to Discovery Gate before spec or plan.
-- Route confirmed brownfield changes through Change Impact Gate before plan or apply.
-- Stop when governance, facts, scope, or evidence conflict; do not invent a hidden shortcut.
-
-### Evidence Rules
-- Treat `.sdc/constitution.md`, current change files, `AGENTS.md`, and explicit user instructions as the primary routing evidence.
-- Treat existing code as behavior evidence, not as permission to override confirmed specs.
-- When the user's intent is ambiguous, state the inferred route and the next concrete SDC artifact.
-
-### Output Contract
-- Name the detected phase, the SDC capability to use, the artifact that will be read or written, and the next step.
-- Keep routing output short; hand off to the specialized skill for detailed work.
-- If the workflow is blocked, output a Stop-Line reason instead of continuing.
-
-SDC 内部必须遵守：
+SDC 的公共路径是：
 
 ```text
-治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
-事实优先级：discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code
-追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
-确认门禁：高影响决策必须 Confirmed，不能 Silent Default
-探索门禁：不确定需求必须先 discovery，再 spec
-遗留门禁：init 做项目整体认知，change 需求确认后做 impact，再 plan/apply
+init -> change -> plan -> apply -> check -> archive
 ```
 
----
+详细能力仍然存在，但默认隐藏在公共路径之后：`spec`、`validate`、`review`、`test`、`quality`、`implement`。
+
+## Reference Loading
+
+Load only what is needed:
+
+- Role contract: `../sdc-shared/role-contracts.md`, section `sdc`.
+- Shared gates and priorities: `../sdc-shared/workflow-standards.md`.
+- Discovery decisions: `../sdc-shared/discovery-gate.md`.
+- Legacy routing: `../sdc-shared/legacy-impact-gate.md`.
 
 ## 路由规则
 
 | 用户意图 | 应执行的 SDC 能力 |
-|---------|------------------|
+| --- | --- |
 | 初始化、第一次使用、建立目录 | `/sdc:init` |
-| 新需求、新功能、需求变更 | `/sdc:change`；不确定先 Discovery Gate，确定后 `/sdc:spec` + `/sdc:plan` |
+| 新需求、新功能、需求变更 | `/sdc:change` |
 | 需求探索、头脑风暴、范围不清楚 | `/sdc:change` 的 Discovery Gate |
 | 开始写代码、执行计划 | `/sdc:apply` |
 | 检查、验收、能不能交付 | `/sdc:check` |
-| 分析 bug、失败原因、日志问题 | `/sdc:check` 的 bug 模式 |
-| 分析影响范围、上线风险 | `/sdc:check` 的 impact 模式 |
-| 分析存量仓库、接手项目 | `/sdc:check` 的 repo 模式 |
-| 遗留项目需求已确认，分析改动会影响哪里 | 当前 change 的 Change Impact Gate，更新 `impact.md` 后再 `/sdc:plan` |
+| 分析 bug、失败原因、日志问题 | `/sdc:check` 的 bug mode |
+| 分析影响范围、上线风险 | `/sdc:check` 的 impact mode |
+| 分析存量仓库、接手项目 | `/sdc:check` 的 repo mode |
+| 遗留项目需求已确认，分析改动影响 | 当前 change 的 Legacy Impact Gate，之后 `/sdc:plan` |
 | 完成、归档、沉淀规范 | `/sdc:archive` |
 | 记录项目规则、避免重复踩坑 | `/sdc:harness` |
 
----
-
-## 推荐用户用法
-
-```text
-/sdc 初始化
-/sdc 新需求：支持用户登录
-/sdc:apply
-/sdc 检查
-/sdc 完成
-```
-
----
-
 ## 执行原则
 
-1. 优先自动判断阶段，不要求用户记细分命令
-2. 如果 `.sdc/` 不存在，先建议或执行初始化
-3. 新需求必须进入 `.sdc/changes/` 或 `.sdc/current/`
-4. apply 前必须有 spec、design 和 tasks
-5. 完成前必须 validate/check 通过
-6. 归档时必须沉淀到 `.sdc/specs/`
-7. spec/design/tasks/code 冲突时必须停线，不要继续猜测
-8. check 承担 validate/review/test/quality，以及 bug/impact/repo 分析入口
-9. 新需求必须先讨论和确认高影响决策；AI 只能提出 Proposed/Assumed，不能静默落成事实
-10. plan 不能从宽泛偏好直接推导具体技术栈或大任务清单
-11. 需求不确定时先进入 Discovery Gate，不能直接生成 Confirmed spec
-12. 遗留项目 init 只做整体认知；具体变更影响面必须在 change 需求确认后执行
-
----
+1. 优先判断阶段，不要求用户记细分命令。
+2. 如果 `.sdc/` 不存在，先建议或执行 `/sdc:init`。
+3. 新需求必须进入 `.sdc/changes/` 或 `.sdc/current/`。
+4. 需求不确定时先进入 Discovery Gate，不能直接生成 Confirmed spec。
+5. 遗留项目 init 只做整体认知；具体变更影响面必须在 change 需求确认后执行。
+6. apply 前必须有 confirmed spec、impact（如适用）、design/plan 和 tasks。
+7. check 承担 validate/review/test/quality，以及 bug/impact/repo 分析入口。
+8. spec/design/tasks/code 冲突时必须停线。
+9. 高影响决策必须 Confirmed，不能 Silent Default。
+10. 完成前必须 check 通过；归档时必须沉淀到 `.sdc/specs/`。
 
 ## 输出格式
 
@@ -126,13 +86,9 @@ SDC 内部必须遵守：
 👉 ...
 ```
 
----
-
 ## 质量红线
 
-| 规则 | 违反后果 |
-|------|---------|
-| 不能要求用户记住所有细分命令 | 违背 SDC 初衷 |
-| 不能跳过需求记录直接实现 | 流程失效 |
-| 不能绕过校验直接归档 | 规范污染 |
-| 必须给出下一步 | 用户不知道怎么继续 |
+- 不能要求用户记住所有细分命令。
+- 不能跳过需求记录直接实现。
+- 不能绕过校验直接归档。
+- 必须给出下一步。
