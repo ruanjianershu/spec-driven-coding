@@ -2,7 +2,7 @@
 
 ## 0. 分析快照
 
-- 目标仓库/目录：`/Users/liting/andy-opc/spec-driven-coding`
+- 目标仓库/目录：`<repo-root>`
 - 变更目标：升级 SDC 遗留项目流程，将项目整体认知放在 init/repo 阶段，将具体变更影响分析放在 change 需求确认后。
 - 分析时间：2026-05-16
 - 分支 / Commit / 子模块状态：`main`，本地有当前 active change，未发现子模块需求。
@@ -76,5 +76,5 @@
 - `skills/sdc-plan/SKILL.md`
 - `skills/sdc-review/SKILL.md`
 - `skills/sdc-check/SKILL.md`
-- `/Users/liting/Documents/bot_workspace/SDDInAction/10.maintenance/repo-analysis.md`
-- `/Users/liting/Documents/bot_workspace/SDDInAction/10.maintenance/change-impact-analysis.md`
+- `<local-reference>/SDDInAction/10.maintenance/repo-analysis.md`
+- `<local-reference>/SDDInAction/10.maintenance/change-impact-analysis.md`

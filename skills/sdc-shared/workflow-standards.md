@@ -116,3 +116,15 @@ SDC conclusions must be evidence-backed:
 
 README files, comments, old docs, and historical notes are clues. They are not confirmed facts unless current code or the user confirms them.
 
+## Privacy And Local Path Hygiene
+
+Do not write personal local paths, usernames, cloud-drive paths, desktop paths, private machine names, or local-only absolute paths into committed project artifacts.
+
+Use portable placeholders instead:
+
+- `<repo-root>` for the repository root.
+- `<user-provided-session-log>` for a local input log supplied by the user.
+- `<local-reference>/...` for local reference repositories or documents.
+- `$HOME/...` only when documenting a client installation path that must literally live under a user's home directory.
+
+When recording verification commands, prefer portable commands based on `pwd`, repository-relative paths, or environment variables.

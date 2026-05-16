@@ -14,7 +14,7 @@
 
 - [x] T003 [REQ-03] [AC-03] [Phase 1] [Size: M] 更新 CLI init/change 模板生成 discovery.md
   - Depends on: T002
-  - Verify: `tmpdir=$(mktemp -d); (cd "$tmpdir" && python3 /Users/liting/andy-opc/spec-driven-coding/sdc-cli.py init >/dev/null && python3 /Users/liting/andy-opc/spec-driven-coding/sdc-cli.py change demo >/dev/null && test -f .sdc/templates/discovery.md && find .sdc/changes/active -name discovery.md); rm -rf "$tmpdir"`
+  - Verify: `repo=$(pwd); tmpdir=$(mktemp -d); (cd "$tmpdir" && python3 "$repo/sdc-cli.py" init >/dev/null && python3 "$repo/sdc-cli.py" change demo >/dev/null && test -f .sdc/templates/discovery.md && find .sdc/changes/active -name discovery.md); rm -rf "$tmpdir"`
   - Source: spec.md#AC-03
 
 - [x] T004 [REQ-04] [AC-04] [Phase 1] [Size: S] 更新 README/docs/changelog/package/plugin metadata

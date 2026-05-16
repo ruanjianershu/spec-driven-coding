@@ -2,7 +2,7 @@
 
 ## 0. 分析快照
 
-- 目标仓库/目录：`/Users/liting/andy-opc/spec-driven-coding`
+- 目标仓库/目录：`<repo-root>`
 - 变更目标：为所有 SDC skills 增加英文 Role Prompt Contract。
 - 分析时间：2026-05-16
 - 分支 / Commit / 子模块状态：`main`，存在未提交 legacy 1.1.3 变更。

@@ -5,7 +5,7 @@
 - 状态: Confirmed
 - Change: 2026-05-16-consent-gates
 - 日期: 2026-05-16
-- 输入证据: `/Users/liting/Library/Mobile Documents/com~apple~CloudDocs/Desktop/跨境/2026/session-log-2026-05-15.md`
+- 输入证据: `<user-provided-session-log>`
 
 ## 1. Glossary / 统一语言
 
