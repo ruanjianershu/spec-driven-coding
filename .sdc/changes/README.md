@@ -8,6 +8,7 @@ active/YYYY-MM-DD-short-name/
 
 每个迭代目录建议包含：
 
+- `discovery.md` - 需求不确定时的探索、候选方向、MVP、问题和决策台账
 - `proposal.md` - 这次为什么要改、改什么、不改什么
 - `tasks.md` - 可执行任务清单
 - `design.md` - 关键设计和技术取舍

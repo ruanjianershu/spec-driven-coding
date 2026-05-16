@@ -2,6 +2,21 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.2
+
+- Added Discovery Gate as the built-in requirement exploration phase inside `/sdc:change`.
+- Added `discovery.md` templates to init and change workspaces for current understanding, candidate directions, tradeoffs, recommended MVP, Decision Ledger, open questions, and exit criteria.
+- Updated `/sdc:spec` to consume `discovery.md` and refuse Confirmed specs while blocking discovery questions or high-impact decisions remain unresolved.
+- Documented the command model: `change` is the normal entry point, `spec` is the specification refinement inside a change.
+
+## 1.1.1
+
+- Added consent gates to prevent AI-generated assumptions from becoming confirmed requirements or implementation tasks.
+- Added Brainstorm-first and Decision Ledger rules to `/sdc:spec`.
+- Added Technical Consent Gate and MVP Slice Gate to `/sdc:plan`.
+- Updated `/sdc:validate` and `/sdc:check` to flag unconfirmed decisions, silent defaults, and over-large task plans.
+- Updated constitution, harness, README, and discipline docs with Human Confirmation and No Silent Defaults rules.
+
 ## 1.1.0
 
 - Added the SDC discipline core: governance priority, fact priority, traceability chain, and Stop-Line Report rules.

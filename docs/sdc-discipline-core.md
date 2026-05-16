@@ -37,10 +37,58 @@ Governance priority:
 Fact priority:
 
 ```text
-spec.md > design.md/plan.md > tasks.md > code
+discovery.md > spec.md > design.md/plan.md > tasks.md > code
 ```
 
 When these sources conflict, the agent should stop and produce a Stop-Line Report instead of guessing.
+
+## Consent Gates
+
+SDC v1.1.1 adds consent gates to prevent AI-generated defaults from becoming project truth.
+
+AI may propose options, but high-impact decisions must be confirmed before they enter `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `tasks.md`.
+
+High-impact decisions include:
+
+- product rules and business invariants.
+- roles, permissions, approval flows, and state machines.
+- reminder timing, notification recipients, automation, and timeout behavior.
+- technology stack, architecture, data model, authentication, locking, deletion, migration, rollout, and security policy.
+
+Use a Decision Ledger for these decisions:
+
+| Status | Meaning | Implementation-ready |
+|--------|---------|----------------------|
+| Confirmed | User-confirmed or supported by an authoritative project document | Yes |
+| Proposed | Suggested by AI and waiting for user choice | No |
+| Assumed | Temporary assumption for discussion | No |
+| TBD | Required but unknown | No |
+| Conflict | Conflicts with another source of truth | No |
+
+This is the rule: suggestions are useful, silent defaults are not.
+
+## Discovery Gate
+
+`/sdc:change` is the normal entry point for new work. When the requirement is uncertain, it should enter Discovery Gate before producing a confirmed spec.
+
+Discovery Gate is SDC's built-in requirement exploration workflow. It borrows the useful shape of brainstorming, but it must end in SDC artifacts:
+
+```text
+discovery.md -> Decision Ledger -> confirmed MVP -> spec.md
+```
+
+Use Discovery Gate when any of these are unclear:
+
+- target user or affected actor.
+- business goal.
+- in-scope and out-of-scope boundaries.
+- core scenario.
+- acceptance direction.
+- high-impact product or technical decisions.
+
+`discovery.md` should contain current understanding, candidate directions, tradeoffs, recommended MVP, Decision Ledger, open questions, and exit criteria.
+
+Exit Discovery Gate only when the current MVP scope is confirmed, high-impact decisions are confirmed or explicitly deferred, and no blocking open questions remain.
 
 ## Traceability Chain
 
@@ -76,6 +124,8 @@ Common triggers:
 
 - spec, design, tasks, or code conflict.
 - acceptance criteria are missing or unverifiable.
+- high-impact decisions are Proposed, Assumed, TBD, or Conflict.
+- a plan chooses a concrete technology stack from a vague preference.
 - implementation requires changing scope or public behavior.
 - tests cannot prove the requested behavior.
 - security, data migration, compatibility, or rollout risk appears.

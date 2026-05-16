@@ -22,7 +22,7 @@ description: "Apply the current SDC change by executing tasks incrementally, upd
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
-事实优先级：spec.md > design.md/plan.md > tasks.md > code
+事实优先级：discovery.md > spec.md > design.md/plan.md > tasks.md > code
 ```
 
 当用户临时要求、现有代码或任务描述与上面的裁决链冲突时，必须先停线报告，再由用户确认如何处理。
@@ -38,8 +38,11 @@ description: "Apply the current SDC change by executing tasks incrementally, upd
 - 已读取 `.sdc/constitution.md` 和项目 `AGENTS.md`（如果存在）
 - 重要变更已通过 `/sdc:check` 中的结构校验，至少没有明显模板占位
 - `tasks.md` 中至少有一个符合 `T### [REQ-*] [AC-*] [Phase] [Size]` 的未完成任务
+- spec/design/tasks 中不存在未确认的高影响决策（Proposed/Assumed/TBD/Conflict）
 
 如果缺少 `REQ-* / AC-*`、依赖、验证方式或来源文件，不能直接实现，必须回到 `/sdc:plan` 补齐。
+
+如果发现 Decision Ledger 中仍有未确认高影响事项，不能实现，必须回到 `/sdc:spec` 或 `/sdc:plan` 让用户确认。
 
 ### 执行方式
 1. 读取当前 change 的 `tasks.md`
@@ -95,6 +98,7 @@ Stop-Line Report 格式：
 - 测试失败但仍想标记任务完成
 - 发现需求不清楚却继续猜测实现
 - 未读取 `.sdc/constitution.md` 就开始实现
+- 未确认业务规则、技术栈、状态机、审批/提醒规则却开始实现
 
 ---
 
@@ -146,3 +150,4 @@ Stop-Line Report 格式：
 | 任务完成必须更新 tasks.md | 状态不可信 |
 | 不能把未验证内容标成完成 | 质量风险 |
 | 发现裁决链冲突必须停线 | 规范失效 |
+| 未确认高影响决策不能进入代码 | AI 越权 |

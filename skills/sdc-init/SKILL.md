@@ -18,7 +18,7 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 
 这个技能不是生成一次性文档，而是建立项目的“需求记忆区”。以后所有需求迭代都应该进入 `.sdc/`。
 
-SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决链，`spec.md > design.md/plan.md > tasks.md > code` 是事实裁决链。初始化必须把这两条链路写入项目资产。
+SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决链，`discovery.md > spec.md > design.md/plan.md > tasks.md > code` 是事实裁决链。初始化必须把这两条链路写入项目资产。
 
 ---
 
@@ -43,6 +43,7 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 ├── constitution.md
 ├── project.md
 ├── current/
+│   ├── discovery.md
 │   ├── spec.md
 │   ├── plan.md
 │   ├── tasks.md
@@ -72,6 +73,7 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 │   └── README.md
 ├── templates/
 │   ├── spec.md
+│   ├── discovery.md
 │   ├── plan.md
 │   ├── tasks.md
 │   ├── change.md
@@ -99,7 +101,7 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 | `.sdc/decisions/` | 架构、产品、技术关键决策 |
 | `.sdc/reviews/` | `/sdc:review` 的审查报告 |
 | `.sdc/reports/` | 测试、质量、Bug 分析、影响面分析、棕地仓库分析报告 |
-| `.sdc/templates/` | spec/plan/tasks/change/decision/熔断/bug/impact/repo-analysis 模板 |
+| `.sdc/templates/` | discovery/spec/plan/tasks/change/decision/熔断/bug/impact/repo-analysis 模板 |
 
 ---
 
@@ -114,10 +116,10 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 constitution.md > AGENTS.md
 
 ## 2. Fact Priority
-spec.md > design.md/plan.md > tasks.md > code
+discovery.md > spec.md > design.md/plan.md > tasks.md > code
 
 ## 3. Core Chain
-spec -> plan -> tasks -> code -> verify -> archive
+discovery -> spec -> plan -> tasks -> code -> verify -> archive
 
 ## 4. Stop-The-Line Rules
 Stop and produce a Stop-Line Report when:
@@ -131,6 +133,21 @@ Stop and produce a Stop-Line Report when:
 - tasks must reference SCN/REQ/AC or ARCH identifiers
 - tests must reference AC identifiers
 - implementation notes must record validation evidence
+
+## 6. Human Confirmation Rules
+- AI may propose options, but humans own high-impact decisions
+- high-impact decisions include product rules, permissions, state machines, approval flows, reminder behavior, technology stack, architecture, data model, authentication, locking, deletion, migration, rollout, and security policy
+- high-impact decisions must be explicitly confirmed, supported by project documents, or explicitly delegated before they enter REQ/AC/INV/design/tasks
+
+## 7. No Silent Defaults
+- do not turn common practice into project truth
+- AI-created defaults must be recorded in a Decision Ledger as Proposed or Assumed until confirmed
+- Proposed, Assumed, TBD, and Conflict items are not implementation-ready
+
+## 8. Discovery Gate
+- uncertain requirements must start with discovery instead of confirmed spec
+- discovery must record current understanding, candidate directions, tradeoffs, recommended MVP, open questions, and Decision Ledger
+- confirmed spec can be produced only after MVP scope and high-impact decisions are confirmed or explicitly deferred
 ```
 
 如果项目已有 `AGENTS.md`，不得覆盖；只在输出中提醒后续可执行 `/sdc:harness` 将 constitution 与 standards 提炼到 `AGENTS.md`。
@@ -159,6 +176,7 @@ Stop and produce a Stop-Line Report when:
 | “先不建 standards，后面再说” | standards 是后续 AI 开发的项目宪法，必须在初始化时建立 |
 | “已有 README，不需要 .sdc” | README 面向使用者，`.sdc/` 面向需求迭代和工程执行 |
 | “AGENTS.md 已经够了” | AGENTS.md 是执行护栏，standards 是完整开发规范，两者职责不同 |
+| “AI 可以先替用户决定细节” | 高影响决策必须经过 Human Confirmation，不能 Silent Default |
 
 ---
 
@@ -229,6 +247,8 @@ Stop and produce a Stop-Line Report when:
 | 5 | 必须给出下一步命令 | 输出无效 |
 | 6 | 必须创建 `constitution.md` | 缺少最高裁决链 |
 | 7 | 必须创建 `current/tasks.md` 和 task 模板 | 无法强追踪执行 |
+| 8 | constitution 必须包含 Human Confirmation 和 No Silent Defaults | AI 越权决策 |
+| 9 | 必须创建 `current/discovery.md` 和 discovery 模板 | 不确定需求无法进入 Discovery Gate |
 
 ---
 

@@ -60,9 +60,18 @@ description: "Generate AGENTS.md project AI guardrails from project scan and SDC
 | 类型 | 优先级 |
 |------|--------|
 | 治理规则 | `.sdc/constitution.md` > `AGENTS.md` > 对话即时要求 |
-| 事实来源 | `spec.md` > `design.md/plan.md` > `tasks.md` > code |
+| 事实来源 | `discovery.md` > `spec.md` > `design.md/plan.md` > `tasks.md` > code |
 
 如果发现冲突，必须停止执行并输出 Stop-Line Report。
+
+## 1. 人类确认规则
+
+- AI 可以提出候选方案，但不得自主决定高影响事项
+- 高影响事项包括产品规则、权限、状态机、审批、提醒、技术栈、架构、数据模型、认证、安全策略
+- 未经用户确认、权威文档支持或显式授权，不得把候选方案写成 REQ/AC/INV/design/tasks
+- 所有 AI 默认值必须进入 Decision Ledger，状态为 Proposed 或 Assumed
+- Proposed、Assumed、TBD、Conflict 不可进入 apply
+- 需求不确定时必须先进入 Discovery Gate，确认 MVP 后再生成 spec
 
 ---
 
@@ -199,7 +208,8 @@ echo "✅ All checks passed!"
 | 2 | 必须包含"验证命令"表格 | 输出无效，重做 |
 | 3 | 必须包含"历史错误"部分（即使是空的） | 输出无效，重做 |
 | 4 | 必须包含"0. 裁决链" | 输出无效，重做 |
-| 5 | 格式必须清晰易读，AI 一眼能看懂 | 输出无效，重做 |
+| 5 | 必须包含 Human Confirmation / No Silent Defaults | 输出无效，重做 |
+| 6 | 格式必须清晰易读，AI 一眼能看懂 | 输出无效，重做 |
 
 ---
 

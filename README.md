@@ -19,8 +19,10 @@ v1.1 的核心不是增加更多指令，而是强化内部纪律：
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
-事实优先级：spec.md > design.md/plan.md > tasks.md > code
+事实优先级：discovery.md > spec.md > design.md/plan.md > tasks.md > code
 追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
+确认门禁：高影响决策必须 Confirmed，不能 Silent Default
+探索门禁：不确定需求必须先 discovery，再 spec
 ```
 
 **零服务，零遥测，纯文本技能。** SDC 基于 Superpowers 的轻量 skill-pack 思路，吸收 OpenSpec 的核心需求生命周期，并加入 SDD/Karpathy-style 的“先思考、薄切片、TDD、证据链”工程纪律。
@@ -47,10 +49,12 @@ v1.1 的核心不是增加更多指令，而是强化内部纪律：
 ```text
 1. init      创建 .sdc/ 工作区、constitution、standards、templates
 2. change    创建 .sdc/changes/active/<change-id>/
-3. plan      生成 proposal/spec/design/tasks，并建立 SCN -> REQ -> AC -> T### 追溯
-4. apply     按 T### 薄切片执行，记录 notes 和验证证据
-5. check     合并 validate/review/test/quality，并支持 bug/impact/repo 分析模式
-6. archive   将完成的 change 沉淀到 .sdc/specs/ 和 archive/
+3. discovery 需求不确定时先发散、比较、收敛 MVP 和 Decision Ledger
+4. spec      将 Confirmed discovery 收敛为 SCN -> REQ -> AC
+5. plan      生成 design/tasks，并建立 SCN -> REQ -> AC -> T### 追溯
+6. apply     按 T### 薄切片执行，记录 notes 和验证证据
+7. check     合并 validate/review/test/quality，并支持 bug/impact/repo 分析模式
+8. archive   将完成的 change 沉淀到 .sdc/specs/ 和 archive/
 ```
 
 Claude Code 用户可以直接使用 slash commands：
@@ -58,6 +62,7 @@ Claude Code 用户可以直接使用 slash commands：
 ```text
 /sdc:init
 /sdc:change login-flow
+/sdc:spec
 /sdc:plan
 /sdc:apply
 /sdc:check
@@ -68,7 +73,8 @@ Codex 用户使用自然语言或 `/skills` 触发同名 SDC skills：
 
 ```text
 用 SDC 初始化这个项目
-用 SDC 为登录流程创建 change 并生成 plan
+用 SDC 为登录流程创建 change；如果需求不确定，先进入 Discovery Gate
+用 SDC 基于已确认 discovery 生成 spec 和 plan
 用 SDC apply 执行当前任务
 用 SDC check 检查是否可以交付
 用 SDC archive 归档这个变更
@@ -234,8 +240,8 @@ SDC 已补齐官方市场审核需要的基础材料：
 | 命令 | 作用 |
 |------|------|
 | `/sdc:init` | 创建标准 `.sdc/` 工作区 |
-| `/sdc:change <name>` | 创建一次需求迭代 |
-| `/sdc:plan` | 生成或更新 proposal/spec/design/tasks |
+| `/sdc:change <name>` | 创建一次需求迭代；需求不确定时进入 Discovery Gate |
+| `/sdc:plan` | 基于已确认 spec 生成或更新 proposal/spec/design/tasks |
 | `/sdc:apply` | 按 tasks 执行当前变更 |
 | `/sdc:check` | 综合执行校验、审查、测试和质量检查 |
 | `/sdc:archive <change-id>` | 归档需求迭代，沉淀稳定规范 |
@@ -270,6 +276,8 @@ SDC 已补齐官方市场审核需要的基础材料：
 ```
 
 普通模式只暴露少量公共入口；详细模式保留 `spec`、`validate`、`review`、`test`、`quality` 等细分能力。
+
+日常心智模型：`change` 是入口，`spec` 是 change 内的规格细化。新项目第一版、后续迭代、Bug 修复都先用 `change`；只有当 change 已存在并且需要补清楚 SCN/REQ/AC 时，才直接用 `spec`。
 
 ---
 
@@ -342,8 +350,11 @@ SDC 的公共 Skill 内置四类纪律机制：
 
 | 机制 | 作用 |
 |------|------|
-| 裁决链 | `.sdc/constitution.md > AGENTS.md`，`spec > design/plan > tasks > code` |
+| 裁决链 | `.sdc/constitution.md > AGENTS.md`，`discovery > spec > design/plan > tasks > code` |
 | 追溯链 | `SCN -> REQ -> AC -> T### -> 验证证据` |
+| 探索门禁 | 不确定需求先进入 Discovery Gate，确认 MVP 后再生成 spec |
+| 确认门禁 | 高影响产品/技术决策必须进入 Decision Ledger，确认后才能 apply |
+| 禁止静默默认值 | AI 可以提出 Proposed/Assumed，但不能把默认值写成事实 |
 | 停线报告 | 文档、代码、任务或验收冲突时先停线，不猜测推进 |
 | 反合理化表 | 对抗 AI “这个很简单不用测”“看起来没问题”等偷懒借口 |
 | 红旗警告 | 明确出现哪些迹象必须暂停、修正或阻止归档 |

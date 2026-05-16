@@ -9,6 +9,7 @@ SDC CLI - 规范驱动开发 薄运行层
   sdc validate [target] # 校验 current 或某个 change
   sdc archive <change> # 归档完成的需求迭代
   sdc spec          # 打开规范文档（你在 AI 助手中写完粘贴进来）
+  sdc discovery     # 打开需求探索文档
   sdc plan          # 打开计划文档
   sdc tasks         # 打开任务文档
   sdc apply         # 执行/记录当前需求迭代
@@ -30,6 +31,7 @@ from pathlib import Path
 
 SDC_DIR = Path(".sdc")
 FILES = {
+    "discovery": "current/discovery.md",
     "spec": "current/spec.md",
     "plan": "current/plan.md",
     "tasks": "current/tasks.md",
@@ -66,7 +68,7 @@ INIT_FILES = {
 
 - `project.md` - 项目长期背景、目标用户、技术约束和验证命令
 - `constitution.md` - 项目最高工程裁决规则
-- `current/` - 当前正在推进的一次需求迭代
+- `current/` - 当前正在推进的一次需求迭代，包含 discovery/spec/plan/tasks/apply
 - `changes/active/` - 正在推进的需求变更，每个变更一个子目录
 - `changes/archive/` - 已完成归档的需求变更
 - `specs/` - 已稳定的业务规范和能力说明
@@ -74,15 +76,17 @@ INIT_FILES = {
 - `decisions/` - 架构决策记录
 - `reviews/` - 代码审查记录
 - `reports/` - 测试、质量、bug、impact、repo-analysis 和交付报告
-- `templates/` - 需求迭代、停线和分析模板
+- `templates/` - discovery、需求迭代、停线和分析模板
 
 ## 推荐流程
 
 1. `/sdc:change <name>` 创建 `changes/active/<name>/`
-2. `/sdc:plan` 生成 proposal/spec/design/tasks
-3. `/sdc:apply` 执行实现并记录过程
-4. `/sdc:check` 综合校验、审查、测试和质量检查
-5. `/sdc:archive <name>` 归档到 `changes/archive/`
+2. 需求不确定时先进入 Discovery Gate，更新 `discovery.md`
+3. `/sdc:spec` 将已确认 discovery 收敛为 SCN/REQ/AC
+4. `/sdc:plan` 生成 proposal/spec/design/tasks
+5. `/sdc:apply` 执行实现并记录过程
+6. `/sdc:check` 综合校验、审查、测试和质量检查
+7. `/sdc:archive <name>` 归档到 `changes/archive/`
 
 ## 三类核心资产
 
@@ -94,8 +98,10 @@ INIT_FILES = {
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
-事实优先级：spec.md > design.md/plan.md > tasks.md > code
+事实优先级：discovery.md > spec.md > design.md/plan.md > tasks.md > code
 追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
+确认门禁：高影响决策必须 Confirmed，不能 Silent Default
+探索门禁：不确定需求必须先 discovery，再 spec
 ```
 """,
     "constitution.md": """# SDC Project Constitution
@@ -108,13 +114,13 @@ If these sources conflict, stop and produce a Stop-Line Report.
 
 ## 2. Fact Priority
 
-`spec.md > design.md/plan.md > tasks.md > code`
+`discovery.md > spec.md > design.md/plan.md > tasks.md > code`
 
 Code is evidence of current behavior, but it does not automatically override the agreed spec.
 
 ## 3. Core Chain
 
-`spec -> plan -> tasks -> code -> verify -> archive`
+`discovery -> spec -> plan -> tasks -> code -> verify -> archive`
 
 ## 4. Stop-The-Line Rules
 
@@ -131,6 +137,30 @@ Stop and produce a Stop-Line Report when:
 - tasks must reference `REQ-*` and `AC-*`
 - tests or validation notes must reference `AC-*`
 - implementation notes must record validation evidence
+
+## 6. Human Confirmation Rules
+
+AI may propose options, but humans own high-impact decisions.
+
+High-impact decisions include product rules, permissions, state machines, approval flows, reminder behavior, technology stack, architecture, data model, authentication, locking, deletion, migration, rollout, and security policy.
+
+Before a high-impact decision enters `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `tasks.md`, it must be one of:
+
+- explicitly confirmed by the user
+- supported by an authoritative project document
+- explicitly delegated by the user with permission to choose
+
+## 7. No Silent Defaults
+
+Do not turn common practice into project truth.
+
+All AI-created defaults must be recorded in a Decision Ledger as `Proposed` or `Assumed` until confirmed. `Proposed`, `Assumed`, `TBD`, and `Conflict` items must not be treated as implementation-ready.
+
+## 8. Discovery Gate
+
+When requirements are uncertain, start with discovery instead of a confirmed spec.
+
+Discovery must record current understanding, candidate directions, tradeoffs, recommended MVP, open questions, and a Decision Ledger. A confirmed spec can only be produced after the current MVP scope and high-impact decisions are confirmed or explicitly deferred.
 """,
     "project.md": """# Project Context
 
@@ -169,17 +199,22 @@ Stop and produce a Stop-Line Report when:
 
 ## 0. 文档元信息
 
-## 1. Glossary / 统一语言
+## 1. Decision Ledger / 决策台账
 
-## 2. 背景与目标
+| ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
+|----|------|------|----------|----------------------|--------|
 
-## 3. 场景与需求
+## 2. Glossary / 统一语言
+
+## 3. 背景与目标
+
+## 4. 场景与需求
 
 ### SCN-01
 
 ### REQ-01
 
-## 4. Acceptance Criteria / 验收标准
+## 5. Acceptance Criteria / 验收标准
 
 ### AC-01
 
@@ -187,11 +222,42 @@ Given ...
 When ...
 Then ...
 
-## 5. 验证策略
+## 6. 验证策略
 
-## 6. 风险、假设与待确认项
+## 7. 风险、假设与待确认项
 
-## 7. 追溯关系矩阵
+## 8. 追溯关系矩阵
+""",
+    "current/discovery.md": """# Current Discovery
+
+> 需求不确定时先在这里探索。Discovery 不是正式 spec，只有 Confirmed 决策才能进入 REQ/AC。
+
+## Current Understanding
+
+## Candidate Directions
+
+| Option | Description | Pros | Cons | Status |
+|--------|-------------|------|------|--------|
+
+## Tradeoffs
+
+## Recommended MVP
+
+## Decision Ledger
+
+| ID | Decision | Status | Source | Impact | Next Step |
+|----|----------|--------|--------|--------|-----------|
+
+## Open Questions
+
+| ID | Question | Why It Matters | Options | Required Before |
+|----|----------|----------------|---------|-----------------|
+
+## Exit Criteria
+
+- [ ] MVP scope confirmed
+- [ ] high-impact decisions confirmed or explicitly deferred
+- [ ] acceptance direction is clear
 """,
     "current/plan.md": """# Current Plan
 
@@ -241,6 +307,7 @@ active/YYYY-MM-DD-short-name/
 每个迭代目录建议包含：
 
 - `proposal.md` - 这次为什么要改、改什么、不改什么
+- `discovery.md` - 需求不确定时的探索、候选方向、MVP、问题和决策台账
 - `tasks.md` - 可执行任务清单
 - `design.md` - 关键设计和技术取舍
 - `spec.md` - 最终沉淀的需求规范
@@ -375,7 +442,7 @@ archive/YYYY-MM-DD-short-name/
 - 开始新需求前确认 `.sdc/` 是否存在
 - 先读 `.sdc/constitution.md`，再读 `AGENTS.md`
 - 新需求进入 `.sdc/changes/active/`
-- 实现前先看 `proposal.md`、`spec.md`、`design.md`、`tasks.md`
+- 实现前先看 `discovery.md`、`proposal.md`、`spec.md`、`design.md`、`tasks.md`
 - 保持 `SCN-* -> REQ-* -> AC-* -> T### -> 验证证据` 追溯链
 - 完成前执行 `/sdc:check`
 - 归档时执行 `/sdc:archive`
@@ -385,6 +452,7 @@ archive/YYYY-MM-DD-short-name/
 - 不要跳过需求记录直接改代码
 - 不要把模板内容当作有效规范
 - 不要在 spec/design/tasks/code 冲突时继续猜测
+- 不要在需求不确定时跳过 Discovery Gate
 - 不要覆盖已有 `.sdc/` 文件
 - 不要删除 change 历史
 - 不要忽略 `.sdc/standards/` 中的项目规范
@@ -435,6 +503,37 @@ YYYY-MM-DD-short-title.md
 
 ## 风险和回滚
 """,
+    "templates/discovery.md": """# Discovery
+
+> 需求不确定时先使用本文件。Discovery 用于发散和收敛，不是 Confirmed spec。
+
+## Current Understanding
+
+## Candidate Directions
+
+| Option | Description | Pros | Cons | Status |
+|--------|-------------|------|------|--------|
+
+## Tradeoffs
+
+## Recommended MVP
+
+## Decision Ledger
+
+| ID | Decision | Status | Source | Impact | Next Step |
+|----|----------|--------|--------|--------|-----------|
+
+## Open Questions
+
+| ID | Question | Why It Matters | Options | Required Before |
+|----|----------|----------------|---------|-----------------|
+
+## Exit Criteria
+
+- [ ] MVP scope confirmed
+- [ ] high-impact decisions confirmed or explicitly deferred
+- [ ] acceptance direction is clear
+""",
     "templates/tasks.md": """# Tasks
 
 ## 实现任务
@@ -475,17 +574,22 @@ YYYY-MM-DD-short-title.md
 
 ## 0. 文档元信息
 
-## 1. Glossary / 统一语言
+## 1. Decision Ledger / 决策台账
 
-## 2. 背景与目标
+| ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
+|----|------|------|----------|----------------------|--------|
 
-## 3. 场景与需求
+## 2. Glossary / 统一语言
+
+## 3. 背景与目标
+
+## 4. 场景与需求
 
 ### SCN-01
 
 ### REQ-01
 
-## 4. Acceptance Criteria / 验收标准
+## 5. Acceptance Criteria / 验收标准
 
 ### AC-01
 
@@ -493,11 +597,11 @@ Given ...
 When ...
 Then ...
 
-## 5. 验证策略
+## 6. 验证策略
 
-## 6. 风险、假设与待确认项
+## 7. 风险、假设与待确认项
 
-## 7. 追溯关系矩阵
+## 8. 追溯关系矩阵
 """,
     "templates/stop-line-report.md": """# Stop-Line Report
 
@@ -671,6 +775,8 @@ def validate_spec_trace(errors, filepath):
     for marker in ("SCN-", "REQ-", "AC-"):
         if marker not in text:
             errors.append(f"{filepath} 缺少追溯标识: {marker}")
+    if "Decision Ledger" not in text and "决策台账" not in text:
+        errors.append(f"{filepath} 缺少 Decision Ledger / 决策台账")
 
 
 def write_if_missing(relative_path, content):
@@ -713,6 +819,7 @@ def cmd_init():
 
     print()
     print("下一步:")
+    print(f"  {BLUE}sdc discovery{ENDC} - 需求不确定时先探索和收敛 MVP")
     print(f"  {BLUE}sdc spec{ENDC}    - 编辑当前需求规范")
     print(f"  {BLUE}sdc plan{ENDC}    - 生成/编辑规范和实现计划")
     print(f"  {BLUE}sdc apply{ENDC}   - 执行当前需求迭代")
@@ -735,6 +842,7 @@ def cmd_change(name):
 
     directory.mkdir(parents=True)
     files = {
+        "discovery.md": INIT_FILES["templates/discovery.md"],
         "proposal.md": INIT_FILES["templates/change.md"].replace("# Change Proposal", f"# {change_id} Proposal"),
         "tasks.md": INIT_FILES["templates/tasks.md"],
         "design.md": INIT_FILES["templates/design.md"],
@@ -760,18 +868,19 @@ def cmd_change(name):
     print(f"   目录: {directory.absolute()}")
     print()
     print("下一步:")
-    print(f"  {BLUE}sdc spec{ENDC}              - 先完善 SCN/REQ/AC")
+    print(f"  {BLUE}sdc discovery{ENDC}         - 需求不确定时先探索和确认 MVP")
+    print(f"  {BLUE}sdc spec{ENDC}              - 基于已确认 discovery 完善 SCN/REQ/AC")
     print(f"  {BLUE}sdc plan {change_id}{ENDC}   - 生成/完善计划")
     print(f"  {BLUE}sdc check {change_id}{ENDC}  - 综合检查")
 
 
-def validate_file(errors, warnings, filepath, required_headings):
+def validate_file(errors, warnings, filepath, required_headings, require_content=True):
     if not filepath.exists():
         errors.append(f"缺少文件: {filepath}")
         return
 
     text = read_text(filepath)
-    if not has_real_content(filepath):
+    if require_content and not has_real_content(filepath):
         errors.append(f"内容仍是模板或缺少有效内容: {filepath}")
 
     for heading in required_headings:
@@ -792,11 +901,14 @@ def cmd_validate(target="current"):
         "## 1. Governance Priority",
         "## 2. Fact Priority",
         "## 5. Traceability Rules",
+        "## 6. Human Confirmation Rules",
+        "## 7. No Silent Defaults",
+        "## 8. Discovery Gate",
     ])
 
     if target == "current":
         base = SDC_DIR / "current"
-        validate_file(errors, warnings, base / "spec.md", ["## 1. Glossary / 统一语言", "## 4. Acceptance Criteria / 验收标准", "## 7. 追溯关系矩阵"])
+        validate_file(errors, warnings, base / "spec.md", ["Decision Ledger", "Acceptance Criteria / 验收标准", "追溯关系矩阵"])
         validate_file(errors, warnings, base / "plan.md", ["## 设计摘要", "## 测试先行策略", "## 交付清单"])
         validate_file(errors, warnings, base / "tasks.md", ["## Tasks"])
         validate_file(errors, warnings, base / "apply.md", ["## 已完成任务", "## 修改文件", "## 测试结果"])
@@ -807,9 +919,16 @@ def cmd_validate(target="current"):
         if not base.exists():
             errors.append(f"需求迭代不存在: {base}")
         else:
+            validate_file(
+                errors,
+                warnings,
+                base / "discovery.md",
+                ["## Current Understanding", "## Decision Ledger", "## Open Questions", "## Exit Criteria"],
+                require_content=False,
+            )
             validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
             validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
-            validate_file(errors, warnings, base / "spec.md", ["## 1. Glossary / 统一语言", "## 4. Acceptance Criteria / 验收标准", "## 7. 追溯关系矩阵"])
+            validate_file(errors, warnings, base / "spec.md", ["Decision Ledger", "Acceptance Criteria / 验收标准", "追溯关系矩阵"])
             validate_spec_trace(errors, base / "spec.md")
             validate_task_trace(errors, base / "tasks.md")
 
@@ -1016,6 +1135,8 @@ def main():
         cmd_check(target)
     elif cmd == "spec":
         cmd_edit("spec")
+    elif cmd == "discovery":
+        cmd_edit("discovery")
     elif cmd == "plan":
         cmd_edit("plan")
     elif cmd == "tasks":
@@ -1054,6 +1175,16 @@ def main():
 | 事实来源 | `spec.md` > `design.md/plan.md` > `tasks.md` > code |
 
 如果发现冲突，必须停止执行并输出 Stop-Line Report。
+
+---
+
+## 1. 人类确认规则
+
+- AI 可以提出候选方案，但不得自主决定高影响事项
+- 高影响事项包括产品规则、权限、状态机、审批、提醒、技术栈、架构、数据模型、认证、安全策略
+- 未经用户确认、权威文档支持或显式授权，不得把候选方案写成 REQ/AC/INV/design/tasks
+- 所有 AI 默认值必须进入 Decision Ledger，状态为 Proposed 或 Assumed
+- Proposed、Assumed、TBD、Conflict 不可进入 apply
 
 ---
 

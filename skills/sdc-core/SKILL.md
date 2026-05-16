@@ -30,8 +30,10 @@ SDC 内部必须遵守：
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
-事实优先级：spec.md > design.md/plan.md > tasks.md > code
+事实优先级：discovery.md > spec.md > design.md/plan.md > tasks.md > code
 追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
+确认门禁：高影响决策必须 Confirmed，不能 Silent Default
+探索门禁：不确定需求必须先 discovery，再 spec
 ```
 
 ---
@@ -41,7 +43,8 @@ SDC 内部必须遵守：
 | 用户意图 | 应执行的 SDC 能力 |
 |---------|------------------|
 | 初始化、第一次使用、建立目录 | `/sdc:init` |
-| 新需求、新功能、需求变更 | `/sdc:change` + `/sdc:spec` + `/sdc:plan` |
+| 新需求、新功能、需求变更 | `/sdc:change`；不确定先 Discovery Gate，确定后 `/sdc:spec` + `/sdc:plan` |
+| 需求探索、头脑风暴、范围不清楚 | `/sdc:change` 的 Discovery Gate |
 | 开始写代码、执行计划 | `/sdc:apply` |
 | 检查、验收、能不能交付 | `/sdc:check` |
 | 分析 bug、失败原因、日志问题 | `/sdc:check` 的 bug 模式 |
@@ -74,6 +77,9 @@ SDC 内部必须遵守：
 6. 归档时必须沉淀到 `.sdc/specs/`
 7. spec/design/tasks/code 冲突时必须停线，不要继续猜测
 8. check 承担 validate/review/test/quality，以及 bug/impact/repo 分析入口
+9. 新需求必须先讨论和确认高影响决策；AI 只能提出 Proposed/Assumed，不能静默落成事实
+10. plan 不能从宽泛偏好直接推导具体技术栈或大任务清单
+11. 需求不确定时先进入 Discovery Gate，不能直接生成 Confirmed spec
 
 ---
 

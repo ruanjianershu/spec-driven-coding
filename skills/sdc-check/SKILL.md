@@ -23,6 +23,8 @@ description: "Combined delivery check that runs validate, review, test, and qual
 - `impact`：变更影响分析
 - `repo` / `brownfield`：存量项目结构与风险分析
 
+v1.1.1 增加流程风险检查：如果 AI 在 spec/plan 阶段自主决定产品规则、技术栈、状态机或任务规模，`/sdc:check` 必须标记为阻塞。
+
 ---
 
 ## 模式选择
@@ -125,6 +127,8 @@ description: "Combined delivery check that runs validate, review, test, and qual
 | “安全风险不大” | 只要涉及外部输入、权限、数据存储或依赖，就必须做安全视角检查 |
 | “先交付，后面再补质量” | `/sdc:check` 是交付门禁，严重问题未解决不能给出可以交付结论 |
 | “只是分析 bug，顺手改了吧” | Bug 分析模式只分析不修改；修复必须进入 change/apply |
+| “这些是行业默认值，可以直接写进 spec” | 默认值必须标为 Proposed/Assumed，用户确认前不能成为事实 |
+| “技术栈我先替用户选了” | 未确认技术/架构决策必须停线 |
 
 ---
 
@@ -134,6 +138,11 @@ description: "Combined delivery check that runs validate, review, test, and qual
 
 - `spec.md`、`tasks.md` 或 `notes.md` 仍是模板内容
 - `SCN-* / REQ-* / AC-* / T###` 无法形成追溯链
+- `Decision Ledger` 缺失，或高影响决策没有状态
+- `Proposed`、`Assumed`、`TBD`、`Conflict` 被写入正式 REQ/AC/INV 或 apply 任务
+- 出现 Silent Default：无来源的审批人、提醒时间、状态机、权限、技术栈、锁策略、认证方案等
+- plan 从宽泛偏好推导具体技术栈，例如“前后端分离”直接变成 Spring Boot + Vue
+- 默认生成过大任务计划且没有 MVP slice
 - 没有运行测试，也没有说明无法运行的原因
 - 修改了与当前 change 无关的大量文件
 - 发现硬编码密钥、未校验输入、权限绕过或敏感日志
@@ -167,6 +176,13 @@ description: "Combined delivery check that runs validate, review, test, and qual
 ## 追溯链
 - SCN/REQ/AC/T### 覆盖情况：...
 
+## 决策门禁
+- Decision Ledger：通过 / 阻塞
+- Unconfirmed Decisions：...
+- Silent Defaults：...
+- Technical Consent Gate：通过 / 阻塞
+- MVP Slice Gate：通过 / 阻塞
+
 ## 代码审查
 - 严重问题：x 个
 - 警告问题：x 个
@@ -198,3 +214,5 @@ description: "Combined delivery check that runs validate, review, test, and qual
 | 必须有明确下一步 | 用户不知道怎么继续 |
 | 必须说明阻塞问题 | 输出无效 |
 | bug 模式不得修改代码 | 分析与执行混淆 |
+| 未确认高影响决策不能给出可以交付结论 | AI 越权 |
+| Silent Default 不能给出可以交付结论 | 需求污染 |
