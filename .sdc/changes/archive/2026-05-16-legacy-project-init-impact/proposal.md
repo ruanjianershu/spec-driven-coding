@@ -9,7 +9,7 @@ SDC 当前已经有 repo/brownfield 和 impact 模式，但遗留项目流程边
 - `init` 能区分新项目和存量/遗留项目；对遗留项目，生成项目整体认知资产和 repo-analysis 提示，而不是生成具体需求影响分析。
 - `change` 在需求确定后，如果项目是遗留项目，必须触发 change impact gate，产出当前 change 的影响面分析。
 - `plan/apply/check/review` 对遗留项目必须读取并复核该影响分析，最终给出老系统改造点与影响点。
-- 吸收 SDDInAction 中 repo-analysis 和 change-impact-analysis 的提示词原则：证据优先、先找入口、沿调用链收敛、区分已确认事实/合理推断/待确认问题。
+- 吸收本地参考流程中 repo-analysis 和 change-impact-analysis 的提示词原则：证据优先、先找入口、沿调用链收敛、区分已确认事实/合理推断/待确认问题。
 
 ## 非目标
 

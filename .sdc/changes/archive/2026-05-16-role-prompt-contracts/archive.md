@@ -10,7 +10,7 @@
 
 ## 交付结论
 
-可以交付。所有 SDC skills 已补充英文 Role Prompt Contract，每次 skill 调用时都会明确专家角色、工作契约、证据规则和输出契约，从而更接近 SDDInAction 的角色化任务 Prompt，同时保持 SDC 的少指令模型。
+可以交付。所有 SDC skills 已补充英文 Role Prompt Contract，每次 skill 调用时都会明确专家角色、工作契约、证据规则和输出契约，从而具备角色化任务 Prompt 的稳定行为，同时保持 SDC 的少指令模型。
 
 ## 追溯摘要
 

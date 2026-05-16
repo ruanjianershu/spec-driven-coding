@@ -14,7 +14,7 @@ SDC 已有 repo/brownfield 和 impact 分析模式，但流程时机需要更精
 2. `sdc:change`
    - 每个 change 增加 `impact.md` 文件。
    - 明确 Change Impact Gate 的调用时机：Discovery Gate 退出、spec Confirmed 之后，plan/apply 之前。
-   - 使用 SDDInAction 的证据优先结构：分析快照、入口、调用链、直接修改点、级联影响、契约/数据/配置、安全/观测、测试回归、实施顺序、待确认问题。
+   - 使用本地参考流程的证据优先结构：分析快照、入口、调用链、直接修改点、级联影响、契约/数据/配置、安全/观测、测试回归、实施顺序、待确认问题。
 
 3. `sdc:plan` / `sdc:apply`
    - 遗留项目必须读取 `impact.md`。

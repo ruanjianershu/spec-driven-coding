@@ -13,7 +13,7 @@
 | ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
 |----|------|------|----------|----------------------|--------|
 | DEC-01 | `init` 只处理项目整体认知，不做具体需求影响分析 | Confirmed | 用户修正：“遗留项目变更分析应该在 change 中确定完需求之后调用” | 是 | 实施 |
-| DEC-02 | 遗留项目变更影响分析作为 `change` 需求确认后的门禁 | Confirmed | 用户明确要求，并与 SDDInAction change-impact-analysis 一致 | 是 | 实施 |
+| DEC-02 | 遗留项目变更影响分析作为 `change` 需求确认后的门禁 | Confirmed | 用户明确要求，并与本地参考流程的 change-impact-analysis 一致 | 是 | 实施 |
 | DEC-03 | 不新增公开命令，复用 init/change/check/review | Confirmed | SDC 少指令原则 | 是 | 实施 |
 | DEC-04 | 最终 code review/check 需要复核实际老系统改造点与影响点 | Confirmed | 用户明确要求 | 是 | 实施 |
 

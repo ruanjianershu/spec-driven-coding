@@ -2,11 +2,11 @@
 
 SDC v1.1 keeps the public command surface small while strengthening the internal engineering discipline.
 
-The goal is not to copy every OpenSpec, Superpowers, or SDDInAction command. The goal is to keep their useful core:
+The goal is not to copy every OpenSpec, Superpowers, or internal workflow command. The goal is to keep their useful core:
 
 - OpenSpec: change lifecycle, validation, archive.
 - Superpowers: lightweight skill-pack distribution.
-- SDDInAction / Karpathy-style skills: think before coding, thin slices, TDD, stop-line reports, evidence over vibes.
+- Karpathy-style skills and internal workflow practice: think before coding, thin slices, TDD, stop-line reports, evidence over vibes.
 
 ## Public Surface
 

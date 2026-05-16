@@ -6,7 +6,7 @@ All notable changes to SDC are documented here.
 
 - Added English Role Prompt Contracts to every SDC skill.
 - Standardized each contract around Role, Operating Contract, Evidence Rules, and Output Contract.
-- Strengthened SDDInAction-style expert persona behavior without adding new public commands.
+- Strengthened expert persona behavior without adding new public commands.
 - Updated README, docs, package metadata, and plugin metadata for the role contract upgrade.
 
 ## 1.1.3

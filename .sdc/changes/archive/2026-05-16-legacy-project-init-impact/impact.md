@@ -76,5 +76,5 @@
 - `skills/sdc-plan/SKILL.md`
 - `skills/sdc-review/SKILL.md`
 - `skills/sdc-check/SKILL.md`
-- `<local-reference>/SDDInAction/10.maintenance/repo-analysis.md`
-- `<local-reference>/SDDInAction/10.maintenance/change-impact-analysis.md`
+- `<local-reference>/legacy-repo-analysis.md`
+- `<local-reference>/legacy-change-impact-analysis.md`

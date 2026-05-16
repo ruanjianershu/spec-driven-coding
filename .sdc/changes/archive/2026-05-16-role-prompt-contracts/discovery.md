@@ -2,7 +2,7 @@
 
 ## Current Understanding
 
-SDC skills already include Chinese workflow rules, quality gates, red flags, and output formats. The user wants stronger SDDInAction-style role definition and requirements in English so each skill invocation carries a clear expert persona, operating contract, evidence discipline, and output contract.
+SDC skills already include Chinese workflow rules, quality gates, red flags, and output formats. The user wants stronger role definition and requirements in English so each skill invocation carries a clear expert persona, operating contract, evidence discipline, and output contract.
 
 ## Candidate Directions
 

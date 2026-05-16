@@ -572,7 +572,7 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 - 灵感来自 [Superpowers](https://github.com/obra/superpowers) - 168k+ stars 的纯声明式 AI 技能框架
 - 借鉴 OpenSpec 的 change / validate / archive 生命周期
-- 借鉴 SDDInAction 和 Karpathy-style skills 的“先思考、薄切片、TDD、证据链”工程纪律
+- 借鉴 Karpathy-style skills 和本地流程实践中的“先思考、薄切片、TDD、证据链”工程纪律
 - 感谢所有贡献者的努力
 
 ---

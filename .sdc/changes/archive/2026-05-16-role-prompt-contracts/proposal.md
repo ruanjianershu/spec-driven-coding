@@ -2,13 +2,13 @@
 
 ## 背景
 
-用户指出 SDDInAction 的提示词会在每次调用时给出明确角色定义和工作要求。SDC 当前有流程规则，但角色化程度还不够强。
+用户指出参考流程的提示词会在每次调用时给出明确角色定义和工作要求。SDC 当前有流程规则，但角色化程度还不够强。
 
 ## 目标
 
 - 为每个 SDC skill 补充英文 Role Prompt Contract。
 - 明确每个 skill 的 Role、Operating Contract、Evidence Rules、Output Contract。
-- 让 SDC 调用时更像 SDDInAction 的“角色化任务 Prompt”，但仍保留 SDC 的少指令和可追溯流程。
+- 让 SDC 调用时具备“角色化任务 Prompt”的清晰专家角色，但仍保留 SDC 的少指令和可追溯流程。
 - 更新 README、docs、changelog、package/plugin metadata。
 
 ## 非目标
