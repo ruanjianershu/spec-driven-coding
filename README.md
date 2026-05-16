@@ -97,12 +97,15 @@ Codex 用户使用自然语言或 `/skills` 触发同名 SDC skills：
 
 ## 🚀 快速开始
 
-### 方式 1：npx 一键安装 / 更新（推荐 ⭐）
+### 方式 1：通用安装 / 更新（推荐 ⭐）
+
+无论是首次安装还是更新老版本，优先使用这一条：
+
 ```bash
 npx sdc-spec@latest
 ```
 
-自动检测你安装的 AI 工具（Claude Code / Codex / Hermes Agent），一键安装到对应目录。
+它会自动检测你安装的 AI 工具（Claude Code / Codex / Hermes Agent），一键安装到对应目录。
 
 安装器会为 Claude Code 注册本地 marketplace 并启用 `sdc@sdc-local` 插件；为 Codex 注册本地 marketplace、启用插件并同步 skills。
 
@@ -115,6 +118,39 @@ npx sdc-spec@latest
 ```bash
 npx sdc-spec@latest
 ```
+
+### 更新命令速查
+
+| 安装来源 | 通用更新命令 | 说明 |
+| --- | --- | --- |
+| npm / npx（推荐） | `npx sdc-spec@latest` | 首次安装和更新都用这一条。 |
+| npm 全局安装 | `npm install -g sdc-spec@latest && sdc` | 已经习惯使用全局 `sdc` 命令的机器用这一条。 |
+| GitHub 原生安装 | `npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec` | 不走 npm registry，直接使用 GitHub `main` 分支最新版。 |
+| 本地 clone 安装 | `git pull && node bin/install.js` | 在本地克隆的 `spec-driven-coding` 目录里执行。 |
+| 手动复制安装 | `npx sdc-spec@latest` | 推荐改用安装器同步，避免漏复制插件、skills 或命令文件。 |
+
+### 各客户端更新后生效方式
+
+| 客户端 | 推荐更新命令 | 更新后操作 | 验证方式 |
+| --- | --- | --- | --- |
+| Claude Code | `npx sdc-spec@latest` | 完全退出并重新打开 Claude Code。 | 输入 `/sdc:init`、`/sdc:change` 或 `/sdc:check`。 |
+| Codex CLI | `npx sdc-spec@latest` | 退出当前 CLI 会话后重新进入。 | 在 skill 列表中看到 `sdc` / `sdc-*`，或直接用自然语言调用 SDC。 |
+| Codex App | `npx sdc-spec@latest` | 完全退出并重新打开 Codex App。 | 新会话的 skill 列表中出现 `SDC`、`sdc` 或 `sdc:*`。 |
+| Hermes Agent | `npx sdc-spec@latest` | 重启或重新加载 Hermes Agent 会话。 | skill 列表中出现 `sdc` / `sdc-*`。 |
+
+如果某台机器必须从 GitHub 更新，把上表里的更新命令统一替换为：
+
+```bash
+npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec
+```
+
+如果某台机器使用本地 clone 更新，请在克隆目录里执行：
+
+```bash
+git pull && node bin/install.js
+```
+
+如果更新后仍显示旧版本，先关闭对应客户端，再重新执行一次推荐更新命令即可。
 
 一键卸载：
 ```bash
@@ -134,7 +170,7 @@ sdc
 
 如果你想绕过 npm registry，直接从 GitHub 安装最新代码：
 ```bash
-npx --package github:ruanjianershu/spec-driven-coding sdc-spec
+npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec
 ```
 
 ### 方式 2：本地加载
