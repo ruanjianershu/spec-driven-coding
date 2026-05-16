@@ -10,6 +10,7 @@ active/YYYY-MM-DD-short-name/
 
 - `discovery.md` - 需求不确定时的探索、候选方向、MVP、问题和决策台账
 - `proposal.md` - 这次为什么要改、改什么、不改什么
+- `impact.md` - 遗留项目在需求确认后的变更影响面分析
 - `tasks.md` - 可执行任务清单
 - `design.md` - 关键设计和技术取舍
 - `spec.md` - 最终沉淀的需求规范

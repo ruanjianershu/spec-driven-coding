@@ -24,6 +24,28 @@ Normal users should only need these commands or natural-language equivalents:
 
 Detailed skills such as `sdc:spec`, `sdc:validate`, `sdc:review`, `sdc:test`, and `sdc:quality` remain available for advanced users and internal routing.
 
+## Role Prompt Contracts
+
+SDC v1.1.4 adds an English Role Prompt Contract to every skill. This borrows the useful part of SDDInAction-style prompts: each skill should tell the agent who it is, how it must operate, what counts as evidence, and what the output must contain.
+
+Every skill contract uses this shape:
+
+```text
+Role
+Operating Contract
+Evidence Rules
+Output Contract
+```
+
+These contracts do not add new public commands. They make each existing skill more reliable when loaded by Codex, Claude Code, or another skill-aware agent.
+
+The contract has four goals:
+
+- establish the expert role for the current task.
+- prevent unstated assumptions from becoming facts.
+- require evidence anchors for conclusions.
+- force concrete outputs or Stop-Line Reports instead of generic advice.
+
 ## Two Decision Chains
 
 Every SDC workspace should have `.sdc/constitution.md`.
@@ -37,7 +59,7 @@ Governance priority:
 Fact priority:
 
 ```text
-discovery.md > spec.md > design.md/plan.md > tasks.md > code
+discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code
 ```
 
 When these sources conflict, the agent should stop and produce a Stop-Line Report instead of guessing.
@@ -90,6 +112,29 @@ Use Discovery Gate when any of these are unclear:
 
 Exit Discovery Gate only when the current MVP scope is confirmed, high-impact decisions are confirmed or explicitly deferred, and no blocking open questions remain.
 
+## Brownfield / Legacy Gates
+
+SDC v1.1.3 separates two legacy concerns:
+
+- `init` builds project cognition.
+- `change` runs impact analysis after the requirement is confirmed.
+
+For Brownfield/Legacy projects, `/sdc:init` should create or preserve `.sdc/project-cognition.md`. That file is the overall code-based map of the existing system: runtime shape, entry points, core data models, module map, external integrations, tests, delivery paths, risks, and reading order.
+
+Do not produce a specific change impact analysis during init. There is no concrete requirement yet, so the impact would be guesswork.
+
+After `/sdc:change` exits Discovery Gate and the spec is confirmed, the current change should run Change Impact Gate before `/sdc:plan`:
+
+```text
+project-cognition.md -> confirmed spec.md -> impact.md -> plan -> apply
+```
+
+`impact.md` should identify the change entry points, direct modification points, cascading impacts, contracts, data/config changes, security/observability effects, regression strategy, rollout order, rollback boundary, and open questions.
+
+Important rule: only confirmed impact can become implementation tasks. Reasonable inferences may become investigation tasks. Open questions that affect scope, acceptance, contracts, data, permissions, security, or rollout must stop plan/apply.
+
+At final `/sdc:review` or `/sdc:check`, Brownfield/Legacy delivery must include a legacy final impact review: compare actual diff and validation evidence against `impact.md`, then list old-system modification points, impact points, deviations, and residual risks.
+
 ## Traceability Chain
 
 Every meaningful change should preserve this chain:
@@ -127,6 +172,8 @@ Common triggers:
 - high-impact decisions are Proposed, Assumed, TBD, or Conflict.
 - a plan chooses a concrete technology stack from a vague preference.
 - implementation requires changing scope or public behavior.
+- Brownfield/Legacy change lacks `impact.md` after requirements are confirmed.
+- actual diff exceeds `impact.md` without updating spec/design/tasks.
 - tests cannot prove the requested behavior.
 - security, data migration, compatibility, or rollout risk appears.
 

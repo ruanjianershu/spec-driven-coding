@@ -67,6 +67,7 @@ INIT_FILES = {
 ## 目录
 
 - `project.md` - 项目长期背景、目标用户、技术约束和验证命令
+- `project-cognition.md` - 遗留项目整体认知，基于代码证据建立维护地图
 - `constitution.md` - 项目最高工程裁决规则
 - `current/` - 当前正在推进的一次需求迭代，包含 discovery/spec/plan/tasks/apply
 - `changes/active/` - 正在推进的需求变更，每个变更一个子目录
@@ -76,17 +77,18 @@ INIT_FILES = {
 - `decisions/` - 架构决策记录
 - `reviews/` - 代码审查记录
 - `reports/` - 测试、质量、bug、impact、repo-analysis 和交付报告
-- `templates/` - discovery、需求迭代、停线和分析模板
+- `templates/` - discovery、需求迭代、项目认知、影响面、停线和分析模板
 
 ## 推荐流程
 
 1. `/sdc:change <name>` 创建 `changes/active/<name>/`
 2. 需求不确定时先进入 Discovery Gate，更新 `discovery.md`
 3. `/sdc:spec` 将已确认 discovery 收敛为 SCN/REQ/AC
-4. `/sdc:plan` 生成 proposal/spec/design/tasks
-5. `/sdc:apply` 执行实现并记录过程
-6. `/sdc:check` 综合校验、审查、测试和质量检查
-7. `/sdc:archive <name>` 归档到 `changes/archive/`
+4. 遗留项目在需求确认后先更新当前 change 的 `impact.md`
+5. `/sdc:plan` 生成 proposal/spec/design/tasks
+6. `/sdc:apply` 执行实现并记录过程
+7. `/sdc:check` 综合校验、审查、测试和质量检查
+8. `/sdc:archive <name>` 归档到 `changes/archive/`
 
 ## 三类核心资产
 
@@ -98,7 +100,7 @@ INIT_FILES = {
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
-事实优先级：discovery.md > spec.md > design.md/plan.md > tasks.md > code
+事实优先级：discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code
 追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
 确认门禁：高影响决策必须 Confirmed，不能 Silent Default
 探索门禁：不确定需求必须先 discovery，再 spec
@@ -114,13 +116,13 @@ If these sources conflict, stop and produce a Stop-Line Report.
 
 ## 2. Fact Priority
 
-`discovery.md > spec.md > design.md/plan.md > tasks.md > code`
+`discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code`
 
 Code is evidence of current behavior, but it does not automatically override the agreed spec.
 
 ## 3. Core Chain
 
-`discovery -> spec -> plan -> tasks -> code -> verify -> archive`
+`discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive`
 
 ## 4. Stop-The-Line Rules
 
@@ -192,6 +194,45 @@ Discovery must record current understanding, candidate directions, tradeoffs, re
 ## AI 工作规则
 
 （项目级偏好、禁忌、容易踩坑的地方）
+""",
+    "project-cognition.md": """# Project Cognition
+
+> 遗留项目整体认知。新项目可以暂时保留为空；存量/遗留项目建议通过 `/sdc:check repo` 基于代码证据补全。
+
+## 0. 分析快照
+
+- 目标仓库/目录：
+- 分析时间：
+- 分支 / Commit / 子模块状态：
+- 技术生态线索：
+- 可见配置与依赖范围：
+- 本次分析限制：
+
+## 1. 一句话概述
+
+## 2. 系统形态与技术栈
+
+## 3. 核心数据模型与 Schema/DDL
+
+## 4. 关键入口与启动方式
+
+## 5. 目录结构与模块地图
+
+## 6. 核心链路与数据流
+
+## 7. 配置、数据存储与外部集成
+
+## 8. 可观测性与运行诊断线索
+
+## 9. 测试、构建与交付现状
+
+## 10. 已确认风险与复杂区域
+
+## 11. 待确认问题
+
+## 12. 建议阅读顺序
+
+## 13. 证据索引
 """,
     "current/spec.md": """# Current Spec
 
@@ -308,6 +349,7 @@ active/YYYY-MM-DD-short-name/
 
 - `proposal.md` - 这次为什么要改、改什么、不改什么
 - `discovery.md` - 需求不确定时的探索、候选方向、MVP、问题和决策台账
+- `impact.md` - 遗留项目在需求确认后的变更影响面分析
 - `tasks.md` - 可执行任务清单
 - `design.md` - 关键设计和技术取舍
 - `spec.md` - 最终沉淀的需求规范
@@ -442,7 +484,8 @@ archive/YYYY-MM-DD-short-name/
 - 开始新需求前确认 `.sdc/` 是否存在
 - 先读 `.sdc/constitution.md`，再读 `AGENTS.md`
 - 新需求进入 `.sdc/changes/active/`
-- 实现前先看 `discovery.md`、`proposal.md`、`spec.md`、`design.md`、`tasks.md`
+- 遗留项目先读 `.sdc/project-cognition.md`
+- 实现前先看 `discovery.md`、`proposal.md`、`spec.md`、`impact.md`、`design.md`、`tasks.md`
 - 保持 `SCN-* -> REQ-* -> AC-* -> T### -> 验证证据` 追溯链
 - 完成前执行 `/sdc:check`
 - 归档时执行 `/sdc:archive`
@@ -453,6 +496,7 @@ archive/YYYY-MM-DD-short-name/
 - 不要把模板内容当作有效规范
 - 不要在 spec/design/tasks/code 冲突时继续猜测
 - 不要在需求不确定时跳过 Discovery Gate
+- 不要在遗留项目需求确认后跳过 Change Impact Gate
 - 不要覆盖已有 `.sdc/` 文件
 - 不要删除 change 历史
 - 不要忽略 `.sdc/standards/` 中的项目规范
@@ -633,19 +677,91 @@ Then ...
 
 ## Recommended Fix
 """,
+    "templates/project-cognition.md": """# Project Cognition Template
+
+> 遗留项目整体认知模板。只基于代码、配置、构建、测试和运行脚本等证据填写；文档和注释只能作为线索。
+
+## 0. 分析快照
+
+- 目标仓库/目录：
+- 分析时间：
+- 分支 / Commit / 子模块状态：
+- 技术生态线索：
+- 可见配置与依赖范围：
+- 本次分析限制：
+
+## 1. 一句话概述
+
+## 2. 系统形态与技术栈
+
+## 3. 核心数据模型与 Schema/DDL
+
+## 4. 关键入口与启动方式
+
+## 5. 目录结构与模块地图
+
+## 6. 核心链路与数据流
+
+## 7. 配置、数据存储与外部集成
+
+## 8. 可观测性与运行诊断线索
+
+## 9. 测试、构建与交付现状
+
+## 10. 已确认风险与复杂区域
+
+## 11. 待确认问题
+
+## 12. 建议阅读顺序
+
+## 13. 证据索引
+""",
     "templates/change-impact.md": """# Change Impact Analysis
 
-## Change Summary
+> 遗留项目在需求确认后的变更影响面分析。它发生在 confirmed spec 之后、plan/apply 之前。
 
-## Direct Impact
+## 0. 分析快照
 
-## Indirect Impact
+- 目标仓库/目录：
+- 变更目标：
+- 分析时间：
+- 分支 / Commit / 子模块状态：
+- 技术生态线索：
+- 可见配置与依赖范围：
+- 本次分析限制：
 
-## Affected REQ/AC/T###
+## 1. 变更意图与范围概述
 
-## Test Matrix
+## 2. 受影响系统形态与技术栈
 
-## Rollback Plan
+## 3. 核心调用链路图谱
+
+## 4. 必须修改的文件清单
+
+| 类别 | 文件/模块/契约 | 为什么需要关注 | 证据 | 关联 REQ/AC |
+|------|----------------|----------------|------|-------------|
+
+## 5. 级联影响与风险雷达
+
+| 风险点 | 影响范围 | 触发原因 | 证据 | 初步应对 |
+|--------|----------|----------|------|----------|
+
+## 6. 契约、数据与配置影响
+
+## 7. 安全、权限、中间件与可观测性影响
+
+## 8. 测试与回归策略建议
+
+## 9. 已确认风险与复杂区域
+
+## 10. 待确认业务规则与问题清单
+
+| 问题 | 为什么重要 | 影响哪类修改 | 缺少什么信息 |
+|------|------------|--------------|--------------|
+
+## 11. 推荐的实施顺序
+
+## 12. 证据索引
 """,
     "templates/repo-analysis.md": """# Repo Analysis
 
@@ -791,9 +907,55 @@ def write_if_missing(relative_path, content):
     return True
 
 
+def detect_project_kind():
+    """Best-effort hint for whether init is running in a new or existing project."""
+    marker_names = {
+        "package.json",
+        "pyproject.toml",
+        "requirements.txt",
+        "pom.xml",
+        "build.gradle",
+        "build.gradle.kts",
+        "go.mod",
+        "Cargo.toml",
+        "composer.json",
+        "Gemfile",
+        "Makefile",
+        "CMakeLists.txt",
+        "docker-compose.yml",
+        "compose.yaml",
+    }
+    ignored_dirs = {".git", ".sdc", ".idea", "node_modules", "dist", "build", "target", "coverage", "vendor"}
+    source_suffixes = {".py", ".js", ".ts", ".tsx", ".jsx", ".java", ".kt", ".go", ".rs", ".cs", ".php", ".rb", ".cpp", ".c", ".h"}
+
+    markers = []
+    source_count = 0
+
+    for path in Path(".").iterdir():
+        if path.name in ignored_dirs:
+            continue
+        if path.is_file() and path.name in marker_names:
+            markers.append(path.name)
+        elif path.is_dir() and path.name in {"src", "app", "lib", "cmd", "internal", "server", "client", "frontend", "backend", "tests"}:
+            markers.append(f"{path.name}/")
+
+    for path in Path(".").rglob("*"):
+        if any(part in ignored_dirs for part in path.parts):
+            continue
+        if path.is_file() and path.suffix in source_suffixes:
+            source_count += 1
+            if source_count >= 5:
+                break
+
+    if markers or source_count >= 5:
+        return "brownfield", markers[:8], source_count
+    return "greenfield", markers, source_count
+
+
 def cmd_init():
     """初始化标准 SDC 工作区"""
     created = []
+    project_kind, project_markers, source_count = detect_project_kind()
 
     SDC_DIR.mkdir(exist_ok=True)
 
@@ -818,6 +980,19 @@ def cmd_init():
         print_color(YELLOW, "⚠️  SDC 工作区已存在，未覆盖任何文件")
 
     print()
+    if project_kind == "brownfield":
+        print_color(YELLOW, "🧭 检测到存量/遗留项目线索")
+        if project_markers:
+            print(f"   线索: {', '.join(project_markers)}")
+        print(f"   源码文件线索: {source_count}+")
+        print("   建议先用 /sdc:check repo 补全 .sdc/project-cognition.md。")
+        print("   具体需求的影响面分析会在 change 需求确认后写入该 change 的 impact.md。")
+        print()
+    else:
+        print_color(GREEN, "🧭 当前更像新项目 / Greenfield")
+        print("   可以直接从 /sdc:change 开始记录第一版需求。")
+        print()
+
     print("下一步:")
     print(f"  {BLUE}sdc discovery{ENDC} - 需求不确定时先探索和收敛 MVP")
     print(f"  {BLUE}sdc spec{ENDC}    - 编辑当前需求规范")
@@ -843,6 +1018,7 @@ def cmd_change(name):
     directory.mkdir(parents=True)
     files = {
         "discovery.md": INIT_FILES["templates/discovery.md"],
+        "impact.md": INIT_FILES["templates/change-impact.md"],
         "proposal.md": INIT_FILES["templates/change.md"].replace("# Change Proposal", f"# {change_id} Proposal"),
         "tasks.md": INIT_FILES["templates/tasks.md"],
         "design.md": INIT_FILES["templates/design.md"],
@@ -870,6 +1046,7 @@ def cmd_change(name):
     print("下一步:")
     print(f"  {BLUE}sdc discovery{ENDC}         - 需求不确定时先探索和确认 MVP")
     print(f"  {BLUE}sdc spec{ENDC}              - 基于已确认 discovery 完善 SCN/REQ/AC")
+    print(f"  {BLUE}impact.md{ENDC}             - 遗留项目需求确认后先做变更影响面分析")
     print(f"  {BLUE}sdc plan {change_id}{ENDC}   - 生成/完善计划")
     print(f"  {BLUE}sdc check {change_id}{ENDC}  - 综合检查")
 
@@ -924,6 +1101,13 @@ def cmd_validate(target="current"):
                 warnings,
                 base / "discovery.md",
                 ["## Current Understanding", "## Decision Ledger", "## Open Questions", "## Exit Criteria"],
+                require_content=False,
+            )
+            validate_file(
+                errors,
+                warnings,
+                base / "impact.md",
+                ["## 0. 分析快照", "## 4. 必须修改的文件清单", "## 8. 测试与回归策略建议", "## 10. 待确认业务规则与问题清单"],
                 require_content=False,
             )
             validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
@@ -1172,7 +1356,7 @@ def main():
 | 类型 | 优先级 |
 |------|--------|
 | 治理规则 | `.sdc/constitution.md` > `AGENTS.md` > 对话即时要求 |
-| 事实来源 | `spec.md` > `design.md/plan.md` > `tasks.md` > code |
+| 事实来源 | `discovery.md` > `spec.md` > `impact.md` > `design.md/plan.md` > `tasks.md` > code |
 
 如果发现冲突，必须停止执行并输出 Stop-Line Report。
 
@@ -1185,6 +1369,9 @@ def main():
 - 未经用户确认、权威文档支持或显式授权，不得把候选方案写成 REQ/AC/INV/design/tasks
 - 所有 AI 默认值必须进入 Decision Ledger，状态为 Proposed 或 Assumed
 - Proposed、Assumed、TBD、Conflict 不可进入 apply
+- 需求不确定时必须先进入 Discovery Gate，确认 MVP 后再生成 spec
+- 遗留项目必须先维护 `.sdc/project-cognition.md`
+- 遗留项目在需求确认后、plan/apply 前必须读取当前 change 的 `impact.md`
 
 ---
 

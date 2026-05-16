@@ -6,16 +6,19 @@ For Claude Code specific marketplace behavior, install commands, and user-facing
 
 ## Short Description
 
-SDC is a lightweight spec-driven coding workflow for Claude Code. It helps developers discover uncertain requirements, capture changes, preserve SCN/REQ/AC traceability, confirm high-impact decisions, apply tasks, run delivery checks, and archive stable specs in local project files.
+SDC is a lightweight spec-driven coding workflow for Claude Code. It uses role prompt contracts, discovers uncertain requirements, captures changes, analyzes legacy impact after requirements are confirmed, preserves SCN/REQ/AC traceability, confirms high-impact decisions, applies tasks, runs delivery checks, and archives stable specs in local project files.
 
 ## Long Description
 
 SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills:
 
 - initialize a `.sdc/` workspace
+- use per-skill role prompt contracts for expert behavior, evidence rules, and output discipline
 - create structured requirement changes
 - explore uncertain requirements through Discovery Gate
 - brainstorm and confirm high-impact product or technical decisions
+- build project cognition for brownfield repositories
+- analyze legacy change impact after requirements are confirmed
 - turn requirements into traceable `SCN -> REQ -> AC -> task -> evidence` plans
 - execute implementation tasks incrementally
 - run combined validation, review, test, quality, bug, impact, and repo checks

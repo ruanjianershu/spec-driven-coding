@@ -18,7 +18,35 @@ description: "Initialize the standard .sdc workspace with specs, changes, standa
 
 这个技能不是生成一次性文档，而是建立项目的“需求记忆区”。以后所有需求迭代都应该进入 `.sdc/`。
 
-SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决链，`discovery.md > spec.md > design.md/plan.md > tasks.md > code` 是事实裁决链。初始化必须把这两条链路写入项目资产。
+SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决链，`discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code` 是事实裁决链。初始化必须把这两条链路写入项目资产。
+
+SDC v1.1.3 起，`/sdc:init` 必须区分 Greenfield 与 Brownfield/Legacy：
+- 新项目：直接创建标准 `.sdc/` 结构，进入 `/sdc:change`。
+- 存量/遗留项目：创建同样结构，但额外生成 `project-cognition.md`，并提示先用 `/sdc:check repo` 基于代码证据补全项目整体认知。
+
+注意：遗留项目的“具体需求变更影响面分析”不在 init 阶段做。它必须在 `/sdc:change` 需求已经确认之后、进入 `/sdc:plan` 或 `/sdc:apply` 之前完成，并写入该 change 的 `impact.md`。
+
+## Role Prompt Contract
+
+### Role
+You are a project workspace architect and brownfield onboarding analyst. Your job is to create the SDC memory system without overwriting user work, and to distinguish a new project from an existing system that needs code-based cognition.
+
+### Operating Contract
+- Create or repair the `.sdc/` workspace idempotently; never overwrite existing project memory.
+- Classify the project as Greenfield, Brownfield/Legacy, or Unknown using visible repository evidence.
+- For Greenfield projects, guide the user toward the first `/sdc:change`.
+- For Brownfield/Legacy projects, create `project-cognition.md` and recommend `/sdc:check repo`; do not perform per-change impact analysis during init.
+
+### Evidence Rules
+- Use source files, build files, package manifests, tests, configuration, CI, database scripts, and launch scripts as project-type evidence.
+- Treat README files, comments, and historical documents as clues, not confirmed facts.
+- Mark uncertain project-type judgments as Unknown or likely Brownfield; do not overclaim.
+
+### Output Contract
+- Report created and preserved files.
+- State the project-type assessment and the evidence behind it.
+- For Brownfield/Legacy projects, clearly separate project cognition from future change impact analysis.
+- End with the next SDC command or artifact to update.
 
 ---
 
@@ -31,6 +59,12 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 - 如果已存在：只补齐缺失目录和模板，不能覆盖已有文件
 - 如果项目已有类似目录：说明将保留原目录，并创建/补齐 `.sdc/`
 
+同时判断项目类型：
+- Greenfield：没有明显源码、构建脚本、配置、测试或历史目录
+- Brownfield/Legacy：存在源码、构建脚本、运行配置、测试、CI、数据库脚本、历史业务目录或其他既有系统线索
+
+判断只能作为提示，不得替用户强行定性；如果不确定，标记为“可能是存量项目”，并建议补充 `project-cognition.md`。
+
 ---
 
 ### 第二步：创建标准目录结构
@@ -42,6 +76,7 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 ├── README.md
 ├── constitution.md
 ├── project.md
+├── project-cognition.md
 ├── current/
 │   ├── discovery.md
 │   ├── spec.md
@@ -77,6 +112,7 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 │   ├── plan.md
 │   ├── tasks.md
 │   ├── change.md
+│   ├── project-cognition.md
 │   ├── decision.md
 │   ├── stop-line-report.md
 │   ├── bug-analysis.md
@@ -92,6 +128,7 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 | 路径 | 作用 |
 |------|------|
 | `.sdc/project.md` | 项目长期背景、用户、技术栈、约束和验证命令 |
+| `.sdc/project-cognition.md` | 存量/遗留项目整体认知，基于代码证据记录系统形态、入口、模块、数据、风险和阅读顺序 |
 | `.sdc/constitution.md` | 项目不可协商的最高工程原则，定义治理裁决链和事实裁决链 |
 | `.sdc/current/` | 当前正在推进的一次需求迭代的快捷工作区 |
 | `.sdc/changes/active/` | 正在推进的需求变更，每个变更一个子目录 |
@@ -101,7 +138,33 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 | `.sdc/decisions/` | 架构、产品、技术关键决策 |
 | `.sdc/reviews/` | `/sdc:review` 的审查报告 |
 | `.sdc/reports/` | 测试、质量、Bug 分析、影响面分析、棕地仓库分析报告 |
-| `.sdc/templates/` | discovery/spec/plan/tasks/change/decision/熔断/bug/impact/repo-analysis 模板 |
+| `.sdc/templates/` | discovery/spec/plan/tasks/change/project-cognition/decision/熔断/bug/impact/repo-analysis 模板 |
+
+---
+
+## Greenfield / Brownfield 初始化规则
+
+### Greenfield / 新项目
+
+如果当前目录没有既有代码事实：
+- 直接创建标准 `.sdc/`
+- 下一步建议 `/sdc:change`
+- `project-cognition.md` 可以暂时为空
+
+### Brownfield / Legacy / 遗留项目
+
+如果当前目录已经有既有代码事实：
+- 创建标准 `.sdc/`
+- 生成 `project-cognition.md`
+- 输出建议：先执行 `/sdc:check repo` 完成项目整体认知
+- 不要在 init 阶段生成具体 change 的影响面分析
+
+`project-cognition.md` 必须吸收 SDDInAction 的 repo-analysis 思路：
+- 代码是真理之源，README/注释/历史文档只能作为线索
+- 先识别运行形态、启动入口、构建和配置，再理解业务
+- 提炼核心数据模型、入口链路、模块地图、外部集成、测试交付现状、遗留风险
+- 每个关键结论尽量标记 `[已确认事实]`、`[合理推断]` 或 `[待确认问题]`
+- 缺少运行环境、数据库、私有依赖、配置中心时必须显式记录缺口
 
 ---
 
@@ -116,10 +179,10 @@ SDC v1.1 引入 SDD 纪律内核：`constitution.md > AGENTS.md` 是治理裁决
 constitution.md > AGENTS.md
 
 ## 2. Fact Priority
-discovery.md > spec.md > design.md/plan.md > tasks.md > code
+discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code
 
 ## 3. Core Chain
-discovery -> spec -> plan -> tasks -> code -> verify -> archive
+discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive
 
 ## 4. Stop-The-Line Rules
 Stop and produce a Stop-Line Report when:
@@ -186,7 +249,9 @@ Stop and produce a Stop-Line Report when:
 
 ```text
 .sdc/changes/active/YYYY-MM-DD-short-name/
+├── discovery.md
 ├── proposal.md
+├── impact.md
 ├── tasks.md
 ├── design.md
 ├── spec.md
@@ -249,6 +314,8 @@ Stop and produce a Stop-Line Report when:
 | 7 | 必须创建 `current/tasks.md` 和 task 模板 | 无法强追踪执行 |
 | 8 | constitution 必须包含 Human Confirmation 和 No Silent Defaults | AI 越权决策 |
 | 9 | 必须创建 `current/discovery.md` 和 discovery 模板 | 不确定需求无法进入 Discovery Gate |
+| 10 | 遗留项目 init 只能做项目整体认知，不能做具体需求影响分析 | 时机错误，影响面分析会失真 |
+| 11 | 必须创建 `project-cognition.md` 和项目认知模板 | 遗留项目缺少上手地图 |
 
 ---
 

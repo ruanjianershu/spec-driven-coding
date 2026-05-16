@@ -7,6 +7,8 @@
 SDC 是一套**纯声明式 AI 开发技能集**。它不是把 slash command 做得越多越好，而是用少量稳定入口，让 AI 助手在每次需求迭代中做到：
 
 - 📂 先建立标准 `.sdc/` 工作区，长期记录需求迭代
+- 🎭 每个 skill 内置英文 Role Prompt Contract，调用时明确专家角色、工作契约、证据规则和输出契约
+- 🧭 存量/遗留项目先建立项目整体认知，再处理具体变更
 - 🧾 像 OpenSpec 一样记录 change、validate、archive 的核心生命周期
 - 📐 生成项目专属开发规范，让后续开发有章可循
 - 📋 先把需求转成 SCN/REQ/AC，再写代码
@@ -19,13 +21,22 @@ v1.1 的核心不是增加更多指令，而是强化内部纪律：
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
-事实优先级：discovery.md > spec.md > design.md/plan.md > tasks.md > code
+事实优先级：discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code
 追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
 确认门禁：高影响决策必须 Confirmed，不能 Silent Default
 探索门禁：不确定需求必须先 discovery，再 spec
+遗留门禁：init 做项目整体认知，change 需求确认后做 impact，再 plan/apply
 ```
 
 **零服务，零遥测，纯文本技能。** SDC 基于 Superpowers 的轻量 skill-pack 思路，吸收 OpenSpec 的核心需求生命周期，并加入 SDD/Karpathy-style 的“先思考、薄切片、TDD、证据链”工程纪律。
+
+v1.1.4 起，每个 SDC skill 都补充了英文 `Role Prompt Contract`：
+
+```text
+Role -> Operating Contract -> Evidence Rules -> Output Contract
+```
+
+这让 SDC 更接近 SDDInAction 的角色化任务 Prompt：每次 skill 被调用时，AI 不只知道流程，还会知道自己扮演什么专家、必须依据什么证据、什么时候停线、输出必须包含什么。
 
 普通模式只需要记住：
 
@@ -51,10 +62,11 @@ v1.1 的核心不是增加更多指令，而是强化内部纪律：
 2. change    创建 .sdc/changes/active/<change-id>/
 3. discovery 需求不确定时先发散、比较、收敛 MVP 和 Decision Ledger
 4. spec      将 Confirmed discovery 收敛为 SCN -> REQ -> AC
-5. plan      生成 design/tasks，并建立 SCN -> REQ -> AC -> T### 追溯
-6. apply     按 T### 薄切片执行，记录 notes 和验证证据
-7. check     合并 validate/review/test/quality，并支持 bug/impact/repo 分析模式
-8. archive   将完成的 change 沉淀到 .sdc/specs/ 和 archive/
+5. impact    遗留项目在需求确认后分析当前 change 的影响面
+6. plan      生成 design/tasks，并建立 SCN -> REQ -> AC -> T### 追溯
+7. apply     按 T### 薄切片执行，记录 notes 和验证证据
+8. check     合并 validate/review/test/quality，并支持 bug/impact/repo 分析模式
+9. archive   将完成的 change 沉淀到 .sdc/specs/ 和 archive/
 ```
 
 Claude Code 用户可以直接使用 slash commands：
@@ -74,6 +86,7 @@ Codex 用户使用自然语言或 `/skills` 触发同名 SDC skills：
 ```text
 用 SDC 初始化这个项目
 用 SDC 为登录流程创建 change；如果需求不确定，先进入 Discovery Gate
+如果这是遗留项目，用 SDC 在需求确认后做当前 change 的影响面分析
 用 SDC 基于已确认 discovery 生成 spec 和 plan
 用 SDC apply 执行当前任务
 用 SDC check 检查是否可以交付
@@ -197,6 +210,7 @@ npx sdc-spec@latest
 ```text
 用 SDC 初始化这个项目，创建 .sdc 工作区和开发规范
 用 SDC 为“支持用户登录”创建一次 change
+如果这是遗留项目，用 SDC 在需求确认后先更新 impact.md
 用 SDC 基于当前 change 生成 plan
 用 SDC 执行 apply
 用 SDC 做 check，给出验证、审查、测试和质量结论
@@ -239,9 +253,9 @@ SDC 已补齐官方市场审核需要的基础材料：
 
 | 命令 | 作用 |
 |------|------|
-| `/sdc:init` | 创建标准 `.sdc/` 工作区 |
-| `/sdc:change <name>` | 创建一次需求迭代；需求不确定时进入 Discovery Gate |
-| `/sdc:plan` | 基于已确认 spec 生成或更新 proposal/spec/design/tasks |
+| `/sdc:init` | 创建标准 `.sdc/` 工作区；遗留项目先建立项目整体认知 |
+| `/sdc:change <name>` | 创建一次需求迭代；需求不确定时进入 Discovery Gate，遗留项目需求确认后进入 Change Impact Gate |
+| `/sdc:plan` | 基于已确认 spec 和必要的 impact.md 生成或更新 proposal/spec/design/tasks |
 | `/sdc:apply` | 按 tasks 执行当前变更 |
 | `/sdc:check` | 综合执行校验、审查、测试和质量检查 |
 | `/sdc:archive <change-id>` | 归档需求迭代，沉淀稳定规范 |
@@ -279,6 +293,8 @@ SDC 已补齐官方市场审核需要的基础材料：
 
 日常心智模型：`change` 是入口，`spec` 是 change 内的规格细化。新项目第一版、后续迭代、Bug 修复都先用 `change`；只有当 change 已存在并且需要补清楚 SCN/REQ/AC 时，才直接用 `spec`。
 
+遗留项目心智模型：`init` 只建立项目整体认知，不分析某个还不存在的需求；具体变更的影响面分析发生在 `change` 需求确认后，写入当前 change 的 `impact.md`，再进入 `plan/apply`。
+
 ---
 
 ## 🗂️ SDC 工作区
@@ -289,6 +305,7 @@ SDC 已补齐官方市场审核需要的基础材料：
 .sdc/
 ├── constitution.md  # 最高工程裁决规则
 ├── project.md       # 项目背景、技术栈、约束和验证命令
+├── project-cognition.md # 遗留项目整体认知，基于代码证据维护
 ├── current/         # 当前需求快捷工作区
 ├── changes/         # 需求迭代：这次为什么改、怎么改、如何验收
 ├── specs/           # 稳定业务规范：项目应该做什么
@@ -296,7 +313,7 @@ SDC 已补齐官方市场审核需要的基础材料：
 ├── decisions/       # 架构/产品/技术关键决策
 ├── reviews/         # 审查报告
 ├── reports/         # bug、impact、repo-analysis 等分析报告
-└── templates/       # spec、plan、tasks、stop-line 等模板
+└── templates/       # spec、plan、tasks、project-cognition、impact 等模板
 ```
 
 其中 `standards/` 是项目专属开发规范：
@@ -354,6 +371,8 @@ SDC 的公共 Skill 内置四类纪律机制：
 | 追溯链 | `SCN -> REQ -> AC -> T### -> 验证证据` |
 | 探索门禁 | 不确定需求先进入 Discovery Gate，确认 MVP 后再生成 spec |
 | 确认门禁 | 高影响产品/技术决策必须进入 Decision Ledger，确认后才能 apply |
+| 遗留门禁 | init 建项目整体认知；change 需求确认后做 impact，再 plan/apply |
+| 角色契约 | 每个 skill 都有英文 Role Prompt Contract，约束角色、工作方式、证据和输出 |
 | 禁止静默默认值 | AI 可以提出 Proposed/Assumed，但不能把默认值写成事实 |
 | 停线报告 | 文档、代码、任务或验收冲突时先停线，不猜测推进 |
 | 反合理化表 | 对抗 AI “这个很简单不用测”“看起来没问题”等偷懒借口 |

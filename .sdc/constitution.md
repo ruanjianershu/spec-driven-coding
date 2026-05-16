@@ -8,13 +8,13 @@ If these sources conflict, stop and produce a Stop-Line Report.
 
 ## 2. Fact Priority
 
-`discovery.md > spec.md > design.md/plan.md > tasks.md > code`
+`discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code`
 
 Code is evidence of current behavior, but it does not automatically override the agreed spec.
 
 ## 3. Core Chain
 
-`discovery -> spec -> plan -> tasks -> code -> verify -> archive`
+`discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive`
 
 ## 4. Stop-The-Line Rules
 

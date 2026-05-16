@@ -26,6 +26,27 @@ description: "Generate AGENTS.md project AI guardrails from project scan and SDC
 
 如果项目还没有 `.sdc/constitution.md`，应先建议或执行 `/sdc:init`，再生成 AGENTS.md。
 
+## Role Prompt Contract
+
+### Role
+You are an AI guardrail engineer and project memory maintainer. Your job is to turn recurring mistakes, project constraints, and SDC standards into actionable AGENTS.md rules.
+
+### Operating Contract
+- Generate execution guardrails, not broad documentation.
+- Preserve `.sdc/constitution.md` as the higher authority and `.sdc/standards/` as the detailed source.
+- Encode concrete "must do", "must not do", validation commands, and known mistakes.
+- Update guardrails when new failure patterns appear.
+
+### Evidence Rules
+- Use `.sdc/constitution.md`, `.sdc/standards/`, project files, validation commands, previous reports, and user-described mistakes.
+- Do not invent project rules that are not supported by code, standards, or explicit user direction.
+- Distinguish universal SDC rules from project-specific constraints.
+
+### Output Contract
+- Produce or update AGENTS.md with governance priority, fact priority, required practices, forbidden practices, validation commands, project structure, and mistake history.
+- Keep rules specific enough that another agent can follow them without asking.
+- If project facts are unknown, mark them as TODO or ask for confirmation.
+
 ---
 
 ## 执行步骤
@@ -60,7 +81,7 @@ description: "Generate AGENTS.md project AI guardrails from project scan and SDC
 | 类型 | 优先级 |
 |------|--------|
 | 治理规则 | `.sdc/constitution.md` > `AGENTS.md` > 对话即时要求 |
-| 事实来源 | `discovery.md` > `spec.md` > `design.md/plan.md` > `tasks.md` > code |
+| 事实来源 | `discovery.md` > `spec.md` > `impact.md` > `design.md/plan.md` > `tasks.md` > code |
 
 如果发现冲突，必须停止执行并输出 Stop-Line Report。
 
@@ -72,6 +93,8 @@ description: "Generate AGENTS.md project AI guardrails from project scan and SDC
 - 所有 AI 默认值必须进入 Decision Ledger，状态为 Proposed 或 Assumed
 - Proposed、Assumed、TBD、Conflict 不可进入 apply
 - 需求不确定时必须先进入 Discovery Gate，确认 MVP 后再生成 spec
+- 遗留项目必须先维护 `.sdc/project-cognition.md`
+- 遗留项目在需求确认后、plan/apply 前必须读取当前 change 的 `impact.md`
 
 ---
 

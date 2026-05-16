@@ -2,6 +2,21 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.4
+
+- Added English Role Prompt Contracts to every SDC skill.
+- Standardized each contract around Role, Operating Contract, Evidence Rules, and Output Contract.
+- Strengthened SDDInAction-style expert persona behavior without adding new public commands.
+- Updated README, docs, package metadata, and plugin metadata for the role contract upgrade.
+
+## 1.1.3
+
+- Added Brownfield/Legacy project cognition during init through `project-cognition.md`.
+- Clarified that legacy change impact analysis happens after requirements are confirmed inside the current change, not during init.
+- Added per-change `impact.md` generation and Change Impact Gate before plan/apply for legacy projects.
+- Updated review/check to include final old-system modification and impact analysis for legacy deliveries.
+- Expanded CLI/templates/docs/metadata for legacy project cognition and confirmed-requirement impact analysis.
+
 ## 1.1.2
 
 - Added Discovery Gate as the built-in requirement exploration phase inside `/sdc:change`.
