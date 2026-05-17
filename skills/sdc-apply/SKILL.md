@@ -53,7 +53,7 @@ Load only what is needed:
 1. 读取当前 `tasks.md`。
 2. 从第一个未完成且依赖满足的 `T###` 开始。
 3. 记录该任务对应的 REQ/AC。
-4. 优先写或更新测试，再写最小实现。
+4. 先写或更新测试，再写最小实现；如果无法写测试，先在 notes 中记录原因和替代验证方式。
 5. 运行任务声明的 Verify 命令或可行的等价验证。
 6. 更新 `tasks.md`、`notes.md`、文件变更和验证证据。
 7. 如果实现需要超出 spec/design/tasks/impact，立即停线。

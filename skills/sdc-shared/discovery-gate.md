@@ -2,9 +2,29 @@
 
 Discovery Gate is the SDC replacement for broad brainstorming. It borrows divergent thinking, but it must converge into a small, verifiable change.
 
-## When To Enter
+## Mandatory Change Intake Gate
 
-Enter Discovery Gate when any of these are unclear:
+Before creating or updating any `.sdc/changes/active/*` files, ALWAYS run Change Intake Gate. Do not let the agent decide silently whether the requirement is "clear enough".
+
+The first response to a new `/sdc:change ...` request must:
+
+1. Restate only what the user has said.
+2. Ask 4 intake questions, one for each required category below.
+3. Wait for explicit user confirmation before writing files.
+4. Avoid assuming tech stack, timeline, scope, database, framework, deployment, integrations, roles, permissions, or success criteria.
+
+Required intake categories:
+
+- Project context: greenfield or existing codebase, solo/team, target users.
+- Core scope: must-have vs nice-to-have, MVP boundary, non-goals.
+- Technical preferences: language, framework, database, platform, deployment.
+- Constraints and acceptance: deadline, budget, integrations, compliance/security, how done will be proven.
+
+The agent may propose options, but every option is `Proposed` until the user confirms it. No change files, confirmed spec, final plan, or implementation tasks may be written before intake confirmation.
+
+## When To Continue Discovery
+
+After intake confirmation, continue Discovery Gate when any of these remain unresolved:
 
 - Target user or affected actor.
 - Business goal.
@@ -22,9 +42,9 @@ Use a lightweight sequence:
 
 1. Restate only what the user has actually said.
 2. Identify missing facts and high-impact decisions.
-3. Offer 2-3 candidate directions when options are useful.
+3. If the user has not selected a direction, offer 2-3 candidate directions and mark them `Proposed`.
 4. Recommend a smallest viable change slice.
-5. Ask at most 3 key questions.
+5. Ask 3-5 key questions when more discovery is still required after intake.
 6. Record decisions in `discovery.md`.
 7. Exit only when the MVP and blockers are confirmed or explicitly deferred.
 
@@ -66,23 +86,25 @@ Discovery Gate can exit only when:
 - High-impact decisions are `Confirmed` or `Deferred` outside the current MVP.
 - The user agrees the discovery can be turned into a spec.
 
-## Draft Change Summary
+## Intake Output
 
-Before writing final artifacts, present a short draft:
+Before writing files, present an intake summary:
 
 ```text
-## Change Draft
-- Background:
-- Goal:
-- Non-goals:
-- Scope:
-- Initial SCN:
-- Initial REQ:
-- Initial AC:
-- Risks / assumptions:
-- Discovery status: not needed / active / complete
+## Change Intake
+- Current understanding:
+- Missing / unconfirmed facts:
+- Proposed MVP direction:
 - Recommended change id:
+
+## Required Questions
+1. Project context:
+2. Core scope:
+3. Technical preferences:
+4. Constraints and acceptance:
+
+## Next Step
+Please confirm or correct the answers. I will create SDC change files only after confirmation.
 ```
 
 If the user says "use your judgment", record the proposed path as `Proposed` or `Assumed`. Do not treat it as confirmed.
-

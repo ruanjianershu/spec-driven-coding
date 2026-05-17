@@ -64,7 +64,7 @@ Examples that must not be silently created:
 - "Frontend/backend separation" -> Spring Boot, Vue, JWT, MyBatis, or a specific deployment layout.
 - "Admin user" -> concrete RBAC matrix.
 
-Offer 2-3 options when useful, mark them as `Proposed`, and ask for confirmation.
+When a high-impact decision is unconfirmed, offer 2-3 options, mark them as `Proposed`, and ask for confirmation.
 
 ## Stop-Line Report
 

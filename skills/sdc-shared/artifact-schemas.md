@@ -157,7 +157,7 @@ A durable spec should include:
 - Impact scope and non-scope.
 - Key tradeoffs.
 - Data, API, state, or interaction changes as relevant.
-- Brownfield `impact.md` summary when applicable.
+- Brownfield/Unknown `impact.md` summary; for confirmed Greenfield, write `N/A` with reason.
 - Risk, rollback, and migration notes.
 - REQ/AC to design decision mapping.
 
@@ -174,4 +174,3 @@ Archiving a completed change should:
 5. Move the change directory to `.sdc/changes/archive/<change-id>/`.
 
 Never delete change history to make it look cleaner.
-

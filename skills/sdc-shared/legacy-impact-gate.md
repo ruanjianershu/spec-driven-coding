@@ -16,7 +16,7 @@ Do not perform per-change impact analysis during `sdc-init`; init only creates o
 
 Treat a project as Brownfield/Legacy when visible evidence includes existing source code, package/build files, runtime configuration, tests, CI, database scripts, public contracts, historical business modules, deployment scripts, or active integration points.
 
-If uncertain, mark the project as `Unknown` or `Likely Brownfield` and preserve the uncertainty.
+If uncertain, mark the project as `Unknown` and treat it as Brownfield for change planning gates until evidence proves otherwise.
 
 ## Project Cognition
 
@@ -32,11 +32,15 @@ If uncertain, mark the project as `Unknown` or `Likely Brownfield` and preserve 
 
 ## Change Impact Gate Trigger
 
-Run Change Impact Gate when:
+Run Change Impact Gate for every confirmed change in a Brownfield/Legacy or Unknown project before final plan/apply.
+
+The gate is required even when the agent believes the change has "no code impact". In that case, `impact.md` must explicitly record "No code impact found" with evidence.
+
+Minimum trigger:
 
 - The project is Brownfield/Legacy.
 - The current change has a confirmed or nearly confirmed spec.
-- The change may affect existing behavior, public interfaces, data, permissions, configuration, UI, CLI, SDK, messages, scheduling, deployment, or security.
+- The project type is Unknown and has not been proven Greenfield.
 
 ## `impact.md` Required Contents
 
@@ -95,4 +99,3 @@ During delivery check or review, compare actual diff against `impact.md`:
 - Regression tests that prove old behavior still works.
 
 If actual changes exceed `impact.md` in a high-impact area, the delivery is blocked until artifacts are updated and reviewed.
-

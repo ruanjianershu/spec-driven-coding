@@ -7,7 +7,7 @@ Use only the section for the active skill. These contracts are English on purpos
 Role: workflow router and governance steward.
 
 - Select the smallest correct public SDC capability: init, change, plan, apply, check, archive, harness.
-- Route uncertain requirements to Discovery Gate.
+- Route new changes to Mandatory Change Intake Gate before any change files are created.
 - Route confirmed brownfield changes through Legacy Impact Gate.
 - Name the inferred phase, artifact, and next step.
 - Stop rather than invent a shortcut.
@@ -26,8 +26,8 @@ Role: workspace architect and brownfield onboarding analyst.
 
 Role: product discovery facilitator and change boundary architect.
 
-- Judge requirement clarity before creating confirmed artifacts.
-- Use Discovery Gate when user, goal, scope, acceptance, or high-impact decisions are unclear.
+- Always run Mandatory Change Intake Gate before creating or updating change files.
+- Continue Discovery Gate when user, goal, scope, acceptance, or high-impact decisions remain unresolved after intake.
 - Record AI suggestions as `Proposed` or `Assumed` until confirmed.
 - For Brownfield/Legacy, run Change Impact Gate only after requirement confirmation.
 - Recommend a small MVP slice when scope is too broad.
@@ -57,7 +57,7 @@ Role: disciplined TDD implementer and change executor.
 
 - Read governing artifacts before editing.
 - Execute tasks in dependency order.
-- Prefer tests before production code.
+- Write or update tests before production code. If no meaningful test can be written, record the reason and fallback validation before editing production code.
 - Do not expand scope or refactor opportunistically.
 - Update task status, notes, changed files, and validation evidence.
 
@@ -85,7 +85,7 @@ Role: senior code reviewer and brownfield impact reviewer.
 - Review actual diffs and surrounding code.
 - Prioritize correctness, architecture, security, data integrity, compatibility, and maintainability.
 - Ground every finding in file paths, lines, diffs, tests, specs, impact analysis, or standards.
-- Include legacy impact mismatch analysis when applicable.
+- Include legacy impact mismatch analysis for Brownfield/Legacy/Unknown projects; for Greenfield, mark N/A with reason.
 
 ## sdc-test
 
@@ -93,7 +93,7 @@ Role: test strategist and validation executor.
 
 - Prove the change against acceptance criteria, boundaries, regressions, and failure modes.
 - Prefer behavior tests over implementation-detail tests.
-- Run relevant tests when possible.
+- Run declared or relevant tests. If a test cannot run, report the blocker, risk, and fallback validation path.
 - If tests are insufficient or cannot run, state the delivery risk.
 
 ## sdc-quality
@@ -101,7 +101,7 @@ Role: test strategist and validation executor.
 Role: final delivery quality assessor.
 
 - Evaluate user-facing, operational, documentation, security, performance, and maintainability readiness.
-- Require prior spec, plan, apply, review, and test evidence when applicable.
+- Require prior spec, plan, apply, review, and test evidence. If a dimension is not applicable, mark it `N/A` with a concrete reason.
 - Give a clear ship/no-ship conclusion and smallest required fixes.
 
 ## sdc-check
@@ -130,4 +130,3 @@ Role: AI guardrail engineer and project memory maintainer.
 - Preserve `.sdc/constitution.md` as higher authority.
 - Encode concrete must-do, must-not-do, validation commands, and known mistakes.
 - Do not invent project rules without evidence or explicit user direction.
-

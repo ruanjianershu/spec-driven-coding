@@ -59,8 +59,8 @@ Role -> Operating Contract -> Evidence Rules -> Output Contract
 
 ```text
 1. init      创建 .sdc/ 工作区、constitution、standards、templates
-2. change    创建 .sdc/changes/active/<change-id>/
-3. discovery 需求不确定时先发散、比较、收敛 MVP 和 Decision Ledger
+2. change    先做 Mandatory Change Intake Gate，用户确认后创建 .sdc/changes/active/<change-id>/
+3. discovery intake 后仍有不确定项时，继续发散、比较、收敛 MVP 和 Decision Ledger
 4. spec      将 Confirmed discovery 收敛为 SCN -> REQ -> AC
 5. impact    遗留项目在需求确认后分析当前 change 的影响面
 6. plan      生成 design/tasks，并建立 SCN -> REQ -> AC -> T### 追溯
@@ -85,7 +85,7 @@ Codex 用户使用自然语言或 `/skills` 触发同名 SDC skills：
 
 ```text
 用 SDC 初始化这个项目
-用 SDC 为登录流程创建 change；如果需求不确定，先进入 Discovery Gate
+用 SDC 为登录流程创建 change；先完成 intake 问题并确认，再创建 change 文件
 如果这是遗留项目，用 SDC 在需求确认后做当前 change 的影响面分析
 用 SDC 基于已确认 discovery 生成 spec 和 plan
 用 SDC apply 执行当前任务
@@ -290,7 +290,7 @@ SDC 已补齐官方市场审核需要的基础材料：
 | 命令 | 作用 |
 |------|------|
 | `/sdc:init` | 创建标准 `.sdc/` 工作区；遗留项目先建立项目整体认知 |
-| `/sdc:change <name>` | 创建一次需求迭代；需求不确定时进入 Discovery Gate，遗留项目需求确认后进入 Change Impact Gate |
+| `/sdc:change <name>` | 创建一次需求迭代；创建文件前必须先完成 Mandatory Change Intake Gate，遗留项目需求确认后进入 Change Impact Gate |
 | `/sdc:plan` | 基于已确认 spec 和必要的 impact.md 生成或更新 proposal/spec/design/tasks |
 | `/sdc:apply` | 按 tasks 执行当前变更 |
 | `/sdc:check` | 综合执行校验、审查、测试和质量检查 |

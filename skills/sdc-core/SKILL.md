@@ -43,7 +43,7 @@ Load only what is needed:
 | 用户意图 | 应执行的 SDC 能力 |
 | --- | --- |
 | 初始化、第一次使用、建立目录 | `/sdc:init` |
-| 新需求、新功能、需求变更 | `/sdc:change` |
+| 新需求、新功能、需求变更 | `/sdc:change`，先执行 Mandatory Change Intake Gate |
 | 需求探索、头脑风暴、范围不清楚 | `/sdc:change` 的 Discovery Gate |
 | 开始写代码、执行计划 | `/sdc:apply` |
 | 检查、验收、能不能交付 | `/sdc:check` |
@@ -59,9 +59,9 @@ Load only what is needed:
 1. 优先判断阶段，不要求用户记细分命令。
 2. 如果 `.sdc/` 不存在，先建议或执行 `/sdc:init`。
 3. 新需求必须进入 `.sdc/changes/` 或 `.sdc/current/`。
-4. 需求不确定时先进入 Discovery Gate，不能直接生成 Confirmed spec。
+4. 新 change 一律先进入 Mandatory Change Intake Gate；用户确认前不能创建 change 文件。
 5. 遗留项目 init 只做整体认知；具体变更影响面必须在 change 需求确认后执行。
-6. apply 前必须有 confirmed spec、impact（如适用）、design/plan 和 tasks。
+6. apply 前必须有 confirmed spec、design/plan 和 tasks；Brownfield/Legacy/Unknown 必须有 impact，明确 Greenfield 才可 N/A。
 7. check 承担 validate/review/test/quality，以及 bug/impact/repo 分析入口。
 8. spec/design/tasks/code 冲突时必须停线。
 9. 高影响决策必须 Confirmed，不能 Silent Default。

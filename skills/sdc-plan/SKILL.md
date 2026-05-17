@@ -48,14 +48,14 @@ Load only what is needed:
 
 如果 spec 缺少 SCN/REQ/AC、验收场景或关键约束，必须停线回到 `/sdc:spec`。
 
-如果存在未确认高影响决策，必须输出 Stop-Line Report，不能写成最终 design/tasks。
+如果缺少 Decision Ledger，或存在未确认高影响决策，必须输出 Stop-Line Report，不能写成最终 design/tasks。
 
-如果是 Brownfield/Legacy 项目且缺少有效 `impact.md`，必须先回到 Legacy Impact Gate。
+如果是 Brownfield/Legacy/Unknown 项目且缺少有效 `impact.md`，必须先回到 Legacy Impact Gate。即使 AI 判断“没有影响”，也必须有 `impact.md` 记录证据。
 
 ## 执行步骤
 
 1. 确认 spec 状态和 Decision Ledger。
-2. 确认 Brownfield/Legacy impact 是否适用且已完成。
+2. 确认 Brownfield/Legacy/Unknown impact 已完成；只有明确 Greenfield 才可标记 N/A 并说明理由。
 3. 提炼设计摘要、影响范围、不改范围、风险和回滚。
 4. 将 REQ/AC 映射到设计决策。
 5. 拆出 5-12 个当前 MVP slice 的薄任务。
@@ -93,7 +93,7 @@ Load only what is needed:
 
 ## 遗留项目影响面
 - 适用：
-- impact.md：
+- impact.md：已完成 / Greenfield N/A（说明理由）
 - 阻塞项：
 
 ## 任务拆解

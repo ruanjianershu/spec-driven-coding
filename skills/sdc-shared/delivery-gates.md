@@ -61,7 +61,7 @@ Final quality checks should cover:
 - Setup and documentation clarity.
 - Code quality and formatting.
 - Security baseline.
-- Performance baseline when relevant.
+- Performance baseline, or `N/A` with a concrete reason.
 - Maintainability.
 - Release or deployment readiness.
 - Validation evidence.
@@ -117,4 +117,3 @@ Block archive when:
 - Check or equivalent review/test/security/quality evidence is missing.
 - `.sdc/specs/<change-id>.md` already exists and overwrite is not explicitly allowed.
 - Residual work is hidden instead of recorded as deferred scope or a new change.
-

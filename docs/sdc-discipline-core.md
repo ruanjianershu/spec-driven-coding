@@ -91,7 +91,7 @@ This is the rule: suggestions are useful, silent defaults are not.
 
 ## Discovery Gate
 
-`/sdc:change` is the normal entry point for new work. When the requirement is uncertain, it should enter Discovery Gate before producing a confirmed spec.
+`/sdc:change` is the normal entry point for new work. It must always start with Mandatory Change Intake Gate before creating files. The agent must not decide silently whether the request is "clear enough".
 
 Discovery Gate is SDC's built-in requirement exploration workflow. It borrows the useful shape of brainstorming, but it must end in SDC artifacts:
 
@@ -99,7 +99,7 @@ Discovery Gate is SDC's built-in requirement exploration workflow. It borrows th
 discovery.md -> Decision Ledger -> confirmed MVP -> spec.md
 ```
 
-Use Discovery Gate when any of these are unclear:
+Mandatory Change Intake Gate always asks project context, core scope, technical preferences, and constraints/acceptance questions. After intake, continue Discovery Gate when any of these remain unresolved:
 
 - target user or affected actor.
 - business goal.
