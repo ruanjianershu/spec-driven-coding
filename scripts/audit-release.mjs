@@ -56,6 +56,29 @@ const commandFiles = fs
   .map((name) => name.replace(/\.md$/, ''));
 sameSet(commandFiles, publicCommands, 'Claude public command files');
 
+const claudePlugin = readJSON('.claude-plugin/plugin.json');
+const expectedClaudeSkills = [
+  './.claude/skills/sdc-core',
+  './.claude/skills/sdc-init',
+  './.claude/skills/sdc-change',
+  './.claude/skills/sdc-plan',
+  './.claude/skills/sdc-apply',
+  './.claude/skills/sdc-check',
+  './.claude/skills/sdc-archive',
+  './.claude/skills/sdc-harness',
+  './.claude/skills/sdc-spec',
+  './.claude/skills/sdc-implement',
+  './.claude/skills/sdc-review',
+  './.claude/skills/sdc-test',
+  './.claude/skills/sdc-quality',
+  './.claude/skills/sdc-validate',
+];
+if (!Array.isArray(claudePlugin.skills)) {
+  fail('Claude plugin skills must be an explicit array, not a whole .claude/skills/ directory scan.');
+} else {
+  sameSet(claudePlugin.skills, expectedClaudeSkills, 'Claude plugin explicit skills');
+}
+
 const codexPlugin = readJSON('.codex-plugin/plugin.json');
 if (Object.prototype.hasOwnProperty.call(codexPlugin, 'commands')) {
   fail('Codex plugin must be skill-plugin only and must not declare slash commands.');
@@ -75,10 +98,16 @@ const pluginEntriesBlock = installJs.slice(
 if (pluginEntriesBlock.includes("'.claude',")) {
   fail('PLUGIN_ENTRIES must not copy a root .claude directory; Claude layout is generated.');
 }
+if (/\b(init|change|plan|apply|check|archive|harness|spec|implement|review|test|quality|validate):\s*'sdc-/.test(installJs)) {
+  fail('Claude skill layout must not generate short alias skill directories that collide with slash command names.');
+}
+if (!installJs.includes("'sdc-init'") || !installJs.includes("path.join(claudeSkillsRoot, skillName)")) {
+  fail('Claude skill layout must generate sdc-* skill directories.');
+}
 
 const cli = readText('sdc-cli.py');
-if (cli.includes('Schema: SDC 1.1.7')) {
-  fail('sdc-cli.py still contains stale Schema: SDC 1.1.7.');
+if (cli.includes('Schema: SDC 1.1.7') || cli.includes('Schema: SDC 1.1.8')) {
+  fail('sdc-cli.py still contains stale Schema: SDC 1.1.7/1.1.8.');
 }
 if (!cli.includes('--confirmed-intake')) {
   fail('sdc-cli.py must enforce Change Intake Gate with --confirmed-intake for file creation.');

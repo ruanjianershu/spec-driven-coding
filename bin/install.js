@@ -128,27 +128,27 @@ function ensureClaudeSkillLayout(pluginRoot, sourceRoot = path.join(pluginRoot, 
     copyDir(shared, path.join(claudeSkillsRoot, 'sdc-shared'));
   }
 
-  const aliases = {
-    sdc: 'sdc-core',
-    init: 'sdc-init',
-    change: 'sdc-change',
-    plan: 'sdc-plan',
-    apply: 'sdc-apply',
-    check: 'sdc-check',
-    archive: 'sdc-archive',
-    harness: 'sdc-harness',
-    spec: 'sdc-spec',
-    implement: 'sdc-implement',
-    review: 'sdc-review',
-    test: 'sdc-test',
-    quality: 'sdc-quality',
-    validate: 'sdc-validate'
-  };
+  const skillNames = [
+    'sdc-core',
+    'sdc-init',
+    'sdc-change',
+    'sdc-plan',
+    'sdc-apply',
+    'sdc-check',
+    'sdc-archive',
+    'sdc-harness',
+    'sdc-spec',
+    'sdc-implement',
+    'sdc-review',
+    'sdc-test',
+    'sdc-quality',
+    'sdc-validate'
+  ];
 
-  for (const [alias, skillName] of Object.entries(aliases)) {
+  for (const skillName of skillNames) {
     const src = path.join(sourceRoot, skillName);
     if (fs.existsSync(src)) {
-      copyDir(src, path.join(claudeSkillsRoot, alias));
+      copyDir(src, path.join(claudeSkillsRoot, skillName));
     }
   }
 }

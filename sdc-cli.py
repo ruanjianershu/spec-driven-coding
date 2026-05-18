@@ -246,7 +246,7 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.1.8
+- Schema: SDC 1.1.9
 - Source:
 
 ## 1. Decision Ledger / 决策台账
@@ -640,7 +640,7 @@ YYYY-MM-DD-short-title.md
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.1.8
+- Schema: SDC 1.1.9
 - Source:
 
 ## 1. Decision Ledger / 决策台账

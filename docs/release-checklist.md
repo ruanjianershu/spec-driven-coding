@@ -33,10 +33,11 @@ Expected:
 
 - `sdc@sdc-local` appears in `claude plugin list`
 - plugin version matches the release version
-- Claude plugin cache contains `.claude/skills/init/SKILL.md`
+- Claude plugin cache contains `.claude/skills/sdc-init/SKILL.md`
 - Claude plugin cache contains `.claude/skills/sdc-shared/role-contracts.md`
 - Claude plugin cache contains `commands/init.md`
-- Claude local marketplace source does not contain a root `skills/` directory; only `.claude/skills/` should be exposed to Claude Code
+- Claude local marketplace source does not contain a root `skills/` directory
+- Claude generated skill directories use `sdc-*` names, not short command aliases such as `.claude/skills/init`, to avoid duplicate `/sdc:init` registration
 
 ## Manual Smoke Test
 

@@ -2,6 +2,12 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.9
+
+- Fixed Claude Code duplicate command/skill registration by generating Claude skill directories with `sdc-*` names instead of short command aliases.
+- Changed the Claude plugin manifest to declare skills explicitly as an array, so public slash commands such as `/sdc:init` do not collide with same-named plugin skills.
+- Updated installer and release audit checks to prevent short Claude skill alias directories from returning.
+
 ## 1.1.8
 
 - Changed Codex installation to plugin-first by default and clean stale `~/.agents/skills/sdc-*` and `~/.codex/plugins/sdc` direct installs to avoid duplicate SDC entries.

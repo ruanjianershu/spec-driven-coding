@@ -65,7 +65,7 @@ This produces user-facing Claude Code commands such as:
 /sdc:plan
 ```
 
-SDC also generates a `.claude/skills/` compatibility layout during install so Claude Code versions that scan that path can load the same capabilities.
+SDC also generates a `.claude/skills/` compatibility layout during install so Claude Code versions that scan that path can load the same capabilities. Generated Claude skill directories use `sdc-*` names such as `.claude/skills/sdc-init/`, not short command aliases such as `.claude/skills/init/`, so public slash commands and skills do not register with the same `sdc:init` name.
 
 ## Marketplace Submission Positioning
 
