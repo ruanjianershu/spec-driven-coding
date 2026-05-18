@@ -23,7 +23,10 @@ const PLUGIN_ENTRIES = [
   'commands',
   '.claude-plugin',
   '.codex-plugin',
-  'docs',
+  'docs/claude-code-marketplace.md',
+  'docs/official-submission.md',
+  'docs/release-checklist.md',
+  'docs/sdc-discipline-core.md',
   'SECURITY.md',
   'PRIVACY.md',
   'CHANGELOG.md',
@@ -90,20 +93,29 @@ function copyIfExists(src, dest) {
   }
 }
 
-function copyPlugin(dest) {
+function copyPlugin(dest, options = {}) {
+  const includeRootSkills = options.includeRootSkills !== false;
+  const claudeSkillSourceRoot = options.claudeSkillSourceRoot || path.join(dest, 'skills');
+
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
   }
 
   for (const entry of PLUGIN_ENTRIES) {
+    if (entry === 'skills' && !includeRootSkills) {
+      continue;
+    }
     copyIfExists(path.join(projectRoot, entry), path.join(dest, entry));
   }
 
-  ensureClaudeSkillLayout(dest);
+  ensureClaudeSkillLayout(dest, claudeSkillSourceRoot);
+
+  if (!includeRootSkills) {
+    fs.rmSync(path.join(dest, 'skills'), { recursive: true, force: true });
+  }
 }
 
-function ensureClaudeSkillLayout(pluginRoot) {
-  const sourceRoot = path.join(pluginRoot, 'skills');
+function ensureClaudeSkillLayout(pluginRoot, sourceRoot = path.join(pluginRoot, 'skills')) {
   if (!fs.existsSync(sourceRoot)) {
     return;
   }
@@ -237,7 +249,10 @@ function runOptional(command, args) {
 function writeLocalClaudeMarketplace(home) {
   const marketplaceRoot = path.join(home, '.claude', 'plugins', 'marketplaces', SDC_MARKETPLACE_NAME);
   fs.rmSync(marketplaceRoot, { recursive: true, force: true });
-  copyPlugin(marketplaceRoot);
+  copyPlugin(marketplaceRoot, {
+    includeRootSkills: false,
+    claudeSkillSourceRoot: path.join(projectRoot, 'skills')
+  });
   return marketplaceRoot;
 }
 

@@ -2,6 +2,12 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.5
+
+- Fixed Claude Code local marketplace packaging so it exposes only `.claude/skills/` and no longer registers duplicate root `skills/` entries.
+- Kept Codex and Hermes skill packaging unchanged.
+- Added release checklist coverage for duplicate skill registration.
+
 ## 1.1.4
 
 - Added English Role Prompt Contracts to every SDC skill.

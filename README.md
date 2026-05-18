@@ -179,14 +179,15 @@ git clone https://github.com/ruanjianershu/spec-driven-coding.git
 cd spec-driven-coding
 ```
 
-Claude Code 推荐通过 marketplace 安装：
+本地 clone 调试也推荐运行安装器，它会为 Claude Code 生成只包含 `.claude/skills/` 的专用 marketplace，避免根 `skills/` 和 `.claude/skills/` 被重复注册：
 
 ```bash
-claude plugin marketplace add "$(pwd)" --scope user
-claude plugin install sdc@sdc-local --scope user
+node bin/install.js
 ```
 
-Codex 可通过 `npx sdc-spec@latest` 完成本地 marketplace 和 skills 同步。
+不要直接把仓库根目录 `claude plugin marketplace add "$(pwd)"` 作为 Claude marketplace；仓库根目录同时包含 Codex/Hermes 使用的 `skills/` 和 Claude 使用的 `.claude/skills/`，直接加载可能出现重复 skill。
+
+Codex 可通过 `node bin/install.js` 或 `npx sdc-spec@latest` 完成本地 marketplace 和 skills 同步。
 
 ### 方式 3：手动复制技能
 直接把 `skills/` 目录复制到你的 AI 工具的 skills 目录。

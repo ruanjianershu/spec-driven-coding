@@ -35,6 +35,7 @@ Expected:
 - Claude plugin cache contains `.claude/skills/init/SKILL.md`
 - Claude plugin cache contains `.claude/skills/sdc-shared/role-contracts.md`
 - Claude plugin cache contains `commands/init.md`
+- Claude local marketplace source does not contain a root `skills/` directory; only `.claude/skills/` should be exposed to Claude Code
 
 ## Manual Smoke Test
 

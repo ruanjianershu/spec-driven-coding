@@ -4,7 +4,7 @@ SDC is designed to be submitted to the Claude plugin directory and used from Cla
 
 ## Current Distribution
 
-Before SDC is accepted into the official marketplace, users can install it through npm or a local marketplace:
+Before SDC is accepted into the official marketplace, users can install it through npm or the generated local marketplace:
 
 ```bash
 npx sdc-spec@latest
@@ -13,9 +13,10 @@ npx sdc-spec@latest
 or from a cloned repository:
 
 ```bash
-claude plugin marketplace add "$(pwd)" --scope user
-claude plugin install sdc@sdc-local --scope user
+node bin/install.js
 ```
+
+Do not add the repository root directly as a Claude marketplace. The repository root contains `skills/` for Codex/Hermes and `.claude/skills/` for Claude compatibility; the installer generates a Claude-specific marketplace that exposes only `.claude/skills/` to avoid duplicate skill registration.
 
 After installation, restart Claude Code or run `/reload-plugins` when available.
 
