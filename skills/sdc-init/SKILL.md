@@ -72,6 +72,7 @@ Load only what is needed:
 - `project-cognition.md` 记录项目整体认知：运行形态、入口、模块、数据、集成、测试、风险、阅读顺序。
 - 关键结论尽量标记 `[Confirmed Fact]`、`[Reasoned Inference]`、`[Open Question]`。
 - 下一步建议 `/sdc:check repo` 补全代码证据。
+- `project-cognition.md` 是长期可复用基座；后续 change 默认读取它并做局部 impact，不应每次重跑完整项目分析。
 
 ## 输出格式
 

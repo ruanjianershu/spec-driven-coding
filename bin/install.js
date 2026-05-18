@@ -19,7 +19,6 @@ const RESET = '\x1b[0m';
 
 const PLUGIN_ENTRIES = [
   'skills',
-  '.claude',
   'commands',
   '.claude-plugin',
   '.codex-plugin',
@@ -264,6 +263,14 @@ function installClaudePlugin(home) {
   fs.rmSync(path.join(home, '.claude', 'plugins', 'sdc-spec'), { recursive: true, force: true });
 
   const hasClaude = runOptional('claude', ['--version']);
+  if (hasClaude) {
+    runOptional('claude', ['plugin', 'uninstall', 'sdc', '--scope', 'user', '--yes']);
+    runOptional('claude', ['plugin', 'uninstall', SDC_CLAUDE_PLUGIN_ID, '--scope', 'user', '--yes']);
+    runOptional('claude', ['plugin', 'marketplace', 'remove', SDC_MARKETPLACE_NAME]);
+  }
+
+  writeLocalClaudeMarketplace(home);
+
   if (!hasClaude) {
     return {
       marketplaceRoot,
@@ -272,11 +279,6 @@ function installClaudePlugin(home) {
     };
   }
 
-  runOptional('claude', ['plugin', 'uninstall', 'sdc', '--scope', 'user', '--yes']);
-  runOptional('claude', ['plugin', 'uninstall', SDC_CLAUDE_PLUGIN_ID, '--scope', 'user', '--yes']);
-  runOptional('claude', ['plugin', 'marketplace', 'remove', SDC_MARKETPLACE_NAME]);
-
-  writeLocalClaudeMarketplace(home);
   const marketplaceAdded = runOptional('claude', [
     'plugin',
     'marketplace',
@@ -332,6 +334,29 @@ function installCodexSkills(home) {
   }
 
   return installedPaths;
+}
+
+function removeCodexDirectSkills(home) {
+  const removedPaths = [];
+
+  for (const skillsRoot of [
+    path.join(home, '.agents', 'skills'),
+    path.join(home, '.codex', 'skills')
+  ]) {
+    if (!fs.existsSync(skillsRoot)) {
+      continue;
+    }
+
+    for (const entry of fs.readdirSync(skillsRoot, { withFileTypes: true })) {
+      if (entry.isDirectory() && entry.name.startsWith('sdc-')) {
+        const target = path.join(skillsRoot, entry.name);
+        fs.rmSync(target, { recursive: true, force: true });
+        removedPaths.push(target);
+      }
+    }
+  }
+
+  return removedPaths;
 }
 
 function uninstallClaude(home) {
@@ -442,11 +467,11 @@ function detectPlatforms() {
     }
   }
   
-  // CodeX/Codex: install to the default path even on a fresh machine.
+  // Codex: install to the default path even on a fresh machine.
   // Some Codex builds load custom skills from ~/.agents/skills and may not
   // create ~/.codex/plugins before the first plugin install.
   const codexPath = path.join(home, '.codex', 'plugins');
-  platforms.push({ name: 'CodeX', path: codexPath, type: 'codex' });
+  platforms.push({ name: 'Codex', path: codexPath, type: 'codex' });
   
   // Hermes Agent
   const hermesPaths = [
@@ -466,10 +491,19 @@ function installToPlatform(platform) {
   log(BLUE, `\n安装到 ${platform.name}...`);
   
   const destPath = path.join(platform.path, 'sdc');
+  let installedPath = destPath;
   
   if (platform.type === 'hermes') {
     // Hermes 只需要 skills 目录
     copyDir(path.join(projectRoot, 'skills'), destPath);
+  } else if (platform.type === 'codex') {
+    // Codex uses the local marketplace/cache flow below. Remove the old direct
+    // plugin copy so Codex builds that scan ~/.codex/plugins do not see SDC twice.
+    fs.rmSync(destPath, { recursive: true, force: true });
+  } else if (platform.type === 'claude') {
+    // Claude Code uses the generated local marketplace below; do not leave a
+    // direct ~/.claude/plugins/sdc copy with root skills.
+    fs.rmSync(destPath, { recursive: true, force: true });
   } else {
     // 其他平台复制插件所需文件，避免带入 .git、.DS_Store 等本地文件
     copyPlugin(destPath);
@@ -480,15 +514,25 @@ function installToPlatform(platform) {
     const marketplaceRoot = writeLocalCodexMarketplace(home);
     const cachePath = writeCodexPluginCache(home);
     const configPath = enableCodexPlugin(home, marketplaceRoot);
-    const skillPaths = installCodexSkills(home);
+    installedPath = cachePath;
+    const useLegacyDirectSkills = process.env.SDC_CODEX_DIRECT_SKILLS === '1';
+    const legacySkillPaths = useLegacyDirectSkills ? installCodexSkills(home) : [];
+    const removedSkillPaths = useLegacyDirectSkills ? [] : removeCodexDirectSkills(home);
     console.log('  已注册 Codex 本地插件 marketplace：');
     console.log(`  - ${marketplaceRoot}`);
     console.log('  已写入 Codex 插件 cache：');
     console.log(`  - ${cachePath}`);
     console.log(`  已启用 Codex 插件：${SDC_PLUGIN_ID}`);
     console.log(`  - ${configPath}`);
-    console.log('  已同步 Codex 可直接扫描的 skills：');
-    skillPaths.forEach((p) => console.log(`  - ${p}`));
+    if (useLegacyDirectSkills) {
+      console.log('  已同步 Codex legacy 直扫 skills：');
+      legacySkillPaths.forEach((p) => console.log(`  - ${p}`));
+    } else if (removedSkillPaths.length > 0) {
+      console.log('  已清理旧版 Codex 直扫 SDC skills，避免重复注册：');
+      removedSkillPaths.forEach((p) => console.log(`  - ${p}`));
+    } else {
+      console.log('  Codex 使用 plugin skills；未写入 legacy 直扫 skills。');
+    }
   } else if (platform.type === 'claude') {
     const home = process.env.HOME || process.env.USERPROFILE;
     const result = installClaudePlugin(home);
@@ -501,7 +545,7 @@ function installToPlatform(platform) {
     }
   }
   
-  log(GREEN, `✅ 安装成功！路径: ${destPath}`);
+  log(GREEN, `✅ 安装成功！路径: ${installedPath}`);
 }
 
 // Main
@@ -529,7 +573,7 @@ if (platforms.length === 0) {
   log(YELLOW, '\n⚠️  未检测到已知的 AI 编码工具');
   console.log('\n支持的平台：');
   console.log('  - Claude Code');
-  console.log('  - CodeX');
+  console.log('  - Codex');
   console.log('  - Hermes Agent');
   console.log('\n手动安装方式：');
   console.log(`  git clone https://github.com/ruanjianershu/spec-driven-coding.git`);
@@ -562,16 +606,31 @@ console.log('\n' + '='.repeat(60));
 log(GREEN, '🎉 SDC 安装完成！');
 console.log('='.repeat(60));
 
+const installedTypes = new Set(platforms.map((platform) => platform.type));
+
 console.log('\n📖 使用方法：');
-console.log('  /sdc:init');
-console.log('  /sdc:change 支持用户登录');
-console.log('  /sdc:plan');
-console.log('  /sdc:apply');
-console.log('  /sdc:check');
-console.log('  /sdc:archive <change-id>');
-console.log('\n高级用法：仍可直接调用 /sdc:spec、/sdc:review、/sdc:test、/sdc:quality、/sdc:validate 等细分指令');
-console.log('\n⚠️  Claude Code 安装后请完全重启应用，让 slash commands 重新加载。');
-console.log('⚠️  Codex 当前版本不支持插件自定义 slash commands，请通过 /skills 或自然语言触发 SDC skills。');
+if (installedTypes.has('claude')) {
+  console.log('\nClaude Code slash commands：');
+  console.log('  /sdc:init');
+  console.log('  /sdc:change 支持用户登录');
+  console.log('  /sdc:plan');
+  console.log('  /sdc:apply');
+  console.log('  /sdc:check');
+  console.log('  /sdc:archive <change-id>');
+  console.log('  细分能力：sdc-spec、sdc-review、sdc-test、sdc-quality、sdc-validate 可通过 skills 或自然语言调用。');
+  console.log('  安装后请完全重启 Claude Code，让 slash commands 重新加载。');
+}
+
+if (installedTypes.has('codex')) {
+  console.log('\nCodex skill plugin：');
+  console.log('  Codex 当前版本不支持插件自定义 /sdc:* slash commands。');
+  console.log('  请通过 /skills 查看 SDC / sdc:* skills，或用自然语言触发：使用 SDC 初始化项目、使用 SDC 创建 change。');
+}
+
+if (installedTypes.has('hermes')) {
+  console.log('\nHermes Agent skills：');
+  console.log('  在 Hermes 的 skill 列表中使用 sdc / sdc-* 能力。');
+}
 
 console.log('\n🔗 项目地址：https://github.com/ruanjianershu/spec-driven-coding');
 console.log('\n');

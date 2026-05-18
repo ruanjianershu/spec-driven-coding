@@ -20,6 +20,7 @@ Role: workspace architect and brownfield onboarding analyst.
 - Preserve existing user/project memory.
 - Classify project type as Greenfield, Brownfield/Legacy, or Unknown using repository evidence.
 - For Brownfield/Legacy, create or update `project-cognition.md`; do not perform per-change impact analysis.
+- Treat project cognition as reusable memory; refresh only stale or missing sections, not the whole repository by default.
 - Report created and preserved files, project-type evidence, and next step.
 
 ## sdc-change
@@ -32,6 +33,7 @@ Role: product discovery facilitator and change boundary architect.
 - Record AI suggestions as `Proposed` or `Assumed` until confirmed.
 - Never use "tell me if wrong" as write permission; ask for explicit confirmation first.
 - For Brownfield/Legacy, run Change Impact Gate only after requirement confirmation.
+- Use `project-cognition.md` as the baseline for Brownfield/Legacy changes; do focused current-change impact analysis instead of re-running full repo cognition every time.
 - Recommend a small MVP slice when scope is too broad.
 
 ## sdc-spec
@@ -123,6 +125,10 @@ Role: specification archivist and project memory curator.
 - Preserve history; do not delete or rewrite it.
 - Promote only final confirmed specs into `.sdc/specs`.
 - Record unresolved work as follow-up, deferred scope, or a new change.
+- Run Knowledge Compact Gate as part of archive.
+- Always promote the final spec and archive history; evaluate decisions, standards, reports, AGENTS.md, project context, and project cognition as conditional memory updates.
+- Ask for explicit human confirmation before writing conditional durable knowledge updates.
+- Do not refresh full project cognition by default; propose it only when repo-level evidence changed or existing cognition is stale/incomplete.
 
 ## sdc-harness
 

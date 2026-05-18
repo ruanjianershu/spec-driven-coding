@@ -117,3 +117,27 @@ Block archive when:
 - Check or equivalent review/test/security/quality evidence is missing.
 - `.sdc/specs/<change-id>.md` already exists and overwrite is not explicitly allowed.
 - Residual work is hidden instead of recorded as deferred scope or a new change.
+
+Archive must run Knowledge Compact Gate before it is considered complete.
+
+Required archive outputs:
+
+- Final confirmed spec promoted to `.sdc/specs/<change-id>.md`.
+- Completed change history under `.sdc/changes/archive/<change-id>/`.
+- `archive.md` with conclusion, evidence, residual risks, coverage summary, and Knowledge Compact Gate summary.
+
+Knowledge Compact Gate must evaluate:
+
+- `.sdc/specs/` promotion.
+- `.sdc/changes/archive/` preservation.
+- `.sdc/decisions/` for long-lived product, technical, architecture, data, permission, rollout, or security decisions.
+- `.sdc/standards/` for reusable engineering rules.
+- `AGENTS.md` through `sdc-harness` for AI execution guardrails.
+- `.sdc/reports/bug/` for durable root-cause records.
+- `.sdc/reports/impact/` or archive final impact notes for Brownfield/Legacy effects.
+- `.sdc/project.md` for long-lived project context changes.
+- `.sdc/project-cognition.md` only when repo-level cognition is stale, incomplete, or structurally affected.
+
+Optional durable memory updates may be deferred, but the archive output must say why. They must not be written without explicit human confirmation.
+
+Do not add or require a separate public compact command. Knowledge compaction is an internal archive gate.

@@ -5,9 +5,10 @@ SDC CLI - 规范驱动开发 薄运行层
 
 用法：
   sdc init          # 初始化标准 SDC 工作区
-  sdc change <name> # 创建一次需求迭代
+  sdc change <name> # 提出 intake 问题，不写 change 文件
+  sdc change <name> --confirmed-intake # intake 确认后创建 Discovery Open 草稿
   sdc validate [target] # 校验 current 或某个 change
-  sdc archive <change> # 归档完成的需求迭代
+  sdc archive <change> # 归档完成的需求迭代，并输出 Knowledge Compact Gate
   sdc spec          # 打开规范文档（你在 AI 助手中写完粘贴进来）
   sdc discovery     # 打开需求探索文档
   sdc plan          # 打开计划文档
@@ -83,12 +84,12 @@ INIT_FILES = {
 
 1. `/sdc:change <name>` 创建 `changes/active/<name>/` 的轻量 Discovery Open 草稿
 2. 需求不确定时只更新 `discovery.md`、Draft `proposal.md` 和简短 `notes.md`
-3. `/sdc:spec` 将已确认 discovery 收敛为 SCN/REQ/AC
+3. `sdc-spec` 将已确认 discovery 收敛为 SCN/REQ/AC
 4. 遗留项目在需求确认后先更新当前 change 的 `impact.md`
 5. `/sdc:plan` 生成 design/tasks
 6. `/sdc:apply` 执行实现并记录过程
 7. `/sdc:check` 综合校验、审查、测试和质量检查
-8. `/sdc:archive <name>` 归档到 `changes/archive/`
+8. `/sdc:archive <name>` 归档到 `changes/archive/`，并运行 Knowledge Compact Gate 判断长期知识沉淀
 
 ## 三类核心资产
 
@@ -240,12 +241,12 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 """,
     "current/spec.md": """# Current Spec
 
-> 当前需求规范。由 `/sdc:spec` 生成或维护。
+> 当前需求规范。由 `sdc-spec` 生成或维护。
 
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.1.7
+- Schema: SDC 1.1.8
 - Source:
 
 ## 1. Decision Ledger / 决策台账
@@ -373,6 +374,12 @@ active/YYYY-MM-DD-short-name/
 ```text
 archive/YYYY-MM-DD-short-name/
 ```
+
+归档时会执行 Knowledge Compact Gate：
+
+- `specs/` 和 `changes/archive/` 是必需归档资产
+- `decisions/`、`standards/`、`AGENTS.md`、`reports/`、`project.md`、`project-cognition.md` 是条件性长期知识更新
+- 条件项需要明确确认后再写入，不能由 AI 或 CLI 静默更新
 """,
     "specs/README.md": """# Specs
 
@@ -524,7 +531,7 @@ YYYY-MM-DD-short-title.md
 """,
     "reviews/README.md": """# Reviews
 
-保存 `/sdc:review` 的代码审查结果。
+保存 `sdc-review` 的代码审查结果。
 """,
     "reports/README.md": """# Reports
 
@@ -610,30 +617,30 @@ YYYY-MM-DD-short-title.md
 """,
     "templates/design.md": """# Design
 
-## 背景
+## Solution Summary / 方案摘要
 
-## 方案
+## Impact Scope / 影响范围
 
-## 影响范围
+## Non-Scope / 不改范围
 
-## 不改范围
+## Key Tradeoffs / 关键取舍
 
-## 数据和接口变化
+## Data, API, State, or Interaction Changes / 数据、接口、状态或交互变化
 
-## REQ/AC 到设计决策的映射
+## Brownfield Impact Summary / 遗留影响摘要
 
-## 风险
+## REQ/AC to Design Decision Mapping / 追溯映射
 
-## 回滚方案
+## Risks, Rollback, and Migration / 风险、回滚和迁移
 
-## 替代方案
+## Alternatives / 替代方案
 """,
     "templates/spec.md": """# Spec
 
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.1.7
+- Schema: SDC 1.1.8
 - Source:
 
 ## 1. Decision Ledger / 决策台账
@@ -738,11 +745,11 @@ Then ...
 
 ## 13. 证据索引
 """,
-    "templates/change-impact.md": """# Change Impact Analysis
+    "templates/change-impact.md": """# Change Impact
 
 > 遗留项目在需求确认后的变更影响面分析。它发生在 confirmed spec 之后、plan/apply 之前。
 
-## 0. 分析快照
+## Analysis Snapshot
 
 - 目标仓库/目录：
 - 变更目标：
@@ -752,38 +759,30 @@ Then ...
 - 可见配置与依赖范围：
 - 本次分析限制：
 
-## 1. 变更意图与范围概述
+## Entry Points And Call Chain
 
-## 2. 受影响系统形态与技术栈
+## Direct Changes Required
 
-## 3. 核心调用链路图谱
+| File / Contract | Reason | Evidence | Related REQ/AC |
+|-----------------|--------|----------|----------------|
 
-## 4. 必须修改的文件清单
+## Cascading Impact
 
-| 类别 | 文件/模块/契约 | 为什么需要关注 | 证据 | 关联 REQ/AC |
-|------|----------------|----------------|------|-------------|
+## Contracts / Data / Config / Permissions / Security / Observability
 
-## 5. 级联影响与风险雷达
+## Tests And Regression Strategy
 
-| 风险点 | 影响范围 | 触发原因 | 证据 | 初步应对 |
-|--------|----------|----------|------|----------|
+## Implementation Order And Rollback Boundary
 
-## 6. 契约、数据与配置影响
+## Open Questions
 
-## 7. 安全、权限、中间件与可观测性影响
+| Question | Why It Matters | Blocking? |
+|----------|----------------|-----------|
 
-## 8. 测试与回归策略建议
+## Evidence Index
 
-## 9. 已确认风险与复杂区域
-
-## 10. 待确认业务规则与问题清单
-
-| 问题 | 为什么重要 | 影响哪类修改 | 缺少什么信息 |
-|------|------------|--------------|--------------|
-
-## 11. 推荐的实施顺序
-
-## 12. 证据索引
+| Claim | Source |
+|-------|--------|
 """,
     "templates/repo-analysis.md": """# Repo Analysis
 
@@ -883,6 +882,34 @@ def has_real_content(filepath):
     ]
     placeholders = ("（", "）", "TODO", "todo", "Draft task", "...")
     return any(not any(marker in line for marker in placeholders) for line in lines)
+
+
+def validate_no_template_placeholders(errors, filepath):
+    text = read_text(filepath)
+    if not text:
+        return
+
+    placeholder_patterns = [
+        (r"\bTODO\b", "TODO"),
+        (r"Draft task", "Draft task"),
+        (r"Given \.\.\.", "Given ..."),
+        (r"When \.\.\.", "When ..."),
+        (r"Then \.\.\.", "Then ..."),
+        (r"^\s*-\s+(SCN|REQ|AC)-0*1:\s*$", "empty SCN/REQ/AC placeholder"),
+        (r"^\s*-\s*Source:\s*$", "empty Source"),
+        (r"^\s*-\s*Verify:\s*TODO\s*$", "empty Verify"),
+        (r"^\s*-\s*目标仓库/目录：\s*$", "empty impact snapshot field"),
+        (r"^\s*-\s*变更目标：\s*$", "empty impact snapshot field"),
+    ]
+
+    for pattern, label in placeholder_patterns:
+        if re.search(pattern, text, re.IGNORECASE | re.MULTILINE):
+            errors.append(f"{filepath} 仍包含模板占位内容: {label}")
+            return
+
+
+def has_required_heading_set(text, required_headings):
+    return all(heading in text for heading in required_headings)
 
 
 def validate_task_trace(errors, filepath):
@@ -1135,10 +1162,35 @@ def cmd_init():
     print(f"  {BLUE}sdc status{ENDC}  - 查看工作区状态")
 
 
-def cmd_change(name):
-    """创建一次需求迭代目录，默认只生成轻量 discovery 草稿。"""
+def print_change_intake(name):
+    change_id = f"{date.today().isoformat()}-{slugify(name)}"
+    print_color(YELLOW, "⚠️  Change Intake Gate：尚未创建任何 change 文件")
+    print()
+    print("在 SDC 中，创建 `.sdc/changes/active/*` 前必须先确认 4 类 intake 信息。")
+    print("请先回答并确认下面问题；确认后再运行：")
+    print(f"  {BLUE}sdc change {name} --confirmed-intake{ENDC}")
+    print()
+    print("## Change Intake")
+    print(f"- Current request: {name}")
+    print(f"- Recommended change id: {change_id}")
+    print()
+    print("## Required Questions")
+    print("1. Project context: 这是新项目还是存量项目？目标用户是谁？个人还是团队使用？")
+    print("2. Core scope: 当前 MVP 必须包含什么？哪些明确不做？")
+    print("3. Technical preferences: 语言、框架、数据库、部署方式或集成偏好是什么？")
+    print("4. Constraints and acceptance: 截止时间、预算、安全/合规约束，以及怎么证明完成？")
+    print()
+    print("SDC 不会在这些信息确认前写入 change 文件。")
+
+
+def cmd_change(name, confirmed_intake=False):
+    """创建一次需求迭代目录；未确认 intake 时只提出问题，不写文件。"""
     if not SDC_DIR.exists():
         print_color(RED, "❌ 请先运行: sdc init")
+        return
+
+    if not confirmed_intake:
+        print_change_intake(name)
         return
 
     change_id = f"{date.today().isoformat()}-{slugify(name)}"
@@ -1192,6 +1244,8 @@ def validate_file(errors, warnings, filepath, required_headings, require_content
     validate_no_write_ahead(errors, filepath)
     if require_content and not has_real_content(filepath):
         errors.append(f"内容仍是模板或缺少有效内容: {filepath}")
+    if require_content:
+        validate_no_template_placeholders(errors, filepath)
 
     for heading in required_headings:
         if heading not in text:
@@ -1205,7 +1259,67 @@ def validate_spec_file(errors, warnings, filepath):
         filepath,
         ["Decision Ledger", "Business Invariants / 业务不变量", "Acceptance Criteria / 验收标准", "追溯关系矩阵"],
     )
+    if not filepath.exists():
+        return
+    text = read_text(filepath)
+    if re.search(r"Status:\s*Draft", text, re.IGNORECASE):
+        errors.append(f"{filepath} 仍是 Draft，进入 plan/apply 前必须明确 Confirmed")
+    blocking_states = sorted(set(re.findall(r"\b(Proposed|Assumed|TBD|Conflict)\b", text)))
+    if blocking_states:
+        errors.append(f"{filepath} 包含未确认决策状态: {', '.join(blocking_states)}")
     validate_spec_trace(errors, filepath)
+
+
+def validate_design_file(errors, warnings, filepath):
+    validate_file(
+        errors,
+        warnings,
+        filepath,
+        ["## Solution Summary", "## Impact Scope", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
+    )
+
+
+def validate_impact_file(errors, warnings, filepath):
+    if not filepath.exists():
+        errors.append(f"缺少文件: {filepath}")
+        return
+
+    text = read_text(filepath)
+    validate_no_write_ahead(errors, filepath)
+    validate_no_template_placeholders(errors, filepath)
+
+    english_headings = [
+        "## Analysis Snapshot",
+        "## Direct Changes Required",
+        "## Tests And Regression Strategy",
+        "## Evidence Index",
+    ]
+    legacy_headings = [
+        "## 0. 分析快照",
+        "## 4. 必须修改的文件清单",
+        "## 8. 测试与回归策略建议",
+        "## 10. 待确认业务规则与问题清单",
+    ]
+    if not (
+        has_required_heading_set(text, english_headings)
+        or has_required_heading_set(text, legacy_headings)
+    ):
+        errors.append(f"{filepath} 缺少 Change Impact Gate 必需章节")
+
+
+def validate_impact_gate(errors, warnings, base):
+    impact = base / "impact.md"
+    if impact.exists():
+        validate_impact_file(errors, warnings, impact)
+        return
+
+    project_kind, project_markers, source_count = detect_project_kind()
+    if project_kind == "greenfield":
+        warnings.append("Greenfield N/A：当前项目没有存量代码线索，impact.md 不作为进入 plan/apply 的必需文件")
+        return
+
+    evidence = ", ".join(project_markers) if project_markers else f"source files: {source_count}+"
+    errors.append(f"缺少文件: {impact}（{project_kind} 项目需要 impact.md；证据: {evidence}）")
 
 
 def cmd_validate(target="current"):
@@ -1249,14 +1363,9 @@ def cmd_validate(target="current"):
                 validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标"], require_content=False)
                 validate_file(errors, warnings, base / "notes.md", ["# Notes"], require_content=False)
             else:
-                validate_file(
-                    errors,
-                    warnings,
-                    base / "impact.md",
-                    ["## 0. 分析快照", "## 4. 必须修改的文件清单", "## 8. 测试与回归策略建议", "## 10. 待确认业务规则与问题清单"],
-                    require_content=False,
-                )
+                validate_impact_gate(errors, warnings, base)
                 validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
+                validate_design_file(errors, warnings, base / "design.md")
                 validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
                 validate_spec_file(errors, warnings, base / "spec.md")
                 validate_task_trace(errors, base / "tasks.md")
@@ -1286,26 +1395,133 @@ def cmd_validate(target="current"):
     else:
         print_color(GREEN, "结论: 校验通过")
     print()
+    return not errors
+
+
+def collect_change_text(source):
+    """Collect change artifact text for lightweight archive heuristics."""
+    parts = []
+    for name in ("discovery.md", "proposal.md", "spec.md", "design.md", "impact.md", "tasks.md", "notes.md"):
+        path = source / name
+        if path.exists():
+            parts.append(read_text(path))
+    return "\n".join(parts)
+
+
+def has_any_pattern(text, patterns):
+    return any(re.search(pattern, text, re.IGNORECASE) for pattern in patterns)
+
+
+def knowledge_compact_rows(source, change_id, spec_status):
+    """Build the archive Knowledge Compact Gate table without writing conditional assets."""
+    text = collect_change_text(source)
+    rows = [
+        ("Required", f".sdc/specs/{change_id}.md", "Final confirmed spec", spec_status),
+        ("Required", f".sdc/changes/archive/{change_id}/archive.md", "Completed change history and evidence", "Done"),
+    ]
+
+    optional_rows = []
+    if has_any_pattern(text, [r"Decision Ledger", r"决策台账", r"\bConfirmed\b", r"ADR", r"architecture decision"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/decisions/",
+            "Change artifacts contain decision evidence; confirm whether any decision is long-lived",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"\bstandard\b", r"coding rule", r"testing rule", r"architecture rule", r"security rule", r"git rule", r"AI collaboration rule", r"开发规范", r"测试规范", r"架构边界", r"安全规则", r"Git 规则", r"AI 协作规则"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/standards/",
+            "Change artifacts may contain reusable engineering rules",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"\bAGENTS\.md\b", r"\bagent\b", r"\bAI\b", r"guardrail", r"harness", r"护栏"]):
+        optional_rows.append((
+            "Recommended",
+            "AGENTS.md",
+            "Change artifacts mention AI execution guardrails or harness rules",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"\bbug\b", r"\bdefect\b", r"root cause", r"regression", r"缺陷", r"根因", r"回归"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/reports/bug/",
+            "Bug or regression evidence may deserve durable root-cause record",
+            "Needs confirmation",
+        ))
+
+    if (source / "impact.md").exists():
+        optional_rows.append((
+            "Recommended",
+            ".sdc/reports/impact/",
+            "impact.md exists; preserve final Brownfield/Legacy impact evidence if applicable",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"stack", r"framework", r"validation command", r"deploy", r"constraint", r"技术栈", r"验证命令", r"部署", r"长期约束"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/project.md",
+            "Project context, stack, validation, deployment, or constraints may have changed",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"entry ?point", r"module", r"data model", r"public contract", r"integration", r"仓库结构", r"核心模块", r"数据模型", r"公共契约", r"集成"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/project-cognition.md",
+            "Repository-level cognition may need refresh if structural contracts changed",
+            "Needs confirmation",
+        ))
+
+    if optional_rows:
+        rows.extend(optional_rows)
+    else:
+        rows.append((
+            "N/A",
+            "Conditional memory updates",
+            "CLI did not detect durable decision, standard, report, project, or cognition evidence",
+            "N/A",
+        ))
+
+    return rows
+
+
+def format_knowledge_compact_table(rows):
+    lines = [
+        "| Action | Target | Reason | Status |",
+        "| --- | --- | --- | --- |",
+    ]
+    for action, target, reason, status in rows:
+        lines.append(f"| {action} | `{target}` | {reason} | {status} |")
+    return "\n".join(lines)
 
 
 def cmd_archive(change_id):
     """归档完成的需求迭代"""
     if not SDC_DIR.exists():
         print_color(RED, "❌ 请先运行: sdc init")
-        return
+        return False
 
     source = change_path(change_id)
     if not source.exists():
         print_color(RED, f"❌ 需求迭代不存在: {source}")
-        return
+        return False
+
+    if not cmd_validate(change_id):
+        print_color(RED, "❌ 归档前校验未通过，已停止归档")
+        return False
 
     spec = source / "spec.md"
     if not spec.exists():
         print_color(RED, f"❌ 缺少 spec.md，不能归档: {spec}")
-        return
+        return False
     if not has_real_content(spec):
         print_color(RED, f"❌ spec.md 仍是模板或缺少有效内容，不能归档: {spec}")
-        return
+        return False
 
     trace_errors = []
     validate_spec_trace(trace_errors, spec)
@@ -1313,30 +1529,43 @@ def cmd_archive(change_id):
         print_color(RED, "❌ spec.md 追溯链不完整，不能归档")
         for item in trace_errors:
             print(f"  - {item}")
-        return
+        return False
 
     tasks = source / "tasks.md"
-    if tasks.exists():
-        tasks_text = read_text(tasks)
-        if "- [ ]" in tasks_text and "- [x]" not in tasks_text:
-            print_color(RED, f"❌ tasks.md 中没有已完成任务，不能归档: {tasks}")
-            return
-        trace_errors = []
-        validate_task_trace(trace_errors, tasks)
-        if trace_errors:
-            print_color(RED, "❌ tasks.md 追溯链不完整，不能归档")
-            for item in trace_errors:
-                print(f"  - {item}")
-            return
+    if not tasks.exists():
+        print_color(RED, f"❌ 缺少 tasks.md，不能归档: {tasks}")
+        return False
+
+    tasks_text = read_text(tasks)
+    if re.search(r"^\s*-\s+\[\s\]", tasks_text, re.MULTILINE):
+        print_color(RED, f"❌ tasks.md 仍有未完成任务，不能归档: {tasks}")
+        return False
+    if "- [x]" not in tasks_text and "- [X]" not in tasks_text:
+        print_color(RED, f"❌ tasks.md 中没有已完成任务，不能归档: {tasks}")
+        return False
+    trace_errors = []
+    validate_task_trace(trace_errors, tasks)
+    if trace_errors:
+        print_color(RED, "❌ tasks.md 追溯链不完整，不能归档")
+        for item in trace_errors:
+            print(f"  - {item}")
+        return False
 
     specs_dir = SDC_DIR / "specs"
     specs_dir.mkdir(parents=True, exist_ok=True)
     target = specs_dir / f"{change_id}.md"
+    archived_dir = archive_change_path(change_id)
 
     if target.exists():
-        print_color(YELLOW, f"⚠️  稳定规范已存在，未覆盖: {target}")
-    else:
-        target.write_text(f"# Archived Spec: {change_id}\n\n" + spec.read_text())
+        print_color(RED, f"❌ 稳定规范已存在，未覆盖也不归档: {target}")
+        return False
+    if archived_dir.exists():
+        print_color(RED, f"❌ 归档目录已存在，不能重复归档: {archived_dir}")
+        return False
+
+    target.write_text(f"# Archived Spec: {change_id}\n\n" + spec.read_text())
+    spec_status = "Done"
+    compact_table = format_knowledge_compact_table(knowledge_compact_rows(source, change_id, spec_status))
 
     archive_file = source / "archive.md"
     if not archive_file.exists():
@@ -1347,8 +1576,9 @@ def cmd_archive(change_id):
 
 ## 归档结果
 
-- 稳定规范: `../../specs/{change_id}.md`
-- 原始变更目录: `{source}`
+- 稳定规范: `../../../specs/{change_id}.md`
+- 归档目录: `.sdc/changes/archive/{change_id}/`
+- 原 active 目录: `.sdc/changes/active/{change_id}/`
 
 ## 交付结论
 
@@ -1359,23 +1589,45 @@ def cmd_archive(change_id):
 - REQ/AC/T### 覆盖：
 - 验证证据：
 - 遗留项：
+
+## Knowledge Compact Gate
+
+{compact_table}
+
+> CLI will not write conditional durable memory updates. Confirm optional updates in an AI client or edit the target files intentionally.
 """)
+    elif "Knowledge Compact Gate" not in read_text(archive_file):
+        with archive_file.open("a") as file:
+            file.write(f"""
+
+## Knowledge Compact Gate
+
+{compact_table}
+
+> CLI will not write conditional durable memory updates. Confirm optional updates in an AI client or edit the target files intentionally.
+""")
+
+    final_archive_file = archive_file
+    moved_to = None
+    if source != archived_dir and source.exists() and not archived_dir.exists():
+        archived_dir.parent.mkdir(parents=True, exist_ok=True)
+        source.rename(archived_dir)
+        final_archive_file = archived_dir / "archive.md"
+        moved_to = archived_dir
 
     print_color(GREEN, "✅ SDC 需求迭代已归档")
     print(f"   Change: {change_id}")
     print(f"   Spec: {target.absolute()}")
-    print(f"   Archive: {archive_file.absolute()}")
-
-    archived_dir = archive_change_path(change_id)
-    if source != archived_dir and source.exists() and not archived_dir.exists():
-        archived_dir.parent.mkdir(parents=True, exist_ok=True)
-        source.rename(archived_dir)
-        print(f"   Moved: {archived_dir.absolute()}")
+    print(f"   Archive: {final_archive_file.absolute()}")
+    print("   Knowledge Compact Gate: see archive.md; optional durable memory updates need confirmation")
+    if moved_to:
+        print(f"   Moved: {moved_to.absolute()}")
+    return True
 
 
 def cmd_check(target="current"):
     """综合检查入口：CLI 层先执行结构校验，并提示后续人工/AI 检查。"""
-    cmd_validate(target)
+    ok = cmd_validate(target)
     print_color(HEADER, "🔎 后续检查")
     print("  - delivery: validate + review + test + quality")
     print("  - bug: 只分析根因和证据，不直接改代码")
@@ -1383,6 +1635,7 @@ def cmd_check(target="current"):
     print("  - repo: 分析存量项目结构、风险和 SDC 资产建议")
     print("  - AI 中可直接使用: /sdc:check")
     print()
+    return ok
 
 
 def cmd_edit(name):
@@ -1448,22 +1701,25 @@ def main():
         cmd_init()
     elif cmd == "change":
         if len(sys.argv) < 3:
-            print_color(RED, "❌ 用法: sdc change <short-name>")
+            print_color(RED, "❌ 用法: sdc change <short-name> [--confirmed-intake]")
             return
-        cmd_change(sys.argv[2])
+        cmd_change(sys.argv[2], confirmed_intake="--confirmed-intake" in sys.argv[3:])
     elif cmd == "validate":
         target = sys.argv[2] if len(sys.argv) >= 3 else "current"
-        cmd_validate(target)
+        if not cmd_validate(target):
+            sys.exit(1)
     elif cmd == "archive":
         if len(sys.argv) < 3:
             print_color(RED, "❌ 用法: sdc archive <change-id>")
             return
-        cmd_archive(sys.argv[2])
+        if not cmd_archive(sys.argv[2]):
+            sys.exit(1)
     elif cmd == "apply":
         cmd_edit("apply")
     elif cmd == "check":
         target = sys.argv[2] if len(sys.argv) >= 3 else "current"
-        cmd_check(target)
+        if not cmd_check(target):
+            sys.exit(1)
     elif cmd == "spec":
         cmd_edit("spec")
     elif cmd == "discovery":

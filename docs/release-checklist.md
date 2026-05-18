@@ -15,6 +15,7 @@ Claude Code uses the plugin version as a cache key. If the version is not bumped
 ## Validation
 
 ```bash
+node scripts/audit-release.mjs
 node --check bin/install.js
 claude plugin validate .
 npm pack --dry-run
@@ -44,11 +45,16 @@ After restarting Claude Code:
 ```text
 /sdc:init
 /sdc:change smoke-test
+Confirm the four intake answers before expecting any change files.
 /sdc:plan
 /sdc:check
+/sdc:archive smoke-test
 ```
 
 For Codex, verify SDC skills are visible in the model prompt context or through `/skills` where supported.
+Default Codex install should expose plugin skills (`sdc:*`) and should not leave stale `~/.agents/skills/sdc-*` direct skills unless `SDC_CODEX_DIRECT_SKILLS=1` was intentionally used. It should also remove the old direct plugin copy at `~/.codex/plugins/sdc`.
+
+Archive output should include Knowledge Compact Gate and must not write optional decisions, standards, reports, AGENTS.md, project.md, or project-cognition.md updates without explicit confirmation.
 
 ## Publish
 
@@ -58,4 +64,4 @@ git tag vX.Y.Z
 git push origin main --tags
 ```
 
-Only publish after the npm dry run and Claude validator pass.
+Only publish after the release audit, npm dry run, and Claude validator pass.

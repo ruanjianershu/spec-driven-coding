@@ -53,6 +53,8 @@ commands/plan.md
 commands/apply.md
 commands/check.md
 commands/archive.md
+commands/harness.md
+commands/sdc.md
 ```
 
 This produces user-facing Claude Code commands such as:
@@ -69,11 +71,11 @@ SDC also generates a `.claude/skills/` compatibility layout during install so Cl
 
 Use this concise description when submitting:
 
-> SDC is a lightweight spec-driven coding workflow for Claude Code. It uses role prompt contracts, requires intake confirmation before creating change files, keeps unresolved requirements in minimal draft discovery artifacts, analyzes legacy impact after requirements are confirmed, preserves SCN/REQ/AC traceability, confirms high-impact decisions, applies tasks, runs delivery checks, and archives stable specs in local project files.
+> SDC is a lightweight spec-driven coding workflow for Claude Code. It uses role prompt contracts, requires intake confirmation before creating change files, keeps unresolved requirements in minimal draft discovery artifacts, analyzes legacy impact after requirements are confirmed, preserves SCN/REQ/AC traceability, confirms high-impact decisions, applies tasks, runs delivery checks, archives stable specs, and compacts durable project knowledge in local files.
 
 Use this longer description when a form allows more context:
 
-> SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills. It creates a local `.sdc/` workspace for specs, changes, standards, decisions, and reports; uses shared English Role Prompt Contracts for expert behavior, evidence rules, and output discipline while keeping each SKILL.md compact; requires Mandatory Change Intake Gate before creating change files; continues Discovery Gate with minimal draft artifacts for unresolved requirements before confirmed specs; forbids write-ahead confirmation patterns such as "if wrong, tell me and I will update now"; creates project cognition for brownfield repositories; runs Change Impact Gate after legacy requirements are confirmed; preserves `SCN -> REQ -> AC -> task -> evidence` traceability; uses consent gates so high-impact AI suggestions do not become silent defaults; applies changes incrementally; runs combined validation, review, test, quality, bug, impact, and repo checks; and archives completed changes into stable project specs. SDC is local-first and prompt-only: it ships no MCP server, no telemetry, no background daemon, no default hooks, and no external service dependency.
+> SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills. It creates a local `.sdc/` workspace for specs, changes, standards, decisions, and reports; uses shared English Role Prompt Contracts for expert behavior, evidence rules, and output discipline while keeping each SKILL.md compact; requires Mandatory Change Intake Gate before creating change files; continues Discovery Gate with minimal draft artifacts for unresolved requirements before confirmed specs; forbids write-ahead confirmation patterns such as "if wrong, tell me and I will update now"; creates project cognition for brownfield repositories; runs Change Impact Gate after legacy requirements are confirmed; preserves `SCN -> REQ -> AC -> task -> evidence` traceability; uses consent gates so high-impact AI suggestions do not become silent defaults; applies changes incrementally; runs combined validation, review, test, quality, bug, impact, and repo checks; archives completed changes into stable project specs; and runs Knowledge Compact Gate to recommend durable updates to decisions, standards, reports, AGENTS.md, project context, or project cognition. SDC is local-first and prompt-only: it ships no MCP server, no telemetry, no background daemon, no default hooks, and no external service dependency.
 
 ## Review Notes
 
@@ -92,6 +94,7 @@ For official review, emphasize:
 ## Pre-Submission Checks
 
 ```bash
+node scripts/audit-release.mjs
 node --check bin/install.js
 claude plugin validate .
 npm pack --dry-run

@@ -1,5 +1,5 @@
 ---
-description: Create a focused SDC requirement change with proposal, spec, design, tasks, and notes.
+description: Start a focused SDC requirement change with mandatory intake and minimal discovery artifacts until confirmed.
 ---
 
 # SDC Change

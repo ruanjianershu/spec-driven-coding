@@ -1,6 +1,6 @@
 ---
 name: sdc-change
-description: "Create a focused requirement change under .sdc/changes/active with proposal, spec, design, tasks, and notes."
+description: "Start a focused requirement change with mandatory intake, discovery discipline, and confirmed artifacts only after decisions close."
 ---
 
 # Skill: SDC 需求变更创建 /sdc:change
@@ -22,7 +22,7 @@ description: "Create a focused requirement change under .sdc/changes/active with
 - 创建任何 change 文件前：先问 4 个 intake 问题，并等待用户确认。
 - 用户确认后：如果需求已敲定，再创建完整 change 并进入 spec/plan。
 - 仍有不确定项：继续 Discovery Gate，只保留轻量 Draft，不生成完整 spec/design/tasks。
-- 存量/遗留项目：需求确认后必须进入 Legacy Impact Gate，再 plan/apply。
+- 存量/遗留项目：需求确认后必须读取可复用的 `project-cognition.md`，只围绕当前需求进入 Legacy Impact Gate，再 plan/apply。
 
 ## Reference Loading
 
@@ -44,8 +44,9 @@ Load only what is needed:
 6. Discovery Gate 未退出前，不得创建或更新 `spec.md`、`impact.md`、`design.md`、`tasks.md`。
 7. Discovery Gate 退出后，再创建或更新完整 change artifacts：`proposal.md`、`spec.md`、`impact.md`（如适用）、`design.md`、`tasks.md`、`notes.md`。
 8. 未确认高影响决策必须进入 Decision Ledger，状态为 `Proposed` 或 `Assumed`，不得写成事实。
-9. Brownfield/Legacy 项目在需求确认后创建或更新 `impact.md`。
-10. 输出推荐下一步：继续 discovery、`/sdc:spec` 或 `/sdc:plan`。
+9. Brownfield/Legacy 项目在需求确认后读取 `project-cognition.md`，检查是否覆盖当前需求相关区域；如果认知缺失或过期，只更新相关章节，不做全仓库重分析。
+10. 基于 confirmed spec、`project-cognition.md` 和当前代码证据创建或更新当前 change 的 `impact.md`。
+11. 输出推荐下一步：继续 discovery、`sdc-spec` 或 `/sdc:plan`。
 
 ## Discovery Gate
 
@@ -68,8 +69,10 @@ Load only what is needed:
 正确顺序：
 
 ```text
-Discovery Gate -> Confirmed spec -> impact.md -> plan -> apply
+project-cognition.md -> Discovery Gate -> Confirmed spec -> focused impact.md -> plan -> apply
 ```
+
+不要每次 change 都重新做完整项目认知。完整 repo cognition 只在首次接入、结构明显变化、相关区域缺失、或用户要求时刷新；普通 change 只做当前需求的局部影响面分析。
 
 ## 输出格式
 

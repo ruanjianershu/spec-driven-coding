@@ -17,7 +17,7 @@ description: "Combined delivery check that runs validate, review, test, and qual
 
 ## 核心使命
 
-把交付前最常用的检查动作合并成一个公共指令，避免用户分别记住 `/sdc:validate`、`/sdc:review`、`/sdc:test`、`/sdc:quality`。
+把交付前最常用的检查动作合并成一个公共指令，避免用户分别记住 `sdc-validate`、`sdc-review`、`sdc-test`、`sdc-quality`。
 
 `/sdc:check` 还承载 `bug`、`impact`、`repo/brownfield` 三类分析模式。
 

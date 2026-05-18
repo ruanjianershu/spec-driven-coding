@@ -2,6 +2,23 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.8
+
+- Changed Codex installation to plugin-first by default and clean stale `~/.agents/skills/sdc-*` and `~/.codex/plugins/sdc` direct installs to avoid duplicate SDC entries.
+- Added `SDC_CODEX_DIRECT_SKILLS=1` as an explicit legacy fallback for older Codex builds that only scan direct skills.
+- Fixed CLI validation so confirmed Greenfield changes can proceed without `impact.md`; Brownfield/Unknown changes still require it.
+- Fixed `sdc validate` and `sdc check` exit codes so structural validation errors return a non-zero status for scripts and CI.
+- Split installer completion guidance by platform so Codex users are not told to expect `/sdc:*` slash commands.
+- Aligned the command model so Codex declares skills only, Claude exposes only public slash commands, and detailed controls remain skills.
+- Strengthened CLI validation for confirmed changes: confirmed specs must not be Draft, design.md is checked, common template placeholders are rejected, and impact.md accepts the English Change Impact Gate schema.
+- Fixed Claude local install fallback so the generated marketplace is written even when the `claude` CLI is unavailable, without leaving a direct root plugin copy.
+- Added a release audit script to catch version drift, command exposure drift, Codex slash-command drift, stale schema strings, and README command-model drift before publishing.
+- Clarified Brownfield analysis layering: project cognition is reusable repo memory, while each confirmed change gets a focused `impact.md`; full repo cognition is refreshed only when stale, incomplete, structurally changed, or explicitly requested.
+- Added positioning guidance: SDC's strongest value is safe Brownfield/Legacy iteration, while Greenfield projects benefit from early specs, standards, traceability, and test discipline.
+- Added Knowledge Compact Gate inside archive so completed changes recommend the right durable updates to specs, archive history, decisions, standards, reports, AGENTS.md, project context, or project cognition without adding another public command.
+- Hardened CLI archive behavior: archive now runs validation first, blocks Draft specs, unchecked tasks, existing stable specs, and existing archive directories, and writes a correct archived spec relative link.
+- Updated README and release checklist with Codex duplicate-skill verification.
+
 ## 1.1.7
 
 - Aligned spec templates with the current schema by adding explicit `INV-*` business invariant placeholders and schema metadata.

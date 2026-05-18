@@ -7,10 +7,12 @@ Legacy Impact Gate protects existing systems from accidental change. It applies 
 Correct sequence:
 
 ```text
-init project cognition -> change/discovery -> confirmed spec -> impact.md -> plan -> apply -> check final impact review
+init or sdc-check repo -> project-cognition.md -> change/discovery -> confirmed spec -> impact.md -> plan -> apply -> check final impact review
 ```
 
 Do not perform per-change impact analysis during `sdc-init`; init only creates or updates project-level cognition.
+
+Do not re-run full project cognition for every change. `project-cognition.md` is reusable project memory. For each confirmed change, read it first, then perform a focused impact analysis for the current requirement only.
 
 ## Brownfield / Legacy Signals
 
@@ -30,11 +32,29 @@ If uncertain, mark the project as `Unknown` and treat it as Brownfield for chang
 - Reading order for future agents.
 - Evidence labels: `[Confirmed Fact]`, `[Reasoned Inference]`, `[Open Question]`.
 
+Project cognition is refreshed only when evidence suggests it is stale or incomplete:
+
+- The repository structure, framework, runtime, build/test commands, or deployment path changed.
+- Core modules, data models, public contracts, integrations, or permission boundaries changed.
+- The current change touches an area not covered by `project-cognition.md`.
+- `project-cognition.md` contains blocking `[Open Question]` entries relevant to the current change.
+- The user explicitly asks for repo re-analysis.
+
+When refreshing cognition, update only the affected sections and preserve useful existing knowledge. Do not spend tokens re-describing unrelated modules.
+
 ## Change Impact Gate Trigger
 
 Run Change Impact Gate for every confirmed change in a Brownfield/Legacy or Unknown project before final plan/apply.
 
 The gate is required even when the agent believes the change has "no code impact". In that case, `impact.md` must explicitly record "No code impact found" with evidence.
+
+Change impact analysis is not a full repository audit. It must start from:
+
+```text
+confirmed spec.md + project-cognition.md + current code evidence
+```
+
+Then identify only the necessary impact radius for the current change: entry points, direct modification points, cascading impacts, contracts/data/config/security/observability effects, regression tests, rollout, rollback, and open questions.
 
 Minimum trigger:
 

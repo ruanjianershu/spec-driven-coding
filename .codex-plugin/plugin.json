@@ -1,15 +1,15 @@
 {
   "name": "sdc",
   "displayName": "SDC - 规范驱动开发",
-  "description": "Spec-Driven-Coding 规范驱动开发工具集。普通模式只开放少量公共指令，用共享英文 references 维护角色契约、需求探索、遗留项目认知和变更影响面门禁。",
-  "version": "1.1.7",
+  "description": "Spec-Driven-Coding 规范驱动开发工具集。普通模式只开放少量公共入口，用共享英文 references 维护角色契约、需求探索、遗留项目认知、变更影响面和归档知识沉淀门禁。",
+  "version": "1.1.8",
   "author": "ruanjianershu",
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "homepage": "https://github.com/ruanjianershu/spec-driven-coding",
   "interface": {
     "displayName": "SDC",
-    "shortDescription": "规范驱动开发工作流，用少量入口保留英文角色契约、需求探索、遗留项目影响面、SCN/REQ/AC 追溯和确认门禁。",
-    "longDescription": "SDC 是面向 Codex 的 Spec-Driven-Coding skill 集，提供 init、change、plan、apply、check、archive 等精简入口，并使用共享英文 references 统一维护 Role Prompt Contract、Discovery Gate、Discovery Artifact Budget、No Write-Ahead Confirmation、Brownfield 项目整体认知、需求确认后的 Change Impact Gate、裁决链、SCN/REQ/AC 追溯链、确认门禁、停线报告、review、test、validate 等能力；各 SKILL.md 保持短小，复杂规则按需加载。",
+    "shortDescription": "规范驱动开发工作流，用少量入口保留英文角色契约、需求探索、遗留项目影响面、SCN/REQ/AC 追溯、确认门禁和归档知识沉淀。",
+    "longDescription": "SDC 是面向 Codex 的 Spec-Driven-Coding skill 集，提供 init、change、plan、apply、check、archive 等精简入口，并使用共享英文 references 统一维护 Role Prompt Contract、Discovery Gate、Discovery Artifact Budget、No Write-Ahead Confirmation、Brownfield 项目整体认知、需求确认后的 Change Impact Gate、归档阶段的 Knowledge Compact Gate、裁决链、SCN/REQ/AC 追溯链、确认门禁、停线报告、review、test、validate 等能力；各 SKILL.md 保持短小，复杂规则按需加载。",
     "developerName": "ruanjianershu",
     "category": "Coding",
     "capabilities": [
@@ -28,16 +28,6 @@
     "screenshots": []
   },
   "skills": "./skills/",
-  "commands": {
-    "/sdc": "sdc-core",
-    "/sdc:init": "sdc-init",
-    "/sdc:change": "sdc-change",
-    "/sdc:plan": "sdc-plan",
-    "/sdc:apply": "sdc-apply",
-    "/sdc:check": "sdc-check",
-    "/sdc:archive": "sdc-archive",
-    "/sdc:harness": "sdc-harness"
-  },
   "tags": [
     "开发工具",
     "质量保障",

@@ -3,13 +3,13 @@ name: sdc-spec
 description: "Turn vague requirements into structured, verifiable specs with acceptance criteria, test plan, risks, and next steps."
 ---
 
-# Skill: SDC 规范生成 /sdc:spec
+# Skill: SDC 规范生成 sdc-spec
 
 ## 触发条件
 
 当用户输入以下任一内容时，自动触发本技能：
 
-- `/sdc:spec`
+- `sdc-spec`
 - "帮我生成规范"
 - "先理清楚需求"
 - "这个需求怎么做"
@@ -22,7 +22,7 @@ description: "Turn vague requirements into structured, verifiable specs with acc
 SCN-* -> REQ-* -> AC-* -> T### -> validation evidence
 ```
 
-`/sdc:spec` 不能替用户决定产品规则或技术方案；它只把已确认的事实写成规范，把未确认事项留在 Decision Ledger 或 Open Questions。
+`sdc-spec` 不能替用户决定产品规则或技术方案；它只把已确认的事实写成规范，把未确认事项留在 Decision Ledger 或 Open Questions。
 
 ## Reference Loading
 

@@ -24,6 +24,8 @@ Normal users should only need these commands or natural-language equivalents:
 
 Detailed skills such as `sdc:spec`, `sdc:validate`, `sdc:review`, `sdc:test`, and `sdc:quality` remain available for advanced users and internal routing.
 
+Do not add a separate public compact command. Knowledge compaction is part of `/sdc:archive`.
+
 ## Role Prompt Contracts
 
 SDC v1.1.4 adds English Role Prompt Contracts for every skill. The current layout keeps those contracts in `skills/sdc-shared/role-contracts.md` so each `SKILL.md` stays short while the agent can still load the exact contract it needs.
@@ -125,6 +127,8 @@ SDC v1.1.3 separates two legacy concerns:
 
 For Brownfield/Legacy projects, `/sdc:init` should create or preserve `.sdc/project-cognition.md`. That file is the overall code-based map of the existing system: runtime shape, entry points, core data models, module map, external integrations, tests, delivery paths, risks, and reading order.
 
+`project-cognition.md` is reusable project memory. SDC should not re-run full repository cognition for every change. Refresh it only when the current change touches an undocumented area, the repository structure or core contracts changed, the file contains relevant open questions, or the user explicitly requests repo re-analysis.
+
 Do not produce a specific change impact analysis during init. There is no concrete requirement yet, so the impact would be guesswork.
 
 After `/sdc:change` exits Discovery Gate and the spec is confirmed, the current change should run Change Impact Gate before `/sdc:plan`:
@@ -133,11 +137,39 @@ After `/sdc:change` exits Discovery Gate and the spec is confirmed, the current 
 project-cognition.md -> confirmed spec.md -> impact.md -> plan -> apply
 ```
 
-`impact.md` should identify the change entry points, direct modification points, cascading impacts, contracts, data/config changes, security/observability effects, regression strategy, rollout order, rollback boundary, and open questions.
+`impact.md` is per-change and focused. It should use `project-cognition.md` plus current code evidence to identify only the necessary impact radius: change entry points, direct modification points, cascading impacts, contracts, data/config changes, security/observability effects, regression strategy, rollout order, rollback boundary, and open questions.
 
 Important rule: only confirmed impact can become implementation tasks. Reasonable inferences may become investigation tasks. Open questions that affect scope, acceptance, contracts, data, permissions, security, or rollout must stop plan/apply.
 
-At final `/sdc:review` or `/sdc:check`, Brownfield/Legacy delivery must include a legacy final impact review: compare actual diff and validation evidence against `impact.md`, then list old-system modification points, impact points, deviations, and residual risks.
+At final `sdc-review` or `/sdc:check`, Brownfield/Legacy delivery must include a legacy final impact review: compare actual diff and validation evidence against `impact.md`, then list old-system modification points, impact points, deviations, and residual risks.
+
+## Knowledge Compact Gate
+
+After `/sdc:check` passes, `/sdc:archive` is the normal way to close a requirement and update project memory.
+
+The archive flow is:
+
+```text
+check -> archive -> Knowledge Compact Gate -> confirmed durable memory updates
+```
+
+Required archive writes:
+
+- promote the final confirmed spec to `.sdc/specs/<change-id>.md`.
+- move the completed change history to `.sdc/changes/archive/<change-id>/`.
+- create `archive.md` with delivery conclusion, evidence, coverage summary, residual risks, and knowledge-update summary.
+
+Conditional memory updates:
+
+- `.sdc/decisions/` for long-lived product, technical, architecture, data, permission, rollout, or security decisions.
+- `.sdc/standards/` for reusable engineering rules.
+- `AGENTS.md` through `/sdc:harness` for AI execution guardrails.
+- `.sdc/reports/bug/` for durable bug/root-cause analysis.
+- `.sdc/reports/impact/` or archive final impact notes for Brownfield/Legacy effects.
+- `.sdc/project.md` when stack, validation commands, deployment, or long-lived constraints changed.
+- `.sdc/project-cognition.md` only when repo-level cognition is stale, incomplete, or affected by structural changes.
+
+The agent must recommend conditional updates with evidence and target files, then ask for explicit yes/no confirmation before writing them. Archive should not update every knowledge asset by habit.
 
 ## Traceability Chain
 

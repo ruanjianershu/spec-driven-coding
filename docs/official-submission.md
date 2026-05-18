@@ -6,7 +6,7 @@ For Claude Code specific marketplace behavior, install commands, and user-facing
 
 ## Short Description
 
-SDC is a lightweight spec-driven coding workflow for Claude Code. It uses role prompt contracts, requires intake confirmation before creating change files, keeps unresolved requirements in minimal draft discovery artifacts, analyzes legacy impact after requirements are confirmed, preserves SCN/REQ/AC traceability, confirms high-impact decisions, applies tasks, runs delivery checks, and archives stable specs in local project files.
+SDC is a lightweight spec-driven coding workflow for Claude Code. It uses role prompt contracts, requires intake confirmation before creating change files, keeps unresolved requirements in minimal draft discovery artifacts, analyzes legacy impact after requirements are confirmed, preserves SCN/REQ/AC traceability, confirms high-impact decisions, applies tasks, runs delivery checks, archives stable specs, and compacts durable project knowledge in local files.
 
 ## Long Description
 
@@ -24,6 +24,7 @@ SDC packages a complete spec-driven development lifecycle into a small set of Cl
 - execute implementation tasks incrementally
 - run combined validation, review, test, quality, bug, impact, and repo checks
 - archive completed changes into stable project specs
+- run Knowledge Compact Gate to recommend durable updates to decisions, standards, reports, AGENTS.md, project context, or project cognition
 - generate project-level AI guardrails
 
 The plugin is intentionally narrow. It does not add external services, network integrations, MCP servers, default hooks, telemetry, or background processes.
@@ -41,15 +42,15 @@ The plugin is intentionally narrow. It does not add external services, network i
 /sdc:harness
 ```
 
-Advanced skills are available for users who need finer control:
+Advanced skills are available for users who need finer control. They are not part of the default public slash-command set:
 
 ```text
-/sdc:spec
-/sdc:implement
-/sdc:review
-/sdc:test
-/sdc:quality
-/sdc:validate
+sdc-spec
+sdc-implement
+sdc-review
+sdc-test
+sdc-quality
+sdc-validate
 ```
 
 ## Intended Audience
@@ -92,6 +93,7 @@ It is complementary to existing coding plugins:
 
 Before submitting:
 
+- Run `node scripts/audit-release.mjs`
 - Run `claude plugin validate .`
 - Run `npm pack --dry-run`
 - Run `node bin/install.js uninstall`

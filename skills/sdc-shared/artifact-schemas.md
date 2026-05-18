@@ -87,7 +87,7 @@ Discovery Closed changes may use the full structure:
 ```text
 .sdc/changes/active/YYYY-MM-DD-short-name/
 ├── discovery.md
-├── impact.md
+├── impact.md       # Brownfield/Legacy/Unknown only; Greenfield may be N/A
 ├── proposal.md
 ├── tasks.md
 ├── design.md
@@ -194,6 +194,45 @@ Archiving a completed change should:
 2. Create `archive.md` in the change directory.
 3. Record archive time, delivery conclusion, validation evidence, and residual risks.
 4. Preserve REQ/AC/T### coverage.
-5. Move the change directory to `.sdc/changes/archive/<change-id>/`.
+5. Run the Knowledge Compact Gate.
+6. Move the change directory to `.sdc/changes/archive/<change-id>/`.
 
 Never delete change history to make it look cleaner.
+
+`archive.md` should include:
+
+- Change identity and archive time.
+- Final delivery conclusion.
+- Validation, review, test, quality, security, and Brownfield final impact evidence where applicable.
+- REQ/AC/T### coverage summary.
+- Deferred scope, follow-up changes, and residual risks.
+- Knowledge Compact Gate summary.
+
+## Knowledge Compact Gate Shape
+
+Knowledge Compact Gate is part of archive. It decides what long-lived project memory should be updated after a completed change.
+
+Required durable updates:
+
+- `.sdc/specs/<change-id>.md` for the final confirmed spec.
+- `.sdc/changes/archive/<change-id>/archive.md` for the completed change history and evidence.
+
+Conditional durable updates:
+
+- `.sdc/decisions/` when a product, technical, architecture, data, permission, rollout, or security decision is long-lived.
+- `.sdc/standards/` when the change creates or corrects a reusable engineering standard.
+- `AGENTS.md` through `sdc-harness` when the change exposes a recurring AI execution rule or project guardrail.
+- `.sdc/reports/bug/` when a root cause, reproduction, or regression-prevention note should be preserved.
+- `.sdc/reports/impact/` or an archive final impact section when Brownfield/Legacy impact evidence should be retained.
+- `.sdc/project.md` when project context, stack, validation commands, deployment, or constraints changed.
+- `.sdc/project-cognition.md` only when repository-level cognition is stale, incomplete, or affected by structural/code-contract changes.
+
+The gate should output this table:
+
+| Action | Target | Reason | Status |
+| --- | --- | --- | --- |
+| Required / Recommended / N/A | File or artifact | Evidence-based reason | Done / Needs confirmation / Deferred / N/A |
+
+Archive does not mean updating every knowledge asset. Update only what evidence supports.
+
+Recommended and conditional durable updates require explicit human confirmation before writing. The agent may propose exact target files and content summary, but must not silently write those files.

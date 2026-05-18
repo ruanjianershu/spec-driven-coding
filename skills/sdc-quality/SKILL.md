@@ -3,13 +3,13 @@ name: sdc-quality
 description: "Perform final delivery quality gate across UX, docs, code quality, security, performance, and maintainability."
 ---
 
-# Skill: SDC 全面质量检查 /sdc:quality
+# Skill: SDC 全面质量检查 sdc-quality
 
 ## 触发条件
 
 当用户输入以下任一内容时，自动触发本技能：
 
-- `/sdc:quality`
+- `sdc-quality`
 - "最终检查"
 - "可以交付了吗"
 - "质量检查"

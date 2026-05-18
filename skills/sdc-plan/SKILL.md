@@ -46,7 +46,7 @@ Load only what is needed:
 - 当前 change 的 `impact.md`（Brownfield/Legacy 必须）
 - 已存在的 `design.md`、`tasks.md`（如有）
 
-如果 spec 缺少 SCN/REQ/AC、验收场景或关键约束，必须停线回到 `/sdc:spec`。
+如果 spec 缺少 SCN/REQ/AC、验收场景或关键约束，必须停线回到 `sdc-spec`。
 
 如果缺少 Decision Ledger，或存在未确认高影响决策，必须输出 Stop-Line Report，不能写成最终 design/tasks。
 
