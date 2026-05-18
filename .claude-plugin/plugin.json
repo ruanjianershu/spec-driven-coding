@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "sdc",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "A lightweight spec-driven coding workflow for Claude Code. Use role prompt contracts, discover uncertain requirements with minimal draft artifacts, analyze legacy impact after requirements are confirmed, preserve SCN/REQ/AC traceability, confirm high-impact decisions, apply tasks, check quality, archive specs, and compact durable project knowledge.",
   "author": {
     "name": "ruanjianershu",
@@ -11,14 +11,6 @@
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "license": "MIT",
   "skills": [
-    "./.claude/skills/sdc-core",
-    "./.claude/skills/sdc-init",
-    "./.claude/skills/sdc-change",
-    "./.claude/skills/sdc-plan",
-    "./.claude/skills/sdc-apply",
-    "./.claude/skills/sdc-check",
-    "./.claude/skills/sdc-archive",
-    "./.claude/skills/sdc-harness",
     "./.claude/skills/sdc-spec",
     "./.claude/skills/sdc-implement",
     "./.claude/skills/sdc-review",

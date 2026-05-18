@@ -58,14 +58,6 @@ sameSet(commandFiles, publicCommands, 'Claude public command files');
 
 const claudePlugin = readJSON('.claude-plugin/plugin.json');
 const expectedClaudeSkills = [
-  './.claude/skills/sdc-core',
-  './.claude/skills/sdc-init',
-  './.claude/skills/sdc-change',
-  './.claude/skills/sdc-plan',
-  './.claude/skills/sdc-apply',
-  './.claude/skills/sdc-check',
-  './.claude/skills/sdc-archive',
-  './.claude/skills/sdc-harness',
   './.claude/skills/sdc-spec',
   './.claude/skills/sdc-implement',
   './.claude/skills/sdc-review',
@@ -101,13 +93,21 @@ if (pluginEntriesBlock.includes("'.claude',")) {
 if (/\b(init|change|plan|apply|check|archive|harness|spec|implement|review|test|quality|validate):\s*'sdc-/.test(installJs)) {
   fail('Claude skill layout must not generate short alias skill directories that collide with slash command names.');
 }
-if (!installJs.includes("'sdc-init'") || !installJs.includes("path.join(claudeSkillsRoot, skillName)")) {
-  fail('Claude skill layout must generate sdc-* skill directories.');
+if (/'sdc-(core|init|change|plan|apply|check|archive|harness)'/.test(installJs.slice(
+  installJs.indexOf('const skillNames'),
+  installJs.indexOf('for (const skillName of skillNames)')
+))) {
+  fail('Claude skill layout must not generate public command backing skills.');
+}
+if (!installJs.includes("'sdc-spec'") || !installJs.includes("path.join(claudeSkillsRoot, skillName)")) {
+  fail('Claude skill layout must generate advanced sdc-* skill directories.');
 }
 
 const cli = readText('sdc-cli.py');
-if (cli.includes('Schema: SDC 1.1.7') || cli.includes('Schema: SDC 1.1.8')) {
-  fail('sdc-cli.py still contains stale Schema: SDC 1.1.7/1.1.8.');
+const currentSchema = `Schema: SDC ${version}`;
+const schemaMatches = [...cli.matchAll(/Schema: SDC ([0-9.]+)/g)].map((match) => match[0]);
+if (!schemaMatches.includes(currentSchema) || schemaMatches.some((schema) => schema !== currentSchema)) {
+  fail(`sdc-cli.py schema markers must all match ${currentSchema}. found=${schemaMatches.join(',')}`);
 }
 if (!cli.includes('--confirmed-intake')) {
   fail('sdc-cli.py must enforce Change Intake Gate with --confirmed-intake for file creation.');
@@ -150,6 +150,11 @@ const publicDocs = [
 ].join('\n');
 if (/\/sdc:compact/.test(publicDocs)) {
   fail('Do not advertise a public /sdc:compact command; compaction belongs inside archive.');
+}
+
+const commandDocs = commandFiles.map((name) => readText(path.join('commands', `${name}.md`))).join('\n');
+if (/Follow the installed `sdc-(core|init|change|plan|apply|check|archive|harness)` skill exactly/.test(commandDocs)) {
+  fail('Claude public commands must be self-contained and must not reference hidden public backing skills.');
 }
 
 if (errors.length > 0) {

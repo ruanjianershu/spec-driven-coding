@@ -2,6 +2,13 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.10
+
+- Fixed the remaining Claude Code duplicate UX where public slash commands such as `sdc:apply` still appeared beside equivalent plugin skills such as `sdc:sdc-apply`.
+- Claude Code now exposes public workflows only as slash commands; Claude skills are limited to advanced non-public capabilities: spec, implement, review, test, quality, and validate.
+- Made Claude public command prompts self-contained instead of referencing backing skills that are intentionally not exposed in Claude.
+- Updated installer, release audit, and docs to prevent public command backing skills from being generated in Claude `.claude/skills/`.
+
 ## 1.1.9
 
 - Fixed Claude Code duplicate command/skill registration by generating Claude skill directories with `sdc-*` names instead of short command aliases.

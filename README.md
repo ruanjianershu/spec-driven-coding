@@ -111,7 +111,7 @@ npx sdc-spec@latest
 安装器会为 Claude Code 注册本地 marketplace 并启用 `sdc@sdc-local` 插件；为 Codex 注册本地 marketplace、启用插件，并清理旧版直扫 skills，避免同一个 SDC 能力出现两套。
 
 > Claude Code 安装后需要完全重启应用，`/sdc:*` slash commands 才会刷新到命令列表。
-> SDC 会在 Claude 插件缓存中生成标准 `.claude/skills/` 结构，兼容新版 Claude Code 的 skill 扫描规则。Claude 生成的 skill 目录使用 `sdc-*` 长名，避免和 `/sdc:init`、`/sdc:change` 等公共 slash commands 重名。
+> SDC 会在 Claude 插件缓存中生成标准 `.claude/skills/` 结构，兼容新版 Claude Code 的 skill 扫描规则。Claude 只把高级能力作为 skills 暴露；`init/change/plan/apply/check/archive/harness` 等公共工作流只通过 slash commands 暴露，避免同一能力出现两套入口。
 >
 > Codex 当前应把 SDC 当作 **skill plugin** 使用，而不是 slash command plugin。Codex CLI 可以加载 SDC plugin/skills，但当前不支持插件自定义 `/sdc:*` slash commands。
 > 旧版 Codex 如果只能扫描 `~/.agents/skills`，可临时使用 `SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest` 启用 legacy 直扫 skills。

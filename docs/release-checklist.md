@@ -33,11 +33,12 @@ Expected:
 
 - `sdc@sdc-local` appears in `claude plugin list`
 - plugin version matches the release version
-- Claude plugin cache contains `.claude/skills/sdc-init/SKILL.md`
+- Claude plugin cache contains `.claude/skills/sdc-spec/SKILL.md`
 - Claude plugin cache contains `.claude/skills/sdc-shared/role-contracts.md`
 - Claude plugin cache contains `commands/init.md`
 - Claude local marketplace source does not contain a root `skills/` directory
-- Claude generated skill directories use `sdc-*` names, not short command aliases such as `.claude/skills/init`, to avoid duplicate `/sdc:init` registration
+- Claude generated skill directories contain only advanced non-public skills: `sdc-spec`, `sdc-implement`, `sdc-review`, `sdc-test`, `sdc-quality`, and `sdc-validate`
+- Claude generated skill directories must not contain public command backing skills such as `sdc-init`, `sdc-change`, `sdc-plan`, `sdc-apply`, `sdc-check`, `sdc-archive`, `sdc-harness`, or `sdc-core`
 
 ## Manual Smoke Test
 

@@ -65,7 +65,7 @@ This produces user-facing Claude Code commands such as:
 /sdc:plan
 ```
 
-SDC also generates a `.claude/skills/` compatibility layout during install so Claude Code versions that scan that path can load the same capabilities. Generated Claude skill directories use `sdc-*` names such as `.claude/skills/sdc-init/`, not short command aliases such as `.claude/skills/init/`, so public slash commands and skills do not register with the same `sdc:init` name.
+SDC also generates a `.claude/skills/` compatibility layout during install for advanced non-public capabilities. Public workflows such as init, change, plan, apply, check, archive, harness, and the main SDC entry are exposed only through slash commands. Generated Claude skill directories are limited to advanced skills such as `.claude/skills/sdc-spec/`, `.claude/skills/sdc-review/`, and `.claude/skills/sdc-validate/`, so users do not see duplicate entries like `sdc:apply` and `sdc:sdc-apply`.
 
 ## Marketplace Submission Positioning
 

@@ -4,8 +4,6 @@ description: Start a focused SDC requirement change with mandatory intake and mi
 
 # SDC Change
 
-Follow the installed `sdc-change` skill exactly.
-
 Use "$ARGUMENTS" as the requirement or change name.
 
 Always start with Mandatory Change Intake Gate:
@@ -15,3 +13,5 @@ Always start with Mandatory Change Intake Gate:
 3. If any Open Question or high-impact decision remains, stay in Discovery Gate and keep artifacts minimal: `discovery.md`, optional Draft `proposal.md`, and brief `notes.md` only.
 4. Do not create or update `spec.md`, `design.md`, `tasks.md`, or `impact.md` until Discovery Gate exits.
 5. Never use "if wrong, tell me" / "如有偏差请告知，我先改" as authorization to write files. Ask yes/no or option confirmation and wait.
+
+For Brownfield/Legacy projects, run focused current-change impact analysis only after requirements are confirmed.

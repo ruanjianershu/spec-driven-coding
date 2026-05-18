@@ -129,14 +129,6 @@ function ensureClaudeSkillLayout(pluginRoot, sourceRoot = path.join(pluginRoot, 
   }
 
   const skillNames = [
-    'sdc-core',
-    'sdc-init',
-    'sdc-change',
-    'sdc-plan',
-    'sdc-apply',
-    'sdc-check',
-    'sdc-archive',
-    'sdc-harness',
     'sdc-spec',
     'sdc-implement',
     'sdc-review',
