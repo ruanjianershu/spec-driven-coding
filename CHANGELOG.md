@@ -2,6 +2,13 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.7
+
+- Aligned spec templates with the current schema by adding explicit `INV-*` business invariant placeholders and schema metadata.
+- Updated validation to require `INV-*` alongside `SCN-*`, `REQ-*`, and `AC-*`.
+- Added safe init repair for stale SDC-generated templates: old managed templates are upgraded with `.bak-*` backups instead of being left to fail later validation.
+- Clarified Discovery Open versus Discovery Closed active change structures.
+
 ## 1.1.6
 
 - Added Discovery Artifact Budget: unresolved requirements now stay in `discovery.md`, optional Draft `proposal.md`, and brief `notes.md` instead of generating full `spec.md`, `design.md`, `tasks.md`, or `impact.md`.

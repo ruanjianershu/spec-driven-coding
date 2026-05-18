@@ -40,11 +40,12 @@ Load only what is needed:
 
 1. 检查当前目录是否已有 `.sdc/`。
 2. 用仓库证据判断 Greenfield / Brownfield-Legacy / Unknown。
-3. 创建缺失目录和模板；不得覆盖已有 `.sdc/` 文件。
+3. 创建缺失目录和模板；不得覆盖用户编写的 `.sdc/` 文件。
 4. 创建或补齐 `constitution.md`、`project.md`、`project-cognition.md`、`standards/`、`templates/`。
-5. 如果项目已有 `AGENTS.md`，不得覆盖；提醒后续可执行 `/sdc:harness` 同步规则。
-6. Brownfield/Legacy 项目只做整体认知，不做具体 change 的 impact。
-7. 输出创建/保留的文件、项目类型判断证据和下一步建议。
+5. 对 SDC 早期版本生成的托管模板，如果明显与当前 schema 漂移，可以安全升级并保留 `.bak-*` 备份。
+6. 如果项目已有 `AGENTS.md`，不得覆盖；提醒后续可执行 `/sdc:harness` 同步规则。
+7. Brownfield/Legacy 项目只做整体认知，不做具体 change 的 impact。
+8. 输出创建/保留/安全升级的文件、项目类型判断证据和下一步建议。
 
 ## 必须创建或补齐
 
@@ -97,7 +98,8 @@ Load only what is needed:
 
 ## 质量红线
 
-- 不能覆盖已有 `.sdc/` 文件。
+- 不能覆盖用户编写的 `.sdc/` 文件。
+- SDC 托管模板升级必须保留备份，并只修复明显的历史 schema 漂移。
 - 必须创建 `constitution.md`、`project.md`、`project-cognition.md` 和 `standards/`。
 - 必须创建 `current/`、`changes/`、`specs/` 和 `templates/`。
 - 必须区分项目整体认知和具体需求影响面分析。

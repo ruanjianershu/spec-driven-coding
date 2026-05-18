@@ -1,6 +1,6 @@
 {
   "name": "sdc-spec",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "SDC is a lightweight spec-driven coding workflow for Claude Code and Codex: role prompt contracts, requirement discovery, legacy impact analysis, SCN/REQ/AC traceability, consent gates, delivery checks, and archived specs.",
   "engines": {
     "node": ">=14.0.0"

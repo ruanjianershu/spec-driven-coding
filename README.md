@@ -292,7 +292,7 @@ SDC 已补齐官方市场审核需要的基础材料：
 
 | 命令 | 作用 |
 |------|------|
-| `/sdc:init` | 创建标准 `.sdc/` 工作区；遗留项目先建立项目整体认知 |
+| `/sdc:init` | 创建/修复标准 `.sdc/` 工作区；遗留项目先建立项目整体认知；旧托管模板会备份后安全升级 |
 | `/sdc:change <name>` | 创建一次需求迭代；先完成 Mandatory Change Intake Gate，Open Questions 未闭合时只保留轻量 Draft，确认后再进入 Change Impact Gate |
 | `/sdc:plan` | 基于已确认 spec 和必要的 impact.md 生成或更新 proposal/spec/design/tasks |
 | `/sdc:apply` | 按 tasks 执行当前变更 |
@@ -455,6 +455,7 @@ SDC 的公共 Skill 内置四类纪律机制：
 - ✅ 项目背景文件 `project.md`
 - ✅ 项目开发规范目录 `standards/`
 - ✅ 需求、任务、停线、bug、impact、repo-analysis 模板
+- ✅ 旧版 SDC 托管模板的安全升级记录（如发生，会保留 `.bak-*`）
 
 ### `/sdc:change` 输出包含
 - ✅ 独立 change 目录

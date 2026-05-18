@@ -18,6 +18,6 @@
 - 不要在 spec/design/tasks/code 冲突时继续猜测
 - 不要在需求不确定时跳过 Discovery Gate
 - 不要在遗留项目需求确认后跳过 Change Impact Gate
-- 不要覆盖已有 `.sdc/` 文件
+- 不要覆盖用户编写的 `.sdc/` 文件；SDC 托管模板升级必须保留备份
 - 不要删除 change 历史
 - 不要忽略 `.sdc/standards/` 中的项目规范

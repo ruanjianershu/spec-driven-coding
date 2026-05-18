@@ -244,6 +244,10 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 
 ## 0. 文档元信息
 
+- Status: Draft
+- Schema: SDC 1.1.7
+- Source:
+
 ## 1. Decision Ledger / 决策台账
 
 | ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
@@ -253,13 +257,17 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 
 ## 3. 背景与目标
 
-## 4. 场景与需求
+## 4. Business Invariants / 业务不变量
+
+### INV-01
+
+## 5. 场景与需求
 
 ### SCN-01
 
 ### REQ-01
 
-## 5. Acceptance Criteria / 验收标准
+## 6. Acceptance Criteria / 验收标准
 
 ### AC-01
 
@@ -267,11 +275,11 @@ Given ...
 When ...
 Then ...
 
-## 6. 验证策略
+## 7. 验证策略
 
-## 7. 风险、假设与待确认项
+## 8. 风险、假设与待确认项
 
-## 8. 追溯关系矩阵
+## 9. 追溯关系矩阵
 """,
     "current/discovery.md": """# Current Discovery
 
@@ -502,7 +510,7 @@ archive/YYYY-MM-DD-short-name/
 - 不要在 spec/design/tasks/code 冲突时继续猜测
 - 不要在需求不确定时跳过 Discovery Gate
 - 不要在遗留项目需求确认后跳过 Change Impact Gate
-- 不要覆盖已有 `.sdc/` 文件
+- 不要覆盖用户编写的 `.sdc/` 文件；SDC 托管模板升级必须保留备份
 - 不要删除 change 历史
 - 不要忽略 `.sdc/standards/` 中的项目规范
 """,
@@ -624,6 +632,10 @@ YYYY-MM-DD-short-title.md
 
 ## 0. 文档元信息
 
+- Status: Draft
+- Schema: SDC 1.1.7
+- Source:
+
 ## 1. Decision Ledger / 决策台账
 
 | ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
@@ -633,13 +645,17 @@ YYYY-MM-DD-short-title.md
 
 ## 3. 背景与目标
 
-## 4. 场景与需求
+## 4. Business Invariants / 业务不变量
+
+### INV-01
+
+## 5. 场景与需求
 
 ### SCN-01
 
 ### REQ-01
 
-## 5. Acceptance Criteria / 验收标准
+## 6. Acceptance Criteria / 验收标准
 
 ### AC-01
 
@@ -647,11 +663,11 @@ Given ...
 When ...
 Then ...
 
-## 6. 验证策略
+## 7. 验证策略
 
-## 7. 风险、假设与待确认项
+## 8. 风险、假设与待确认项
 
-## 8. 追溯关系矩阵
+## 9. 追溯关系矩阵
 """,
     "templates/stop-line-report.md": """# Stop-Line Report
 
@@ -894,7 +910,7 @@ def validate_task_trace(errors, filepath):
 
 def validate_spec_trace(errors, filepath):
     text = read_text(filepath)
-    for marker in ("SCN-", "REQ-", "AC-"):
+    for marker in ("INV-", "SCN-", "REQ-", "AC-"):
         if marker not in text:
             errors.append(f"{filepath} 缺少追溯标识: {marker}")
     if "Decision Ledger" not in text and "决策台账" not in text:
@@ -956,16 +972,63 @@ def validate_discovery_artifact_budget(errors, warnings, base):
     return True
 
 
-def write_if_missing(relative_path, content):
-    """Create a workspace file without overwriting user content."""
-    filepath = SDC_DIR / relative_path
-    if filepath.exists():
+def is_stale_managed_template(relative_path, text):
+    """Detect SDC-generated old templates that can be upgraded safely."""
+    normalized = text.replace("\r\n", "\n")
+    template_paths = {
+        "current/spec.md",
+        "templates/spec.md",
+        "current/tasks.md",
+        "templates/tasks.md",
+    }
+    if relative_path not in template_paths:
         return False
 
-    filepath.parent.mkdir(parents=True, exist_ok=True)
-    with open(filepath, "w") as f:
-        f.write(content)
-    return True
+    if relative_path.endswith("spec.md"):
+        looks_generated = (
+            "Given ..." in normalized
+            or "## 场景" in normalized
+            or "## Requirements" in normalized
+        )
+        return looks_generated and "INV-" not in normalized
+
+    if relative_path.endswith("tasks.md"):
+        old_task_shape = (
+            "### T1" in normalized
+            or "Status:" in normalized
+            or "AC:" in normalized
+            or "Test:" in normalized
+            or "[Size: L]" in normalized
+        )
+        missing_standard_shape = "T001 [REQ-01] [AC-01] [Phase" not in normalized
+        looks_generated = "Draft task" in normalized or old_task_shape
+        if relative_path == "current/tasks.md":
+            looks_generated = looks_generated and (
+                "Draft task" in normalized
+                or "### T1 — title" in normalized
+                or "### T1 - title" in normalized
+            )
+        return looks_generated and (old_task_shape or missing_standard_shape)
+
+    return False
+
+
+def write_or_upgrade_managed(relative_path, content):
+    """Create missing SDC files or upgrade stale generated templates with backup."""
+    filepath = SDC_DIR / relative_path
+    if not filepath.exists():
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        filepath.write_text(content)
+        return "created"
+
+    current = read_text(filepath)
+    if is_stale_managed_template(relative_path, current):
+        backup = filepath.with_name(f"{filepath.name}.bak-{datetime.now().strftime('%Y%m%d%H%M%S')}")
+        backup.write_text(current)
+        filepath.write_text(content)
+        return f"upgraded (backup: {backup.relative_to(SDC_DIR)})"
+
+    return None
 
 
 def detect_project_kind():
@@ -1016,6 +1079,7 @@ def detect_project_kind():
 def cmd_init():
     """初始化标准 SDC 工作区"""
     created = []
+    upgraded = []
     project_kind, project_markers, source_count = detect_project_kind()
 
     SDC_DIR.mkdir(exist_ok=True)
@@ -1027,16 +1091,24 @@ def cmd_init():
             created.append(f"{dirname}/")
 
     for relative_path, content in INIT_FILES.items():
-        if write_if_missing(relative_path, content):
+        result = write_or_upgrade_managed(relative_path, content)
+        if result == "created":
             created.append(relative_path)
+        elif result and result.startswith("upgraded"):
+            upgraded.append(f"{relative_path} {result}")
 
-    if created:
+    if created or upgraded:
         print_color(GREEN, "✅ SDC 标准工作区已初始化")
         print(f"   目录: {SDC_DIR.absolute()}")
         print()
-        print("已创建:")
-        for item in created:
-            print(f"  - {item}")
+        if created:
+            print("已创建:")
+            for item in created:
+                print(f"  - {item}")
+        if upgraded:
+            print("已安全升级的 SDC 托管模板:")
+            for item in upgraded:
+                print(f"  - {item}")
     else:
         print_color(YELLOW, "⚠️  SDC 工作区已存在，未覆盖任何文件")
 
@@ -1126,6 +1198,16 @@ def validate_file(errors, warnings, filepath, required_headings, require_content
             errors.append(f"{filepath} 缺少章节: {heading}")
 
 
+def validate_spec_file(errors, warnings, filepath):
+    validate_file(
+        errors,
+        warnings,
+        filepath,
+        ["Decision Ledger", "Business Invariants / 业务不变量", "Acceptance Criteria / 验收标准", "追溯关系矩阵"],
+    )
+    validate_spec_trace(errors, filepath)
+
+
 def cmd_validate(target="current"):
     """校验 current 或某个 change"""
     if not SDC_DIR.exists():
@@ -1146,11 +1228,10 @@ def cmd_validate(target="current"):
 
     if target == "current":
         base = SDC_DIR / "current"
-        validate_file(errors, warnings, base / "spec.md", ["Decision Ledger", "Acceptance Criteria / 验收标准", "追溯关系矩阵"])
+        validate_spec_file(errors, warnings, base / "spec.md")
         validate_file(errors, warnings, base / "plan.md", ["## 设计摘要", "## 测试先行策略", "## 交付清单"])
         validate_file(errors, warnings, base / "tasks.md", ["## Tasks"])
         validate_file(errors, warnings, base / "apply.md", ["## 已完成任务", "## 修改文件", "## 测试结果"])
-        validate_spec_trace(errors, base / "spec.md")
         validate_task_trace(errors, base / "tasks.md")
     else:
         base = change_path(target)
@@ -1177,8 +1258,7 @@ def cmd_validate(target="current"):
                 )
                 validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
                 validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
-                validate_file(errors, warnings, base / "spec.md", ["Decision Ledger", "Acceptance Criteria / 验收标准", "追溯关系矩阵"])
-                validate_spec_trace(errors, base / "spec.md")
+                validate_spec_file(errors, warnings, base / "spec.md")
                 validate_task_trace(errors, base / "tasks.md")
 
     print()

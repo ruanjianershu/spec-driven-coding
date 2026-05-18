@@ -73,6 +73,17 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 
 ## Active Change Structure
 
+Discovery Open changes intentionally use a small structure:
+
+```text
+.sdc/changes/active/YYYY-MM-DD-short-name/
+├── discovery.md
+├── proposal.md   # Draft
+└── notes.md
+```
+
+Discovery Closed changes may use the full structure:
+
 ```text
 .sdc/changes/active/YYYY-MM-DD-short-name/
 ├── discovery.md
