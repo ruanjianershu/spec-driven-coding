@@ -108,9 +108,13 @@ Mandatory Change Intake Gate always asks project context, core scope, technical 
 - acceptance direction.
 - high-impact product or technical decisions.
 
+While Discovery Gate is open, keep artifacts intentionally small. The default output is the next 3-5 confirmation questions in chat. If persistence is needed after intake confirmation, create or update only `discovery.md`, optional Draft `proposal.md`, and brief `notes.md`. Do not create or update `spec.md`, `design.md`, `tasks.md`, or `impact.md` until the gate exits.
+
 `discovery.md` should contain current understanding, candidate directions, tradeoffs, recommended MVP, Decision Ledger, open questions, and exit criteria.
 
 Exit Discovery Gate only when the current MVP scope is confirmed, high-impact decisions are confirmed or explicitly deferred, and no blocking open questions remain.
+
+Interpretation summaries are not consent. "If wrong, tell me and I will update" is forbidden as write authorization. State the interpretation as `Proposed`, ask a yes/no or option-selection question, wait for the user, then write durable artifacts.
 
 ## Brownfield / Legacy Gates
 

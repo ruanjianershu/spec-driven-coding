@@ -2,14 +2,14 @@
   "name": "sdc",
   "displayName": "SDC - 规范驱动开发",
   "description": "Spec-Driven-Coding 规范驱动开发工具集。普通模式只开放少量公共指令，用共享英文 references 维护角色契约、需求探索、遗留项目认知和变更影响面门禁。",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "author": "ruanjianershu",
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "homepage": "https://github.com/ruanjianershu/spec-driven-coding",
   "interface": {
     "displayName": "SDC",
     "shortDescription": "规范驱动开发工作流，用少量入口保留英文角色契约、需求探索、遗留项目影响面、SCN/REQ/AC 追溯和确认门禁。",
-    "longDescription": "SDC 是面向 Codex 的 Spec-Driven-Coding skill 集，提供 init、change、plan、apply、check、archive 等精简入口，并使用共享英文 references 统一维护 Role Prompt Contract、Discovery Gate、Brownfield 项目整体认知、需求确认后的 Change Impact Gate、裁决链、SCN/REQ/AC 追溯链、确认门禁、停线报告、review、test、validate 等能力；各 SKILL.md 保持短小，复杂规则按需加载。",
+    "longDescription": "SDC 是面向 Codex 的 Spec-Driven-Coding skill 集，提供 init、change、plan、apply、check、archive 等精简入口，并使用共享英文 references 统一维护 Role Prompt Contract、Discovery Gate、Discovery Artifact Budget、No Write-Ahead Confirmation、Brownfield 项目整体认知、需求确认后的 Change Impact Gate、裁决链、SCN/REQ/AC 追溯链、确认门禁、停线报告、review、test、validate 等能力；各 SKILL.md 保持短小，复杂规则按需加载。",
     "developerName": "ruanjianershu",
     "category": "Coding",
     "capabilities": [

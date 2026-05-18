@@ -81,11 +81,11 @@ INIT_FILES = {
 
 ## 推荐流程
 
-1. `/sdc:change <name>` 创建 `changes/active/<name>/`
-2. 需求不确定时先进入 Discovery Gate，更新 `discovery.md`
+1. `/sdc:change <name>` 创建 `changes/active/<name>/` 的轻量 Discovery Open 草稿
+2. 需求不确定时只更新 `discovery.md`、Draft `proposal.md` 和简短 `notes.md`
 3. `/sdc:spec` 将已确认 discovery 收敛为 SCN/REQ/AC
 4. 遗留项目在需求确认后先更新当前 change 的 `impact.md`
-5. `/sdc:plan` 生成 proposal/spec/design/tasks
+5. `/sdc:plan` 生成 design/tasks
 6. `/sdc:apply` 执行实现并记录过程
 7. `/sdc:check` 综合校验、审查、测试和质量检查
 8. `/sdc:archive <name>` 归档到 `changes/archive/`
@@ -163,6 +163,10 @@ All AI-created defaults must be recorded in a Decision Ledger as `Proposed` or `
 When requirements are uncertain, start with discovery instead of a confirmed spec.
 
 Discovery must record current understanding, candidate directions, tradeoffs, recommended MVP, open questions, and a Decision Ledger. A confirmed spec can only be produced after the current MVP scope and high-impact decisions are confirmed or explicitly deferred.
+
+While Discovery Gate is open, keep artifacts minimal: `discovery.md`, optional Draft `proposal.md`, and brief `notes.md` only. Do not create or update `spec.md`, `design.md`, `tasks.md`, or `impact.md` until the MVP, acceptance direction, and high-impact decisions are confirmed or explicitly deferred.
+
+Interpretation summaries are not consent. Do not write files with "if wrong, tell me" or "如有偏差请告知，我先改". Mark the interpretation as `Proposed` or `Assumed`, ask for explicit yes/no or option confirmation, wait for the user, then write durable artifacts.
 """,
     "project.md": """# Project Context
 
@@ -272,6 +276,7 @@ Then ...
     "current/discovery.md": """# Current Discovery
 
 > 需求不确定时先在这里探索。Discovery 不是正式 spec，只有 Confirmed 决策才能进入 REQ/AC。
+> Open Questions 未闭合时，只维护 discovery、可选 Draft proposal 和简短 notes，不生成完整 spec/design/tasks。
 
 ## Current Understanding
 
@@ -550,6 +555,7 @@ YYYY-MM-DD-short-title.md
     "templates/discovery.md": """# Discovery
 
 > 需求不确定时先使用本文件。Discovery 用于发散和收敛，不是 Confirmed spec。
+> Open Questions 未闭合时，只维护 discovery、可选 Draft proposal 和简短 notes，不生成完整 spec/design/tasks。
 
 ## Current Understanding
 
@@ -895,6 +901,61 @@ def validate_spec_trace(errors, filepath):
         errors.append(f"{filepath} 缺少 Decision Ledger / 决策台账")
 
 
+def discovery_gate_open(base):
+    """Return True when discovery still contains unresolved exit criteria or blocking states."""
+    text = read_text(base / "discovery.md")
+    if not text:
+        return False
+
+    unchecked_exit = re.search(
+        r"- \[ \].*(MVP|scope|decision|acceptance|确认|高影响|验收)",
+        text,
+        re.IGNORECASE,
+    )
+    blocking_state = re.search(r"\b(Proposed|Assumed|TBD|Conflict)\b", text)
+    return bool(unchecked_exit or blocking_state)
+
+
+def validate_no_write_ahead(errors, filepath):
+    text = read_text(filepath)
+    if not text:
+        return
+
+    policy_markers = (
+        "No Write-Ahead Confirmation",
+        "Interpretation summaries are not consent",
+        "Forbidden write-ahead patterns",
+        "Do not write files with",
+    )
+    if any(marker in text for marker in policy_markers):
+        return
+
+    patterns = [
+        r"if (this is )?wrong[,，]? tell me.*(update|adjust|proceed)",
+        r"proceed unless you object",
+        r"如有偏差请告知.*(先|立即).*(更新|修改|调整|改)",
+        r"如果不对告诉我.*(先|立即).*(更新|修改|调整|改)",
+        r"若.*有出入.*(先|下面).*更新",
+    ]
+    for pattern in patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            errors.append(f"{filepath} 包含 write-ahead 确认话术，必须先获得显式确认")
+            return
+
+
+def validate_discovery_artifact_budget(errors, warnings, base):
+    if not discovery_gate_open(base):
+        return False
+
+    for filename in ("spec.md", "impact.md", "design.md", "tasks.md"):
+        filepath = base / filename
+        if filepath.exists():
+            errors.append(f"Discovery Gate 未退出，但已生成 {filepath}；只允许 discovery.md / Draft proposal.md / notes.md")
+
+    warnings.append("Discovery Gate 仍打开：这是允许的草稿状态，先关闭 Open Questions 再生成 spec/design/tasks")
+    return True
+
+
 def write_if_missing(relative_path, content):
     """Create a workspace file without overwriting user content."""
     filepath = SDC_DIR / relative_path
@@ -1003,7 +1064,7 @@ def cmd_init():
 
 
 def cmd_change(name):
-    """创建一次需求迭代目录"""
+    """创建一次需求迭代目录，默认只生成轻量 discovery 草稿。"""
     if not SDC_DIR.exists():
         print_color(RED, "❌ 请先运行: sdc init")
         return
@@ -1018,36 +1079,35 @@ def cmd_change(name):
     directory.mkdir(parents=True)
     files = {
         "discovery.md": INIT_FILES["templates/discovery.md"],
-        "impact.md": INIT_FILES["templates/change-impact.md"],
-        "proposal.md": INIT_FILES["templates/change.md"].replace("# Change Proposal", f"# {change_id} Proposal"),
-        "tasks.md": INIT_FILES["templates/tasks.md"],
-        "design.md": INIT_FILES["templates/design.md"],
-        "spec.md": INIT_FILES["templates/spec.md"],
+        "proposal.md": INIT_FILES["templates/change.md"].replace("# Change Proposal", f"# {change_id} Proposal")
+        .replace("## 目标", "## Status\n\nDraft - Discovery Open\n\n## 目标"),
         "notes.md": f"""# Notes
 
 > Change: {change_id}
 > Created: {datetime.now().isoformat()}
+> Status: Draft - Discovery Open
 
-## 实现记录
+## Discovery Notes
 
-## 问题记录
+## Confirmed Decisions
 
-## 验证记录
+## Pending Questions
 """,
     }
 
     for filename, content in files.items():
         (directory / filename).write_text(content)
 
-    print_color(GREEN, "✅ SDC 需求迭代已创建")
+    print_color(GREEN, "✅ SDC 需求迭代草稿已创建")
     print(f"   ID: {change_id}")
     print(f"   目录: {directory.absolute()}")
+    print("   状态: Discovery Open（仅创建 discovery/proposal/notes）")
     print()
     print("下一步:")
-    print(f"  {BLUE}sdc discovery{ENDC}         - 需求不确定时先探索和确认 MVP")
-    print(f"  {BLUE}sdc spec{ENDC}              - 基于已确认 discovery 完善 SCN/REQ/AC")
-    print(f"  {BLUE}impact.md{ENDC}             - 遗留项目需求确认后先做变更影响面分析")
-    print(f"  {BLUE}sdc plan {change_id}{ENDC}   - 生成/完善计划")
+    print(f"  {BLUE}sdc discovery{ENDC}         - 继续确认 MVP、Open Questions 和 Decision Ledger")
+    print(f"  {BLUE}sdc spec{ENDC}              - Discovery 退出后再生成 SCN/REQ/AC")
+    print(f"  {BLUE}impact.md{ENDC}             - 遗留项目需求确认后再做变更影响面分析")
+    print(f"  {BLUE}sdc plan {change_id}{ENDC}   - spec/impact 确认后再生成计划")
     print(f"  {BLUE}sdc check {change_id}{ENDC}  - 综合检查")
 
 
@@ -1057,6 +1117,7 @@ def validate_file(errors, warnings, filepath, required_headings, require_content
         return
 
     text = read_text(filepath)
+    validate_no_write_ahead(errors, filepath)
     if require_content and not has_real_content(filepath):
         errors.append(f"内容仍是模板或缺少有效内容: {filepath}")
 
@@ -1103,18 +1164,22 @@ def cmd_validate(target="current"):
                 ["## Current Understanding", "## Decision Ledger", "## Open Questions", "## Exit Criteria"],
                 require_content=False,
             )
-            validate_file(
-                errors,
-                warnings,
-                base / "impact.md",
-                ["## 0. 分析快照", "## 4. 必须修改的文件清单", "## 8. 测试与回归策略建议", "## 10. 待确认业务规则与问题清单"],
-                require_content=False,
-            )
-            validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
-            validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
-            validate_file(errors, warnings, base / "spec.md", ["Decision Ledger", "Acceptance Criteria / 验收标准", "追溯关系矩阵"])
-            validate_spec_trace(errors, base / "spec.md")
-            validate_task_trace(errors, base / "tasks.md")
+            if validate_discovery_artifact_budget(errors, warnings, base):
+                validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标"], require_content=False)
+                validate_file(errors, warnings, base / "notes.md", ["# Notes"], require_content=False)
+            else:
+                validate_file(
+                    errors,
+                    warnings,
+                    base / "impact.md",
+                    ["## 0. 分析快照", "## 4. 必须修改的文件清单", "## 8. 测试与回归策略建议", "## 10. 待确认业务规则与问题清单"],
+                    require_content=False,
+                )
+                validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
+                validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
+                validate_file(errors, warnings, base / "spec.md", ["Decision Ledger", "Acceptance Criteria / 验收标准", "追溯关系矩阵"])
+                validate_spec_trace(errors, base / "spec.md")
+                validate_task_trace(errors, base / "tasks.md")
 
     print()
     print_color(HEADER, f"🔍 SDC 校验结果: {target}")
@@ -1136,6 +1201,8 @@ def cmd_validate(target="current"):
     print("=" * 50)
     if errors:
         print_color(RED, "结论: 不可归档 / 不建议进入实现")
+    elif any("Discovery Gate 仍打开" in item for item in warnings):
+        print_color(YELLOW, "结论: Discovery 草稿有效；关闭 Open Questions 后再进入 spec/plan/apply")
     else:
         print_color(GREEN, "结论: 校验通过")
     print()
@@ -1369,7 +1436,8 @@ def main():
 - 未经用户确认、权威文档支持或显式授权，不得把候选方案写成 REQ/AC/INV/design/tasks
 - 所有 AI 默认值必须进入 Decision Ledger，状态为 Proposed 或 Assumed
 - Proposed、Assumed、TBD、Conflict 不可进入 apply
-- 需求不确定时必须先进入 Discovery Gate，确认 MVP 后再生成 spec
+- 需求不确定时必须先进入 Discovery Gate，Open Questions 未闭合时只维护 discovery / Draft proposal / notes
+- 禁止“如果不对告诉我，我先改”；必须先 ask yes/no 或选项确认，再写入持久文件
 - 遗留项目必须先维护 `.sdc/project-cognition.md`
 - 遗留项目在需求确认后、plan/apply 前必须读取当前 change 的 `impact.md`
 

@@ -28,7 +28,9 @@ Role: product discovery facilitator and change boundary architect.
 
 - Always run Mandatory Change Intake Gate before creating or updating change files.
 - Continue Discovery Gate when user, goal, scope, acceptance, or high-impact decisions remain unresolved after intake.
+- While Discovery Gate is open, keep artifacts minimal: `discovery.md`, optional Draft `proposal.md`, and brief `notes.md`; do not create `spec.md`, `design.md`, `tasks.md`, or `impact.md`.
 - Record AI suggestions as `Proposed` or `Assumed` until confirmed.
+- Never use "tell me if wrong" as write permission; ask for explicit confirmation first.
 - For Brownfield/Legacy, run Change Impact Gate only after requirement confirmation.
 - Recommend a small MVP slice when scope is too broad.
 

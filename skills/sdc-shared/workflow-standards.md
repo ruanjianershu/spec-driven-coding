@@ -43,6 +43,8 @@ Use the Decision Ledger for high-impact decisions and unclear assumptions.
 | Conflict | Contradiction between sources | No |
 | Deferred | Intentionally postponed and outside the current MVP | Only when it does not affect the current MVP |
 
+Only `Confirmed` decisions may become durable product truth in final `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `tasks.md`. `Proposed` and `Assumed` are useful for discussion and the Decision Ledger, but they are not implementation inputs.
+
 ## High-Impact Decisions
 
 Never silently decide these items:
@@ -52,6 +54,34 @@ Never silently decide these items:
 - Data model, permission boundary, compatibility rule, destructive operation, background job, feature flag, observability strategy.
 
 If a high-impact decision is not confirmed, record it as `Proposed`, `Assumed`, `TBD`, or `Conflict`, then stop before final spec, plan, apply, or archive.
+
+## No Write-Ahead Confirmation
+
+Never use "tell me if wrong" as permission to write files. The agent must not say it will update artifacts now and ask the user to correct it later.
+
+Forbidden patterns:
+
+- "If wrong, tell me and I will adjust."
+- "I will proceed unless you object."
+- "如有偏差请告知，我先更新。"
+- "如果不对告诉我，我先改。"
+
+Required pattern:
+
+1. Mark the interpretation as `Proposed` or `Assumed`.
+2. Ask for explicit yes/no or option-selection confirmation.
+3. Wait for the user's answer.
+4. Write or update final artifacts only after confirmation.
+
+## Minimal Artifacts While Unconfirmed
+
+When the current MVP, acceptance direction, or any high-impact decision remains unconfirmed:
+
+- Keep working in chat and `discovery.md`.
+- Optional persistence is limited to Draft `proposal.md` and brief `notes.md`.
+- Do not create or update final `spec.md`, `design.md`, `tasks.md`, or `impact.md`.
+- Do not generate a full task list or detailed implementation design.
+- Ask only the next 3-5 questions needed to close the blocker.
 
 ## No Silent Defaults
 

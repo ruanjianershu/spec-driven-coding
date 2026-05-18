@@ -46,6 +46,8 @@ Load only what is needed:
 - 裁决链：`.sdc/constitution.md > AGENTS.md > 对话即时要求`。
 - 事实链：`discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code`。
 - Human Confirmation / No Silent Defaults。
+- Discovery Artifact Budget：Open Questions 未闭合时只允许 discovery / Draft proposal / notes。
+- No Write-Ahead Confirmation：禁止“如果不对告诉我，我先改”，必须先获得 yes/no 或选项确认。
 - 项目必须做。
 - 项目绝对不要做。
 - 验证命令。

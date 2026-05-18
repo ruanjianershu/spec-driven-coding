@@ -25,6 +25,7 @@ v1.1 的核心不是增加更多指令，而是强化内部纪律：
 追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
 确认门禁：高影响决策必须 Confirmed，不能 Silent Default
 探索门禁：不确定需求必须先 discovery，再 spec
+轻量草稿：Open Questions 未闭合时只保留 discovery/Draft proposal，不生成完整 spec/design/tasks
 遗留门禁：init 做项目整体认知，change 需求确认后做 impact，再 plan/apply
 ```
 
@@ -60,7 +61,7 @@ Role -> Operating Contract -> Evidence Rules -> Output Contract
 ```text
 1. init      创建 .sdc/ 工作区、constitution、standards、templates
 2. change    先做 Mandatory Change Intake Gate，用户确认后创建 .sdc/changes/active/<change-id>/
-3. discovery intake 后仍有不确定项时，继续发散、比较、收敛 MVP 和 Decision Ledger
+3. discovery intake 后仍有不确定项时，只保留轻量 Draft，继续收敛 MVP 和 Decision Ledger
 4. spec      将 Confirmed discovery 收敛为 SCN -> REQ -> AC
 5. impact    遗留项目在需求确认后分析当前 change 的影响面
 6. plan      生成 design/tasks，并建立 SCN -> REQ -> AC -> T### 追溯
@@ -86,6 +87,7 @@ Codex 用户使用自然语言或 `/skills` 触发同名 SDC skills：
 ```text
 用 SDC 初始化这个项目
 用 SDC 为登录流程创建 change；先完成 intake 问题并确认，再创建 change 文件
+如果还有待确认问题，只记录 discovery 草稿，不要生成 spec/design/tasks
 如果这是遗留项目，用 SDC 在需求确认后做当前 change 的影响面分析
 用 SDC 基于已确认 discovery 生成 spec 和 plan
 用 SDC apply 执行当前任务
@@ -291,7 +293,7 @@ SDC 已补齐官方市场审核需要的基础材料：
 | 命令 | 作用 |
 |------|------|
 | `/sdc:init` | 创建标准 `.sdc/` 工作区；遗留项目先建立项目整体认知 |
-| `/sdc:change <name>` | 创建一次需求迭代；创建文件前必须先完成 Mandatory Change Intake Gate，遗留项目需求确认后进入 Change Impact Gate |
+| `/sdc:change <name>` | 创建一次需求迭代；先完成 Mandatory Change Intake Gate，Open Questions 未闭合时只保留轻量 Draft，确认后再进入 Change Impact Gate |
 | `/sdc:plan` | 基于已确认 spec 和必要的 impact.md 生成或更新 proposal/spec/design/tasks |
 | `/sdc:apply` | 按 tasks 执行当前变更 |
 | `/sdc:check` | 综合执行校验、审查、测试和质量检查 |
@@ -407,6 +409,7 @@ SDC 的公共 Skill 内置四类纪律机制：
 | 裁决链 | `.sdc/constitution.md > AGENTS.md`，`discovery > spec > design/plan > tasks > code` |
 | 追溯链 | `SCN -> REQ -> AC -> T### -> 验证证据` |
 | 探索门禁 | 不确定需求先进入 Discovery Gate，确认 MVP 后再生成 spec |
+| 草稿瘦身 | Open Questions 未闭合时只维护 discovery / Draft proposal / 简短 notes，不展开完整 spec/design/tasks |
 | 确认门禁 | 高影响产品/技术决策必须进入 Decision Ledger，确认后才能 apply |
 | 遗留门禁 | init 建项目整体认知；change 需求确认后做 impact，再 plan/apply |
 | 角色契约 | `skills/sdc-shared/role-contracts.md` 统一维护英文 Role Prompt Contract，约束角色、工作方式、证据和输出 |
@@ -455,9 +458,10 @@ SDC 的公共 Skill 内置四类纪律机制：
 
 ### `/sdc:change` 输出包含
 - ✅ 独立 change 目录
-- ✅ proposal/tasks/design/spec/notes 五件套
+- ✅ Discovery Open 时只包含 `discovery.md`、Draft `proposal.md`、简短 `notes.md`
+- ✅ Discovery Closed 后再生成完整 proposal/spec/design/tasks/impact/notes
 - ✅ 明确的 change-id
-- ✅ 初始 SCN/REQ/AC 或待确认项
+- ✅ 待确认项、Decision Ledger 和下一批问题
 - ✅ 下一步校验建议
 
 ### `/sdc:spec` 输出包含

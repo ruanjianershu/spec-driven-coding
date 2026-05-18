@@ -2,6 +2,14 @@
 
 All notable changes to SDC are documented here.
 
+## 1.1.6
+
+- Added Discovery Artifact Budget: unresolved requirements now stay in `discovery.md`, optional Draft `proposal.md`, and brief `notes.md` instead of generating full `spec.md`, `design.md`, `tasks.md`, or `impact.md`.
+- Added No Write-Ahead Confirmation rules to forbid "if wrong, tell me, I will update now" as authorization.
+- Strengthened Decision Ledger gates so high-impact inferences remain `Proposed` or `Assumed` until explicit confirmation.
+- Updated CLI `sdc change` to create a minimal Discovery Open draft by default.
+- Updated validation to flag full artifacts created before Discovery Gate exits.
+
 ## 1.1.5
 
 - Fixed Claude Code local marketplace packaging so it exposes only `.claude/skills/` and no longer registers duplicate root `skills/` entries.

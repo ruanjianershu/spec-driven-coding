@@ -48,10 +48,8 @@ Load only what is needed:
 
 - `proposal.md`
 - `discovery.md`
-- `spec.md`
-- `impact.md`（Brownfield/Legacy 必须）
-- `design.md`
-- `tasks.md`
+- Discovery Open: only `discovery.md`, Draft `proposal.md`, and `notes.md` are expected.
+- Discovery Closed: `spec.md`, `impact.md`（Brownfield/Legacy 必须）, `design.md`, `tasks.md`
 - `notes.md`
 
 ## 必须检查
@@ -63,6 +61,7 @@ Load only what is needed:
 - 测试任务是否先于实现任务。
 - Decision Ledger 是否存在且状态正确。
 - Proposed / Assumed / TBD / Conflict 是否被错误写入最终范围。
+- Discovery Gate 未退出时，是否错误生成了完整 spec/design/tasks/impact。
 - Silent Defaults 是否出现。
 - Brownfield/Legacy 当前 change 是否有有效 `impact.md`。
 - `impact.md` 是否仍有阻塞性待确认项。

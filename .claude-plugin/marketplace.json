@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "sdc",
-      "description": "A lightweight spec-driven coding workflow for Claude Code: role prompt contracts, requirement discovery, legacy impact analysis, SCN/REQ/AC traceability, consent gates, delivery checks, and archived specs.",
-      "version": "1.1.5",
+      "description": "A lightweight spec-driven coding workflow for Claude Code: role prompt contracts, requirement discovery with minimal draft artifacts, legacy impact analysis, SCN/REQ/AC traceability, consent gates, delivery checks, and archived specs.",
+      "version": "1.1.6",
       "source": "./",
       "author": {
         "name": "ruanjianershu",

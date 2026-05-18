@@ -102,6 +102,18 @@ Name rules:
 | `tasks.md` | Thin, test-first, traceable execution tasks. |
 | `notes.md` | Implementation notes, changed files, validation evidence, issues, decisions made during execution. |
 
+## Artifact Creation Levels
+
+Use the smallest durable artifact set that matches the certainty level:
+
+| Level | Condition | Allowed artifacts |
+| --- | --- | --- |
+| Intake only | User has not confirmed intake answers | No `.sdc/changes/active/*` files |
+| Discovery Open | Intake confirmed, but Open Questions or high-impact decisions remain | `discovery.md`, optional Draft `proposal.md`, brief `notes.md` |
+| Discovery Closed | MVP, acceptance direction, and high-impact decisions are confirmed or explicitly deferred | Full change artifacts may be created |
+
+Do not create `spec.md`, `design.md`, `tasks.md`, or `impact.md` while Discovery Open. This keeps token use low and prevents speculative documents from looking authoritative.
+
 ## Minimum Constitution Content
 
 `constitution.md` should include:

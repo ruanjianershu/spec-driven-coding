@@ -22,6 +22,16 @@ Required intake categories:
 
 The agent may propose options, but every option is `Proposed` until the user confirms it. No change files, confirmed spec, final plan, or implementation tasks may be written before intake confirmation.
 
+## Artifact Budget While Discovery Is Open
+
+When any blocking Open Question remains, keep artifacts minimal:
+
+- Default: ask the next 3-5 highest-value questions in chat and do not write files.
+- If persistence is useful after intake confirmation, create or update only `discovery.md`, plus an optional Draft `proposal.md` and brief `notes.md`.
+- Do not create or update `spec.md`, `design.md`, `tasks.md`, or `impact.md` while Discovery Gate is open.
+- Do not output a large task list, API design, database schema, or implementation plan while Discovery Gate is open.
+- Do not ask every possible question. Ask only the questions required to close the next decision gate.
+
 ## When To Continue Discovery
 
 After intake confirmation, continue Discovery Gate when any of these remain unresolved:
@@ -35,6 +45,26 @@ After intake confirmation, continue Discovery Gate when any of these remain unre
 - Whether the request should be one change or several changes.
 
 Do not produce a `Confirmed` spec, final plan, or implementation tasks while Discovery Gate is open.
+
+Open Questions are blockers unless they are explicitly deferred outside the current MVP. A Draft artifact may mention them, but they must not become final REQ/AC, design decisions, or tasks.
+
+## Explicit Confirmation Gate
+
+Interpretation summaries are not consent.
+
+Forbidden write-ahead patterns:
+
+- "If this is wrong, tell me; I will update the files now."
+- "I will assume X and proceed unless you object."
+- "如有偏差请告知，我先按这个更新。"
+- "如果不对告诉我，我先改。"
+
+Required pattern:
+
+1. State the interpretation as `Proposed`.
+2. Ask a yes/no or option-selection confirmation question.
+3. Wait for the user's answer.
+4. Write durable artifacts only after confirmation.
 
 ## Discovery Method
 

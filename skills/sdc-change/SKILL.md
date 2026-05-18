@@ -20,8 +20,8 @@ description: "Create a focused requirement change under .sdc/changes/active with
 创建一次独立、可追踪、可验证的需求迭代。`/sdc:change` 不能由 AI 自己判断“需求是否足够清楚”，必须先执行强制 intake：
 
 - 创建任何 change 文件前：先问 4 个 intake 问题，并等待用户确认。
-- 用户确认后：再创建 change，并进入 spec/plan。
-- 仍有不确定项：继续 Discovery Gate，先讨论、比较、收敛。
+- 用户确认后：如果需求已敲定，再创建完整 change 并进入 spec/plan。
+- 仍有不确定项：继续 Discovery Gate，只保留轻量 Draft，不生成完整 spec/design/tasks。
 - 存量/遗留项目：需求确认后必须进入 Legacy Impact Gate，再 plan/apply。
 
 ## Reference Loading
@@ -40,10 +40,10 @@ Load only what is needed:
 2. 执行 Mandatory Change Intake Gate：复述用户原话，提出 4 个 intake 问题。
 3. 用户确认前，不得创建或更新 `.sdc/changes/active/*` 文件。
 4. 用户确认后，生成 change id：`YYYY-MM-DD-short-name`。
-5. 创建 `.sdc/changes/active/<change-id>/`。
-6. 创建或更新 `discovery.md`、`proposal.md`、`spec.md`、`impact.md`、`design.md`、`tasks.md`、`notes.md`。
-7. 如果确认后仍有不确定项，停在 Discovery Gate，不得输出 Confirmed spec。
-8. 未确认高影响决策必须进入 Decision Ledger，不得写成事实。
+5. 如果确认后仍有 Open Questions 或高影响未确认决策，只创建或更新最小 Draft：`discovery.md`、可选 `proposal.md`、简短 `notes.md`。
+6. Discovery Gate 未退出前，不得创建或更新 `spec.md`、`impact.md`、`design.md`、`tasks.md`。
+7. Discovery Gate 退出后，再创建或更新完整 change artifacts：`proposal.md`、`spec.md`、`impact.md`（如适用）、`design.md`、`tasks.md`、`notes.md`。
+8. 未确认高影响决策必须进入 Decision Ledger，状态为 `Proposed` 或 `Assumed`，不得写成事实。
 9. Brownfield/Legacy 项目在需求确认后创建或更新 `impact.md`。
 10. 输出推荐下一步：继续 discovery、`/sdc:spec` 或 `/sdc:plan`。
 
@@ -58,6 +58,8 @@ Load only what is needed:
 - 可以给出 2-3 个候选方向，但必须标为 `Proposed`。
 - 推荐最小 MVP slice，而不是完整大方案。
 - 用户确认前不能创建 change files，也不能输出 `Confirmed` spec。
+- Open Questions 未闭合时默认只问下一批 3-5 个关键问题，不展开完整 spec/design/tasks。
+- 禁止“如果不对告诉我，我先改”式写法；必须先问 yes/no 或选项确认，再写入持久文件。
 
 ## Legacy Impact Gate
 
@@ -99,5 +101,7 @@ YYYY-MM-DD-short-name
 - 不能覆盖已有 change。
 - 所有新 change 必须先进入 Mandatory Change Intake Gate。
 - 未确认高影响决策不能写成事实。
+- Open Questions 未闭合时不能生成完整 `spec.md`、`design.md`、`tasks.md`。
+- 不能用“如有偏差请告知”替代用户确认。
 - spec/tasks 不能只有空模板。
 - 遗留项目需求确认后不能跳过 Legacy Impact Gate。

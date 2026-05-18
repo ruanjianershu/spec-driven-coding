@@ -60,12 +60,13 @@ Load only what is needed:
 2. 如果 `.sdc/` 不存在，先建议或执行 `/sdc:init`。
 3. 新需求必须进入 `.sdc/changes/` 或 `.sdc/current/`。
 4. 新 change 一律先进入 Mandatory Change Intake Gate；用户确认前不能创建 change 文件。
-5. 遗留项目 init 只做整体认知；具体变更影响面必须在 change 需求确认后执行。
-6. apply 前必须有 confirmed spec、design/plan 和 tasks；Brownfield/Legacy/Unknown 必须有 impact，明确 Greenfield 才可 N/A。
-7. check 承担 validate/review/test/quality，以及 bug/impact/repo 分析入口。
-8. spec/design/tasks/code 冲突时必须停线。
-9. 高影响决策必须 Confirmed，不能 Silent Default。
-10. 完成前必须 check 通过；归档时必须沉淀到 `.sdc/specs/`。
+5. Open Questions 未闭合时只维护 discovery、Draft proposal 和 notes，不生成完整 spec/design/tasks。
+6. 遗留项目 init 只做整体认知；具体变更影响面必须在 change 需求确认后执行。
+7. apply 前必须有 confirmed spec、design/plan 和 tasks；Brownfield/Legacy/Unknown 必须有 impact，明确 Greenfield 才可 N/A。
+8. check 承担 validate/review/test/quality，以及 bug/impact/repo 分析入口。
+9. spec/design/tasks/code 冲突时必须停线。
+10. 高影响决策必须 Confirmed，不能 Silent Default。
+11. 完成前必须 check 通过；归档时必须沉淀到 `.sdc/specs/`。
 
 ## 输出格式
 

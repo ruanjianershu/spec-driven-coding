@@ -50,6 +50,8 @@ Load only what is needed:
 
 如果缺少 Decision Ledger，或存在未确认高影响决策，必须输出 Stop-Line Report，不能写成最终 design/tasks。
 
+如果 `discovery.md` 仍有 Open Questions、未勾选 Exit Criteria，或 Decision Ledger 中存在 `Proposed` / `Assumed` / `TBD` / `Conflict`，必须停线。不得为了推进而补全 design/tasks。
+
 如果是 Brownfield/Legacy/Unknown 项目且缺少有效 `impact.md`，必须先回到 Legacy Impact Gate。即使 AI 判断“没有影响”，也必须有 `impact.md` 记录证据。
 
 ## 执行步骤
@@ -114,3 +116,4 @@ Load only what is needed:
 - 未确认技术/架构/状态机/权限决策必须停线。
 - 默认只展开当前 MVP slice。
 - 遗留项目缺少有效 `impact.md` 不能进入最终 plan。
+- 禁止把解释性推断直接写成任务；必须先进入 Decision Ledger 并获得确认。

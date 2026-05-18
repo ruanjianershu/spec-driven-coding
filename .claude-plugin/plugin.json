@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "sdc",
-  "version": "1.1.5",
-  "description": "A lightweight spec-driven coding workflow for Claude Code. Use role prompt contracts, discover uncertain requirements, analyze legacy impact after requirements are confirmed, preserve SCN/REQ/AC traceability, confirm high-impact decisions, apply tasks, check quality, and archive specs.",
+  "version": "1.1.6",
+  "description": "A lightweight spec-driven coding workflow for Claude Code. Use role prompt contracts, discover uncertain requirements with minimal draft artifacts, analyze legacy impact after requirements are confirmed, preserve SCN/REQ/AC traceability, confirm high-impact decisions, apply tasks, check quality, and archive specs.",
   "author": {
     "name": "ruanjianershu",
     "url": "https://github.com/ruanjianershu"
