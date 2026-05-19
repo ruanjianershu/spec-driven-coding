@@ -56,6 +56,26 @@ const commandFiles = fs
   .map((name) => name.replace(/\.md$/, ''));
 sameSet(commandFiles, publicCommands, 'Claude public command files');
 
+const advancedSkills = ['sdc-spec', 'sdc-implement', 'sdc-review', 'sdc-test', 'sdc-quality', 'sdc-validate'];
+const skillsDirEntries = fs
+  .readdirSync(path.join(root, 'skills'), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name);
+const allowedSkillsDirEntries = [...advancedSkills, 'sdc-shared'];
+const unexpectedSkillEntries = skillsDirEntries.filter((name) => !allowedSkillsDirEntries.includes(name));
+if (unexpectedSkillEntries.length > 0) {
+  fail(`Source skills/ must not contain legacy public command backing skills. unexpected=${unexpectedSkillEntries.join(',')}`);
+}
+const missingAdvancedSkills = advancedSkills.filter((name) => !skillsDirEntries.includes(name));
+if (missingAdvancedSkills.length > 0) {
+  fail(`Source skills/ is missing advanced skill directories: ${missingAdvancedSkills.join(',')}`);
+}
+
+const sourceClaudeSkills = path.join(root, '.claude', 'skills');
+if (fs.existsSync(sourceClaudeSkills)) {
+  fail('Source repo must not contain .claude/skills/; the installer generates it from skills/. Ignore via .gitignore.');
+}
+
 const claudePlugin = readJSON('.claude-plugin/plugin.json');
 const expectedClaudeSkills = [
   './.claude/skills/sdc-spec',
