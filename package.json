@@ -10,9 +10,9 @@
     "audit": "node scripts/audit-release.mjs"
   },
   "bin": {
-    "sdc": "./bin/install.js",
-    "sdc-spec": "./bin/install.js",
-    "sdc-cli": "./sdc-cli.py"
+    "sdc": "bin/install.js",
+    "sdc-spec": "bin/install.js",
+    "sdc-cli": "sdc-cli.py"
   },
   "files": [
     "bin/",
@@ -63,7 +63,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ruanjianershu/spec-driven-coding.git"
+    "url": "git+https://github.com/ruanjianershu/spec-driven-coding.git"
   },
   "homepage": "https://github.com/ruanjianershu/spec-driven-coding"
 }
