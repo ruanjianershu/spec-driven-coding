@@ -50,6 +50,11 @@ DIRS = [
     "changes/archive",
     "current",
     "decisions",
+    "knowledge",
+    "knowledge/product",
+    "knowledge/technical",
+    "memory",
+    "memory/episodic",
     "reports",
     "reports/bug",
     "reports/impact",
@@ -70,6 +75,8 @@ INIT_FILES = {
 - `project.md` - 项目长期背景、目标用户、技术约束和验证命令
 - `project-cognition.md` - 遗留项目整体认知，基于代码证据建立维护地图
 - `constitution.md` - 项目最高工程裁决规则
+- `knowledge/` - 项目确认知识库，分为产品知识和技术知识
+- `memory/` - 项目记忆与候选知识，默认不高于 confirmed knowledge
 - `current/` - 当前正在推进的一次需求迭代，包含 discovery/spec/plan/tasks/apply
 - `changes/active/` - 正在推进的需求变更，每个变更一个子目录
 - `changes/archive/` - 已完成归档的需求变更
@@ -84,18 +91,21 @@ INIT_FILES = {
 
 1. `/sdc:change <name>` 创建 `changes/active/<name>/` 的轻量 Discovery Open 草稿
 2. 需求不确定时只更新 `discovery.md`、Draft `proposal.md` 和简短 `notes.md`
-3. `sdc-spec` 将已确认 discovery 收敛为 SCN/REQ/AC
-4. 遗留项目在需求确认后先更新当前 change 的 `impact.md`
-5. `/sdc:plan` 生成 design/tasks
-6. `/sdc:apply` 执行实现并记录过程
-7. `/sdc:check` 综合校验、审查、测试和质量检查
-8. `/sdc:archive <name>` 归档到 `changes/archive/`，并运行 Knowledge Compact Gate 判断长期知识沉淀
+3. 需求确认后读取 `knowledge/index.md` 和相关产品/技术知识，再生成 spec
+4. `sdc-spec` 将已确认 discovery 收敛为 SCN/REQ/AC
+5. 遗留项目在需求确认后先更新当前 change 的 `impact.md`
+6. `/sdc:plan` 生成 design/tasks/context-pack
+7. `/sdc:apply` 执行实现，记录验证证据和 `knowledge-candidates.md`
+8. `/sdc:check` 综合校验、审查、测试、质量和知识漂移
+9. `/sdc:archive <name>` 归档到 `changes/archive/`，并运行 Knowledge Compact Gate 判断长期知识沉淀
 
 ## 三类核心资产
 
 - `specs/` - 业务规范：项目应该做什么
 - `changes/` - 需求迭代：这次为什么改、怎么改、如何验收
+- `knowledge/` - 项目知识：产品事实、业务规则、技术事实和运行方式
 - `standards/` - 开发规范：代码、测试、架构、安全、Git 和 AI 协作规则
+- `memory/` - 项目记忆：候选知识、经验、流程和可回顾的工作片段
 
 ## SDC v1.1 纪律内核
 
@@ -105,6 +115,7 @@ INIT_FILES = {
 追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
 确认门禁：高影响决策必须 Confirmed，不能 Silent Default
 探索门禁：不确定需求必须先 discovery，再 spec
+知识门禁：change/plan/apply 前读取 knowledge index；memory 只能辅助召回，不能覆盖 confirmed knowledge
 ```
 """,
     "constitution.md": """# SDC Project Constitution
@@ -121,11 +132,27 @@ If these sources conflict, stop and produce a Stop-Line Report.
 
 Code is evidence of current behavior, but it does not automatically override the agreed spec.
 
-## 3. Core Chain
+## 3. Knowledge and Memory Discipline
+
+`.sdc/knowledge/` stores confirmed project knowledge. It is the shared project brain for product facts, domain rules, technical architecture, interfaces, operations, and validation commands.
+
+`.sdc/memory/` stores project memory and knowledge candidates. Memory is useful for recall and continuity, but it cannot override confirmed knowledge, current specs, user confirmation, or code evidence.
+
+Before writing a final spec, plan, task list, or implementation, read `.sdc/knowledge/index.md` and the relevant product/technical knowledge files. If the current change contradicts existing knowledge, record the conflict in the Decision Ledger and stop until it is confirmed.
+
+No Evidence, No Fact. No Confirmation, No Execution. No Impact, No Brownfield Change.
+
+Every durable knowledge item must record Status, Source, Verified At, Verified Against, and Scope. Missing evidence creates a Knowledge Gap; it does not authorize guessing.
+
+Assumptions may be recorded only in discovery, Decision Ledger, or knowledge-candidates. `Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, and open Knowledge Gaps must not drive final spec, design, context-pack, tasks, impact, apply, or archive.
+
+For Brownfield/Legacy technical knowledge, code/config/test/build/runtime evidence is required. README files, comments, old docs, and memory are clues only.
+
+## 4. Core Chain
 
 `discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive`
 
-## 4. Stop-The-Line Rules
+## 5. Stop-The-Line Rules
 
 Stop and produce a Stop-Line Report when:
 
@@ -133,15 +160,18 @@ Stop and produce a Stop-Line Report when:
 - implementation requires changing business behavior, public contract, acceptance criteria, or key technical decisions
 - current task requires scope expansion
 - validation cannot prove the acceptance criteria
+- required knowledge sources are missing, stale, or contradict the current change
+- final artifacts contain unclosed Knowledge Gaps or unconfirmed assumptions
 
-## 5. Traceability Rules
+## 6. Traceability Rules
 
 - specs must define `SCN-*`, `REQ-*`, and `AC-*` identifiers
 - tasks must reference `REQ-*` and `AC-*`
 - tests or validation notes must reference `AC-*`
 - implementation notes must record validation evidence
+- specs, designs, plans, and context packs must list the knowledge sources they used
 
-## 6. Human Confirmation Rules
+## 7. Human Confirmation Rules
 
 AI may propose options, but humans own high-impact decisions.
 
@@ -153,13 +183,13 @@ Before a high-impact decision enters `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `
 - supported by an authoritative project document
 - explicitly delegated by the user with permission to choose
 
-## 7. No Silent Defaults
+## 8. No Silent Defaults
 
 Do not turn common practice into project truth.
 
 All AI-created defaults must be recorded in a Decision Ledger as `Proposed` or `Assumed` until confirmed. `Proposed`, `Assumed`, `TBD`, and `Conflict` items must not be treated as implementation-ready.
 
-## 8. Discovery Gate
+## 9. Discovery Gate
 
 When requirements are uncertain, start with discovery instead of a confirmed spec.
 
@@ -199,6 +229,13 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 ## AI 工作规则
 
 （项目级偏好、禁忌、容易踩坑的地方）
+
+## 知识库入口
+
+- 产品知识索引：`knowledge/product/`
+- 技术知识索引：`knowledge/technical/`
+- 当前工作状态：`knowledge/current.md`
+- 候选知识与项目记忆：`memory/`
 """,
     "project-cognition.md": """# Project Cognition
 
@@ -246,29 +283,39 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.1.10
+- Schema: SDC 1.1.11
 - Source:
 
-## 1. Decision Ledger / 决策台账
+## 1. Knowledge Sources Used
+
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
+
+## 1.1 Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
+
+## 2. Decision Ledger / 决策台账
 
 | ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
 |----|------|------|----------|----------------------|--------|
 
-## 2. Glossary / 统一语言
+## 3. Glossary / 统一语言
 
-## 3. 背景与目标
+## 4. 背景与目标
 
-## 4. Business Invariants / 业务不变量
+## 5. Business Invariants / 业务不变量
 
 ### INV-01
 
-## 5. 场景与需求
+## 6. 场景与需求
 
 ### SCN-01
 
 ### REQ-01
 
-## 6. Acceptance Criteria / 验收标准
+## 7. Acceptance Criteria / 验收标准
 
 ### AC-01
 
@@ -276,16 +323,26 @@ Given ...
 When ...
 Then ...
 
-## 7. 验证策略
+## 8. 验证策略
 
-## 8. 风险、假设与待确认项
+## 9. 风险、假设与待确认项
 
-## 9. 追溯关系矩阵
+## 10. 追溯关系矩阵
 """,
     "current/discovery.md": """# Current Discovery
 
 > 需求不确定时先在这里探索。Discovery 不是正式 spec，只有 Confirmed 决策才能进入 REQ/AC。
 > Open Questions 未闭合时，只维护 discovery、可选 Draft proposal 和简短 notes，不生成完整 spec/design/tasks。
+
+## Knowledge Sources Used
+
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
+
+## Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
 
 ## Current Understanding
 
@@ -351,6 +408,45 @@ Then ...
 
 ## 遇到的问题
 """,
+    "current/context-pack.md": """# Current Context Pack
+
+> 给执行 Agent 的短交接包。只包含本轮需求落地必须知道的知识，不复制整个知识库。
+
+## Goal
+
+## Knowledge Sources Used
+
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
+
+## Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
+
+## Confirmed Product Knowledge
+
+## Confirmed Technical Knowledge
+
+## Execution Boundaries
+
+## Forbidden Assumptions
+
+## Validation Commands
+
+## Knowledge Candidate Routing
+
+- Product knowledge candidates:
+- Technical knowledge candidates:
+- Memory/procedure candidates:
+""",
+    "current/knowledge-candidates.md": """# Current Knowledge Candidates
+
+> apply/check/archive 阶段记录候选知识。候选知识不是事实，archive 时确认后才能写入长期知识库。
+
+| Candidate | Type | Scope | Source | Status | Target | Evidence Needed | Promotion Gate |
+|-----------|------|-------|--------|--------|--------|-----------------|----------------|
+""",
     "changes/README.md": """# Changes
 
 每一次需求迭代一个目录，放在 `active/` 下，推荐命名：
@@ -367,6 +463,8 @@ active/YYYY-MM-DD-short-name/
 - `tasks.md` - 可执行任务清单
 - `design.md` - 关键设计和技术取舍
 - `spec.md` - 最终沉淀的需求规范
+- `context-pack.md` - 给执行 Agent 的短交接包，引用本次所需知识
+- `knowledge-candidates.md` - apply/check 过程中发现的候选知识
 - `notes.md` - 实现过程记录和问题
 
 归档后移动到：
@@ -379,11 +477,239 @@ archive/YYYY-MM-DD-short-name/
 
 - `specs/` 和 `changes/archive/` 是必需归档资产
 - `decisions/`、`standards/`、`AGENTS.md`、`reports/`、`project.md`、`project-cognition.md` 是条件性长期知识更新
+- `knowledge/product/`、`knowledge/technical/` 和 `memory/` 是条件性知识/记忆更新
 - 条件项需要明确确认后再写入，不能由 AI 或 CLI 静默更新
 """,
     "specs/README.md": """# Specs
 
 这里存放已经稳定下来的业务规范。不要把临时讨论直接放进来，先在 `current/` 或 `changes/` 中完成迭代。
+""",
+    "knowledge/README.md": """# Knowledge Base
+
+这里存放项目长期知识。它不是聊天记录，也不是所有文档的合集，而是人和 AI 都要复用的项目事实。
+
+## 分层
+
+- `index.md` - 短索引。每次 change/plan/apply 前优先读取。
+- `product/` - 产品知识：目标用户、领域概念、业务规则、流程和产品决策。
+- `technical/` - 技术知识：技术栈、架构、模块、数据/接口、运行、测试和部署。
+- `current.md` - 当前项目状态、最近变化和需要下一次接续的上下文。
+
+## 状态
+
+每条长期知识建议标注状态：
+
+- Confirmed - 已确认事实，可以用于 spec/plan/apply。
+- Candidate - 候选知识，等待 archive 确认。
+- Assumed - 临时假设，不能进入最终实现依据。
+- Stale - 可能过期，需要复核。
+- Conflict - 与代码、spec、用户确认或其他知识冲突。
+- Deprecated - 已废弃，仅保留历史参考。
+
+Memory 可以帮助召回，但不能覆盖 Confirmed knowledge、当前 spec、用户确认或代码证据。
+
+## Knowledge Evidence Contract
+
+每条长期知识至少要有：
+
+- Status: Confirmed / Candidate / Assumed / Stale / Conflict / Deprecated
+- Source: user / spec / code / decision / archive / external-doc
+- Verified At: YYYY-MM-DD 或 Commit
+- Verified Against: 文件路径、spec、decision、测试命令、代码证据或用户确认
+- Scope: personal / project / team / enterprise
+
+没有证据的内容只能进入 Knowledge Gap 或 Candidate，不能进入 final spec/design/tasks/context-pack。
+
+```text
+No Evidence, No Fact.
+No Confirmation, No Execution.
+No Impact, No Brownfield Change.
+```
+""",
+    "knowledge/index.md": """# Knowledge Index
+
+> 每次非平凡 change/plan/apply 前先读这里，再按任务打开相关知识文件。
+
+## Product Knowledge
+
+| Topic | File | Status | When To Read | Evidence Rule |
+|-------|------|--------|--------------|---------------|
+| Product overview | `product/overview.md` | Candidate | 新需求、范围讨论、产品目标变化 | Source + Verified Against required |
+| Roles and permissions | `product/roles.md` | Candidate | 涉及用户、权限、审批或可见性 | Source + Verified Against required |
+| Domain concepts | `product/domain.md` | Candidate | 涉及业务术语、对象和状态 | Source + Verified Against required |
+| Product flows | `product/flows.md` | Candidate | 涉及流程、状态机、用户路径 | Source + Verified Against required |
+| Business rules | `product/rules.md` | Candidate | 涉及业务规则、验收标准、不变量 | Source + Verified Against required |
+| Product decisions | `product/decisions.md` | Candidate | 涉及产品取舍、非目标、延期范围 | Source + Verified Against required |
+
+## Technical Knowledge
+
+| Topic | File | Status | When To Read | Evidence Rule |
+|-------|------|--------|--------------|---------------|
+| Stack | `technical/stack.md` | Candidate | 技术选型、依赖、运行环境 | Code/config evidence required |
+| Architecture | `technical/architecture.md` | Candidate | 模块边界、依赖方向、设计变化 | Code/config evidence required |
+| Modules | `technical/modules.md` | Candidate | 查找实现位置、影响面 | Code evidence required |
+| Data and interfaces | `technical/data-and-interfaces.md` | Candidate | 数据模型、API、事件、集成 | Code/schema/contract evidence required |
+| Operations | `technical/operations.md` | Candidate | 启动、部署、回滚、排障 | Script/config evidence required |
+| Testing | `technical/testing.md` | Candidate | 验证策略、测试命令、回归风险 | Test/build evidence required |
+
+## Current State
+
+- Current focus: `current.md`
+- Project cognition: `../project-cognition.md`
+- Standards: `../standards/`
+- Decisions: `../decisions/`
+
+## Retrieval Rule
+
+Read only the entries relevant to the current task. If a needed knowledge file is missing or stale, record a Knowledge Gap and ask whether to refresh it.
+
+## Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
+""",
+    "knowledge/current.md": """# Current Project State
+
+## Current Focus
+
+## Recently Completed
+
+## Active Risks
+
+## Open Knowledge Gaps
+
+## Next Useful Reads
+""",
+    "knowledge/product/README.md": """# Product Knowledge
+
+产品知识回答：为什么做、给谁做、业务规则是什么、什么不做。
+
+这些内容主要服务 `discovery`、`spec` 和验收标准。技术实现不能偷偷改写产品事实。
+""",
+    "knowledge/product/overview.md": """# Product Overview
+
+| Item | Content | Status | Source | Verified At | Verified Against | Scope |
+|------|---------|--------|--------|-------------|------------------|-------|
+| Problem | | Candidate | | | | Project |
+| Target users | | Candidate | | | | Project |
+| Product goals | | Candidate | | | | Project |
+| Non-goals | | Candidate | | | | Project |
+""",
+    "knowledge/product/roles.md": """# Roles And Permissions
+
+| Role | Capabilities | Restrictions | Status | Source | Verified At | Verified Against | Scope |
+|------|--------------|--------------|--------|--------|-------------|------------------|-------|
+""",
+    "knowledge/product/domain.md": """# Domain Concepts
+
+| Concept | Meaning | Related Rules | Status | Source | Verified At | Verified Against | Scope |
+|---------|---------|---------------|--------|--------|-------------|------------------|-------|
+""",
+    "knowledge/product/flows.md": """# Product Flows
+
+## Flow Index
+
+| Flow | Actors | Status | Source | Verified At | Verified Against | Scope |
+|------|--------|--------|--------|-------------|------------------|-------|
+
+## Flow Details
+""",
+    "knowledge/product/rules.md": """# Business Rules
+
+| Rule ID | Rule | Status | Source | Verified At | Verified Against | Scope | Related Specs |
+|---------|------|--------|--------|-------------|------------------|-------|---------------|
+""",
+    "knowledge/product/decisions.md": """# Product Decisions
+
+| Decision ID | Decision | Status | Source | Verified At | Verified Against | Scope | Impact |
+|-------------|----------|--------|--------|-------------|------------------|-------|--------|
+""",
+    "knowledge/technical/README.md": """# Technical Knowledge
+
+技术知识回答：系统怎么实现、怎么运行、怎么安全地改。
+
+这些内容主要服务 `plan`、`apply`、`check` 和遗留项目影响面分析。技术知识必须接受代码证据复核。
+""",
+    "knowledge/technical/stack.md": """# Technical Stack
+
+| Area | Choice | Version / Evidence | Status | Source | Verified At | Verified Against | Scope |
+|------|--------|--------------------|--------|--------|-------------|------------------|-------|
+""",
+    "knowledge/technical/architecture.md": """# Architecture Knowledge
+
+## System Shape
+
+## Boundaries
+
+## Dependency Direction
+
+## Architecture Decisions
+""",
+    "knowledge/technical/modules.md": """# Module Map
+
+| Module | Responsibility | Key Files | Depends On | Status | Source | Verified At | Verified Against | Scope |
+|--------|----------------|-----------|------------|--------|--------|-------------|------------------|-------|
+""",
+    "knowledge/technical/data-and-interfaces.md": """# Data And Interfaces
+
+## Data Models
+
+| Object / Table | Purpose | Key Fields | Status | Source | Verified At | Verified Against | Scope |
+|----------------|---------|------------|--------|--------|-------------|------------------|-------|
+
+## APIs / Events / Integrations
+
+| Contract | Purpose | Producer | Consumer | Status | Source | Verified At | Verified Against | Scope |
+|----------|---------|----------|----------|--------|--------|-------------|------------------|-------|
+""",
+    "knowledge/technical/operations.md": """# Operations
+
+## Setup
+
+## Local Run
+
+## Build
+
+## Deploy / Rollback
+
+## Troubleshooting
+""",
+    "knowledge/technical/testing.md": """# Testing Knowledge
+
+| Scope | Command | What It Proves | Status | Source | Verified At | Verified Against |
+|-------|---------|----------------|--------|--------|-------------|------------------|
+""",
+    "memory/README.md": """# Project Memory
+
+Memory 存放经验、候选知识和过程性记忆。它帮助未来 agent 少重复探索，但不能直接成为产品或技术事实。
+
+## 文件
+
+- `candidates.md` - 本次或历史需求中发现的候选知识，等待 archive 确认。
+- `procedures.md` - 可复用流程、排障步骤、容易犯错的操作。
+- `episodic/` - 重要工作片段、事故或里程碑的简短记录。
+
+长期稳定事实应进入 `knowledge/`、`standards/` 或 `decisions/`，而不是一直留在 memory。
+""",
+    "memory/candidates.md": """# Memory Candidates
+
+| Candidate | Type | Scope | Source | Status | Target | Evidence Needed | Promotion Gate |
+|-----------|------|-------|--------|--------|--------|-----------------|----------------|
+""",
+    "memory/procedures.md": """# Procedures And Lessons
+
+| Procedure / Lesson | When To Use | Evidence | Status | Target | Verified At | Scope |
+|--------------------|-------------|----------|--------|--------|-------------|-------|
+""",
+    "memory/episodic/README.md": """# Episodic Memory
+
+这里保存重要需求、事故、迁移或协作事件的短摘要。不要粘贴完整聊天记录。
+
+推荐文件名：
+
+```text
+YYYY-MM-DD-short-event.md
+```
 """,
     "standards/README.md": """# Development Standards
 
@@ -503,10 +829,12 @@ archive/YYYY-MM-DD-short-name/
 
 - 开始新需求前确认 `.sdc/` 是否存在
 - 先读 `.sdc/constitution.md`，再读 `AGENTS.md`
+- 非平凡需求先读 `.sdc/knowledge/index.md`，再按任务读取相关产品/技术知识
 - 新需求进入 `.sdc/changes/active/`
 - 遗留项目先读 `.sdc/project-cognition.md`
-- 实现前先看 `discovery.md`、`proposal.md`、`spec.md`、`impact.md`、`design.md`、`tasks.md`
+- 实现前先看 `discovery.md`、`proposal.md`、`spec.md`、`impact.md`、`design.md`、`tasks.md`、`context-pack.md`
 - 保持 `SCN-* -> REQ-* -> AC-* -> T### -> 验证证据` 追溯链
+- apply/check 过程中把新发现写入 `knowledge-candidates.md`，不要直接污染长期知识库
 - 完成前执行 `/sdc:check`
 - 归档时执行 `/sdc:archive`
 
@@ -520,6 +848,7 @@ archive/YYYY-MM-DD-short-name/
 - 不要覆盖用户编写的 `.sdc/` 文件；SDC 托管模板升级必须保留备份
 - 不要删除 change 历史
 - 不要忽略 `.sdc/standards/` 中的项目规范
+- 不要把 `.sdc/memory/` 中的 Candidate/Assumed 当作 confirmed 项目事实
 """,
     "decisions/README.md": """# Decisions
 
@@ -544,6 +873,16 @@ YYYY-MM-DD-short-title.md
 - `repo-analysis/` - 存量项目结构、风险和改造建议
 """,
     "templates/change.md": """# Change Proposal
+
+## Knowledge Sources Used
+
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
+
+## Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
 
 ## 背景
 
@@ -571,6 +910,16 @@ YYYY-MM-DD-short-title.md
 
 > 需求不确定时先使用本文件。Discovery 用于发散和收敛，不是 Confirmed spec。
 > Open Questions 未闭合时，只维护 discovery、可选 Draft proposal 和简短 notes，不生成完整 spec/design/tasks。
+
+## Knowledge Sources Used
+
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
+
+## Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
 
 ## Current Understanding
 
@@ -617,6 +966,16 @@ YYYY-MM-DD-short-title.md
 """,
     "templates/design.md": """# Design
 
+## Knowledge Sources Used
+
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
+
+## Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
+
 ## Solution Summary / 方案摘要
 
 ## Impact Scope / 影响范围
@@ -640,29 +999,39 @@ YYYY-MM-DD-short-title.md
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.1.10
+- Schema: SDC 1.1.11
 - Source:
 
-## 1. Decision Ledger / 决策台账
+## 1. Knowledge Sources Used
+
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
+
+## 1.1 Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
+
+## 2. Decision Ledger / 决策台账
 
 | ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
 |----|------|------|----------|----------------------|--------|
 
-## 2. Glossary / 统一语言
+## 3. Glossary / 统一语言
 
-## 3. 背景与目标
+## 4. 背景与目标
 
-## 4. Business Invariants / 业务不变量
+## 5. Business Invariants / 业务不变量
 
 ### INV-01
 
-## 5. 场景与需求
+## 6. 场景与需求
 
 ### SCN-01
 
 ### REQ-01
 
-## 6. Acceptance Criteria / 验收标准
+## 7. Acceptance Criteria / 验收标准
 
 ### AC-01
 
@@ -670,11 +1039,11 @@ Given ...
 When ...
 Then ...
 
-## 7. 验证策略
+## 8. 验证策略
 
-## 8. 风险、假设与待确认项
+## 9. 风险、假设与待确认项
 
-## 9. 追溯关系矩阵
+## 10. 追溯关系矩阵
 """,
     "templates/stop-line-report.md": """# Stop-Line Report
 
@@ -783,6 +1152,70 @@ Then ...
 
 | Claim | Source |
 |-------|--------|
+""",
+    "templates/context-pack.md": """# Context Pack
+
+> 给执行 Agent 的短交接包。由 plan 阶段从 spec、impact、design、tasks 和知识库压缩生成。
+
+## Goal
+
+## Knowledge Sources Used
+
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
+
+## Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
+
+## Confirmed Product Knowledge
+
+## Confirmed Technical Knowledge
+
+## Execution Boundaries
+
+## Forbidden Assumptions
+
+- Do not invent product rules, roles, permissions, approval flows, notification behavior, database choices, migration strategy, rollout policy, or integration contracts that are not confirmed in spec/knowledge.
+
+## Task And Traceability Summary
+
+## Validation Commands
+
+## Knowledge Candidate Routing
+
+- Product knowledge candidates:
+- Technical knowledge candidates:
+- Memory/procedure candidates:
+""",
+    "templates/knowledge-candidates.md": """# Knowledge Candidates
+
+> apply/check 阶段记录候选知识。archive 时确认后再写入长期知识库。
+
+| Candidate | Type | Scope | Source | Status | Target | Evidence Needed | Promotion Gate |
+|-----------|------|-------|--------|--------|--------|-----------------|----------------|
+""",
+    "templates/knowledge-index.md": """# Knowledge Index
+
+## Product Knowledge
+
+| Topic | File | Status | When To Read | Evidence Rule |
+|-------|------|--------|--------------|---------------|
+
+## Technical Knowledge
+
+| Topic | File | Status | When To Read | Evidence Rule |
+|-------|------|--------|--------------|---------------|
+
+## Knowledge Gaps
+
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
+
+## Current State
+
+## Retrieval Rule
 """,
     "templates/repo-analysis.md": """# Repo Analysis
 
@@ -935,6 +1368,24 @@ def validate_task_trace(errors, filepath):
             errors.append(f"{filepath} 缺少任务字段: {marker}")
 
 
+def validate_no_unconfirmed_execution_inputs(errors, filepath):
+    text = read_text(filepath)
+    if not text:
+        return
+
+    blocking_states = sorted(set(re.findall(r"\b(Proposed|Assumed|TBD|Conflict|Stale)\b", text)))
+    if blocking_states:
+        errors.append(f"{filepath} 包含未确认/不可执行状态: {', '.join(blocking_states)}")
+
+    if re.search(r"Knowledge Gap", text, re.IGNORECASE):
+        open_gap_patterns = [
+            r"\|\s*KG-[^|]*\|[^|]*\|[^|]*\|[^|]*\|[^|]*\|\s*(Open|TBD|Blocking|Unresolved|待确认|未闭合|阻塞)\s*\|",
+            r"Knowledge Gap[^\n]*(Open|TBD|Blocking|Unresolved|待确认|未闭合|阻塞)",
+        ]
+        if any(re.search(pattern, text, re.IGNORECASE) for pattern in open_gap_patterns):
+            errors.append(f"{filepath} 存在未闭合 Knowledge Gap，不能进入执行或归档")
+
+
 def validate_spec_trace(errors, filepath):
     text = read_text(filepath)
     for marker in ("INV-", "SCN-", "REQ-", "AC-"):
@@ -990,7 +1441,7 @@ def validate_discovery_artifact_budget(errors, warnings, base):
     if not discovery_gate_open(base):
         return False
 
-    for filename in ("spec.md", "impact.md", "design.md", "tasks.md"):
+    for filename in ("spec.md", "impact.md", "design.md", "tasks.md", "context-pack.md", "knowledge-candidates.md"):
         filepath = base / filename
         if filepath.exists():
             errors.append(f"Discovery Gate 未退出，但已生成 {filepath}；只允许 discovery.md / Draft proposal.md / notes.md")
@@ -1003,13 +1454,68 @@ def is_stale_managed_template(relative_path, text):
     """Detect SDC-generated old templates that can be upgraded safely."""
     normalized = text.replace("\r\n", "\n")
     template_paths = {
+        "constitution.md",
+        "knowledge/index.md",
+        "current/discovery.md",
         "current/spec.md",
+        "current/context-pack.md",
+        "current/knowledge-candidates.md",
+        "memory/candidates.md",
+        "templates/change.md",
+        "templates/discovery.md",
+        "templates/design.md",
         "templates/spec.md",
+        "templates/context-pack.md",
+        "templates/knowledge-candidates.md",
+        "templates/knowledge-index.md",
         "current/tasks.md",
         "templates/tasks.md",
     }
     if relative_path not in template_paths:
         return False
+
+    if relative_path == "constitution.md":
+        return "# SDC Project Constitution" in normalized and (
+            "Knowledge and Memory Discipline" not in normalized
+            or "No Evidence, No Fact" not in normalized
+        )
+
+    if relative_path in {"knowledge/index.md", "templates/knowledge-index.md"}:
+        return "# Knowledge Index" in normalized and (
+            "Evidence Rule" not in normalized
+            or "## Knowledge Gaps" not in normalized
+        )
+
+    if relative_path in {"current/knowledge-candidates.md", "templates/knowledge-candidates.md", "memory/candidates.md"}:
+        return (
+            ("# Knowledge Candidates" in normalized or "# Current Knowledge Candidates" in normalized or "# Memory Candidates" in normalized)
+            and ("Evidence Needed" not in normalized or "Promotion Gate" not in normalized)
+        )
+
+    if relative_path in {"current/context-pack.md", "templates/context-pack.md"}:
+        return "# Context Pack" in normalized and (
+            "## Knowledge Gaps" not in normalized
+            or "## Forbidden Assumptions" not in normalized
+            or "| Source | Status | Evidence | Why It Matters |" not in normalized
+        )
+
+    if relative_path in {"current/discovery.md", "templates/discovery.md"}:
+        return "# Discovery" in normalized and (
+            "## Knowledge Gaps" not in normalized
+            or "| Source | Status | Evidence | Why It Matters |" not in normalized
+        )
+
+    if relative_path == "templates/change.md":
+        return "# Change Proposal" in normalized and (
+            "## Knowledge Gaps" not in normalized
+            or "| Source | Status | Evidence | Why It Matters |" not in normalized
+        )
+
+    if relative_path == "templates/design.md":
+        return "# Design" in normalized and (
+            "## Knowledge Gaps" not in normalized
+            or "| Source | Status | Evidence | Why It Matters |" not in normalized
+        )
 
     if relative_path.endswith("spec.md"):
         looks_generated = (
@@ -1154,6 +1660,7 @@ def cmd_init():
         print()
 
     print("下一步:")
+    print(f"  {BLUE}.sdc/knowledge/index.md{ENDC} - 先补最小产品/技术知识索引")
     print(f"  {BLUE}sdc discovery{ENDC} - 需求不确定时先探索和收敛 MVP")
     print(f"  {BLUE}sdc spec{ENDC}    - 编辑当前需求规范")
     print(f"  {BLUE}sdc plan{ENDC}    - 生成/编辑规范和实现计划")
@@ -1228,6 +1735,7 @@ def cmd_change(name, confirmed_intake=False):
     print("   状态: Discovery Open（仅创建 discovery/proposal/notes）")
     print()
     print("下一步:")
+    print(f"  {BLUE}.sdc/knowledge/index.md{ENDC} - 读取相关产品/技术知识后继续 discovery/spec")
     print(f"  {BLUE}sdc discovery{ENDC}         - 继续确认 MVP、Open Questions 和 Decision Ledger")
     print(f"  {BLUE}sdc spec{ENDC}              - Discovery 退出后再生成 SCN/REQ/AC")
     print(f"  {BLUE}impact.md{ENDC}             - 遗留项目需求确认后再做变更影响面分析")
@@ -1252,21 +1760,42 @@ def validate_file(errors, warnings, filepath, required_headings, require_content
             errors.append(f"{filepath} 缺少章节: {heading}")
 
 
+def validate_knowledge_workspace(errors, warnings):
+    """Validate that the project knowledge/memory skeleton exists."""
+    required = [
+        (SDC_DIR / "knowledge" / "index.md", ["# Knowledge Index", "## Product Knowledge", "## Technical Knowledge"]),
+        (SDC_DIR / "knowledge" / "product" / "README.md", ["# Product Knowledge"]),
+        (SDC_DIR / "knowledge" / "technical" / "README.md", ["# Technical Knowledge"]),
+        (SDC_DIR / "memory" / "candidates.md", ["# Memory Candidates"]),
+    ]
+
+    for filepath, headings in required:
+        validate_file(errors, warnings, filepath, headings, require_content=False)
+
+
+def validate_context_pack(errors, warnings, filepath):
+    validate_file(
+        errors,
+        warnings,
+        filepath,
+        ["## Goal", "## Knowledge Sources Used", "## Knowledge Gaps", "## Execution Boundaries", "## Forbidden Assumptions", "## Validation Commands", "## Knowledge Candidate Routing"],
+    )
+    validate_no_unconfirmed_execution_inputs(errors, filepath)
+
+
 def validate_spec_file(errors, warnings, filepath):
     validate_file(
         errors,
         warnings,
         filepath,
-        ["Decision Ledger", "Business Invariants / 业务不变量", "Acceptance Criteria / 验收标准", "追溯关系矩阵"],
+        ["Knowledge Sources Used", "Decision Ledger", "Business Invariants / 业务不变量", "Acceptance Criteria / 验收标准", "追溯关系矩阵"],
     )
     if not filepath.exists():
         return
     text = read_text(filepath)
     if re.search(r"Status:\s*Draft", text, re.IGNORECASE):
         errors.append(f"{filepath} 仍是 Draft，进入 plan/apply 前必须明确 Confirmed")
-    blocking_states = sorted(set(re.findall(r"\b(Proposed|Assumed|TBD|Conflict)\b", text)))
-    if blocking_states:
-        errors.append(f"{filepath} 包含未确认决策状态: {', '.join(blocking_states)}")
+    validate_no_unconfirmed_execution_inputs(errors, filepath)
     validate_spec_trace(errors, filepath)
 
 
@@ -1275,8 +1804,9 @@ def validate_design_file(errors, warnings, filepath):
         errors,
         warnings,
         filepath,
-        ["## Solution Summary", "## Impact Scope", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
+        ["## Knowledge Sources Used", "## Knowledge Gaps", "## Solution Summary", "## Impact Scope", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
     )
+    validate_no_unconfirmed_execution_inputs(errors, filepath)
 
 
 def validate_impact_file(errors, warnings, filepath):
@@ -1287,6 +1817,7 @@ def validate_impact_file(errors, warnings, filepath):
     text = read_text(filepath)
     validate_no_write_ahead(errors, filepath)
     validate_no_template_placeholders(errors, filepath)
+    validate_no_unconfirmed_execution_inputs(errors, filepath)
 
     english_headings = [
         "## Analysis Snapshot",
@@ -1322,6 +1853,43 @@ def validate_impact_gate(errors, warnings, base):
     errors.append(f"缺少文件: {impact}（{project_kind} 项目需要 impact.md；证据: {evidence}）")
 
 
+def validate_knowledge_candidates_file(errors, warnings, filepath):
+    validate_file(errors, warnings, filepath, ["Knowledge Candidates"], require_content=False)
+    if not filepath.exists():
+        return
+
+    text = read_text(filepath)
+    if "Evidence Needed" not in text or "Promotion Gate" not in text:
+        errors.append(f"{filepath} 缺少候选知识证据字段: Evidence Needed / Promotion Gate")
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        if (
+            not stripped.startswith("|")
+            or stripped.startswith("|---")
+            or stripped.lower().startswith("| candidate |")
+        ):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) < 8:
+            errors.append(f"{filepath} 候选知识行缺少字段: {stripped}")
+            continue
+        candidate, item_type, scope, source, status, target, evidence_needed, promotion_gate = cells[:8]
+        required = {
+            "Candidate": candidate,
+            "Type": item_type,
+            "Scope": scope,
+            "Source": source,
+            "Status": status,
+            "Target": target,
+            "Evidence Needed": evidence_needed,
+            "Promotion Gate": promotion_gate,
+        }
+        missing = [name for name, value in required.items() if not value or value in {"-", "TBD", "TODO"}]
+        if missing:
+            errors.append(f"{filepath} 候选知识缺少必填字段 {', '.join(missing)}: {candidate or stripped}")
+
+
 def cmd_validate(target="current"):
     """校验 current 或某个 change"""
     if not SDC_DIR.exists():
@@ -1334,11 +1902,13 @@ def cmd_validate(target="current"):
     validate_file(errors, warnings, SDC_DIR / "constitution.md", [
         "## 1. Governance Priority",
         "## 2. Fact Priority",
-        "## 5. Traceability Rules",
-        "## 6. Human Confirmation Rules",
-        "## 7. No Silent Defaults",
-        "## 8. Discovery Gate",
+        "## 3. Knowledge and Memory Discipline",
+        "## 6. Traceability Rules",
+        "## 7. Human Confirmation Rules",
+        "## 8. No Silent Defaults",
+        "## 9. Discovery Gate",
     ])
+    validate_knowledge_workspace(errors, warnings)
 
     if target == "current":
         base = SDC_DIR / "current"
@@ -1346,7 +1916,11 @@ def cmd_validate(target="current"):
         validate_file(errors, warnings, base / "plan.md", ["## 设计摘要", "## 测试先行策略", "## 交付清单"])
         validate_file(errors, warnings, base / "tasks.md", ["## Tasks"])
         validate_file(errors, warnings, base / "apply.md", ["## 已完成任务", "## 修改文件", "## 测试结果"])
+        validate_context_pack(errors, warnings, base / "context-pack.md")
+        validate_knowledge_candidates_file(errors, warnings, base / "knowledge-candidates.md")
         validate_task_trace(errors, base / "tasks.md")
+        validate_no_unconfirmed_execution_inputs(errors, base / "tasks.md")
+        validate_no_unconfirmed_execution_inputs(errors, base / "apply.md")
     else:
         base = change_path(target)
         if not base.exists():
@@ -1368,7 +1942,11 @@ def cmd_validate(target="current"):
                 validate_design_file(errors, warnings, base / "design.md")
                 validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
                 validate_spec_file(errors, warnings, base / "spec.md")
+                validate_context_pack(errors, warnings, base / "context-pack.md")
+                validate_knowledge_candidates_file(errors, warnings, base / "knowledge-candidates.md")
                 validate_task_trace(errors, base / "tasks.md")
+                validate_no_unconfirmed_execution_inputs(errors, base / "tasks.md")
+                validate_no_unconfirmed_execution_inputs(errors, base / "notes.md")
 
     print()
     print_color(HEADER, f"🔍 SDC 校验结果: {target}")
@@ -1401,7 +1979,17 @@ def cmd_validate(target="current"):
 def collect_change_text(source):
     """Collect change artifact text for lightweight archive heuristics."""
     parts = []
-    for name in ("discovery.md", "proposal.md", "spec.md", "design.md", "impact.md", "tasks.md", "notes.md"):
+    for name in (
+        "discovery.md",
+        "proposal.md",
+        "spec.md",
+        "design.md",
+        "impact.md",
+        "tasks.md",
+        "context-pack.md",
+        "knowledge-candidates.md",
+        "notes.md",
+    ):
         path = source / name
         if path.exists():
             parts.append(read_text(path))
@@ -1421,6 +2009,38 @@ def knowledge_compact_rows(source, change_id, spec_status):
     ]
 
     optional_rows = []
+    if has_any_pattern(text, [r"Knowledge Gap", r"No Evidence, No Fact", r"No Confirmation, No Execution", r"No Impact, No Brownfield Change", r"禁止假设", r"Forbidden Assumptions"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/knowledge/current.md or Stop-Line Report",
+            "Change artifacts mention knowledge gaps, evidence rules, or forbidden assumptions; confirm whether durable knowledge gaps remain",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"product knowledge", r"business rule", r"\brole\b", r"permission", r"approval", r"workflow", r"user flow", r"non-?goal", r"MVP", r"产品知识", r"业务规则", r"用户角色", r"权限", r"审批", r"流程", r"非目标"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/knowledge/product/",
+            "Change artifacts contain durable product facts, roles, flows, rules, or product decisions",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"technical knowledge", r"\bstack\b", r"framework", r"architecture", r"\bmodule\b", r"data model", r"\bAPI\b", r"integration", r"validation command", r"deploy", r"rollback", r"技术知识", r"技术栈", r"架构", r"模块", r"数据模型", r"接口", r"集成", r"验证命令", r"部署", r"回滚"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/knowledge/technical/",
+            "Change artifacts contain durable technical facts, architecture, interfaces, operations, or validation knowledge",
+            "Needs confirmation",
+        ))
+
+    if (source / "knowledge-candidates.md").exists() or has_any_pattern(text, [r"knowledge candidate", r"memory candidate", r"procedure candidate", r"候选知识", r"项目记忆"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/memory/ or .sdc/knowledge/",
+            "Knowledge candidates exist; confirm which ones become durable knowledge, procedures, or memory",
+            "Needs confirmation",
+        ))
+
     if has_any_pattern(text, [r"Decision Ledger", r"决策台账", r"\bConfirmed\b", r"ADR", r"architecture decision"]):
         optional_rows.append((
             "Recommended",
@@ -1483,7 +2103,7 @@ def knowledge_compact_rows(source, change_id, spec_status):
         rows.append((
             "N/A",
             "Conditional memory updates",
-            "CLI did not detect durable decision, standard, report, project, or cognition evidence",
+            "CLI did not detect durable product knowledge, technical knowledge, memory, decision, standard, report, project, or cognition evidence",
             "N/A",
         ))
 
@@ -1594,7 +2214,7 @@ def cmd_archive(change_id):
 
 {compact_table}
 
-> CLI will not write conditional durable memory updates. Confirm optional updates in an AI client or edit the target files intentionally.
+> CLI will not write conditional durable knowledge or memory updates. Confirm optional updates in an AI client or edit the target files intentionally.
 """)
     elif "Knowledge Compact Gate" not in read_text(archive_file):
         with archive_file.open("a") as file:
@@ -1604,7 +2224,7 @@ def cmd_archive(change_id):
 
 {compact_table}
 
-> CLI will not write conditional durable memory updates. Confirm optional updates in an AI client or edit the target files intentionally.
+> CLI will not write conditional durable knowledge or memory updates. Confirm optional updates in an AI client or edit the target files intentionally.
 """)
 
     final_archive_file = archive_file
@@ -1619,7 +2239,7 @@ def cmd_archive(change_id):
     print(f"   Change: {change_id}")
     print(f"   Spec: {target.absolute()}")
     print(f"   Archive: {final_archive_file.absolute()}")
-    print("   Knowledge Compact Gate: see archive.md; optional durable memory updates need confirmation")
+    print("   Knowledge Compact Gate: see archive.md; optional durable knowledge/memory updates need confirmation")
     if moved_to:
         print(f"   Moved: {moved_to.absolute()}")
     return True
@@ -1760,6 +2380,7 @@ def main():
 |------|--------|
 | 治理规则 | `.sdc/constitution.md` > `AGENTS.md` > 对话即时要求 |
 | 事实来源 | `discovery.md` > `spec.md` > `impact.md` > `design.md/plan.md` > `tasks.md` > code |
+| 知识来源 | `.sdc/knowledge/` confirmed facts > `.sdc/memory/` candidates |
 
 如果发现冲突，必须停止执行并输出 Stop-Line Report。
 
@@ -1774,6 +2395,8 @@ def main():
 - Proposed、Assumed、TBD、Conflict 不可进入 apply
 - 需求不确定时必须先进入 Discovery Gate，Open Questions 未闭合时只维护 discovery / Draft proposal / notes
 - 禁止“如果不对告诉我，我先改”；必须先 ask yes/no 或选项确认，再写入持久文件
+- 非平凡需求必须先读 `.sdc/knowledge/index.md`，并在 spec/design/context-pack 记录用到的知识来源
+- `.sdc/memory/` 只能帮助召回，不能把 Candidate/Assumed 当作 Confirmed fact
 - 遗留项目必须先维护 `.sdc/project-cognition.md`
 - 遗留项目在需求确认后、plan/apply 前必须读取当前 change 的 `impact.md`
 

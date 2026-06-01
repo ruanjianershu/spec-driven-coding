@@ -12,6 +12,7 @@ Run the SDC init workflow:
 
 - Create or repair `.sdc/` idempotently.
 - Preserve existing user/project memory.
-- Create or repair `constitution.md`, `project.md`, `project-cognition.md`, `standards/`, `templates/`, `changes/`, `specs/`, `decisions/`, `reviews/`, and `reports/`.
+- Create or repair `constitution.md`, `project.md`, `project-cognition.md`, `knowledge/`, `memory/`, `standards/`, `templates/`, `changes/`, `specs/`, `decisions/`, `reviews/`, and `reports/`.
 - Classify the project as Greenfield, Brownfield/Legacy, or Unknown using repository evidence.
+- Seed a product/technical knowledge index and a memory candidate area; do not treat generated starter content as confirmed facts.
 - For Brownfield/Legacy, create or update reusable `project-cognition.md`; do not perform per-change impact analysis during init.

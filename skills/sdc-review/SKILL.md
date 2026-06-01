@@ -37,6 +37,7 @@ Load only what is needed:
 - Architecture：模块边界、依赖方向、职责拆分、过度设计。
 - Security：输入校验、权限、敏感信息、注入、危险 API。
 - Data and contracts：数据迁移、公共接口、兼容性。
+- Knowledge drift：实际 diff 是否改变产品/技术事实但未记录到 `knowledge-candidates.md` 或 archive 建议。
 - Performance：明显低效、N+1、内存或并发风险。
 - Maintainability：命名、重复、复杂度、错误处理、注释质量。
 - Legacy impact：实际 diff 是否超出 `impact.md`。
@@ -70,6 +71,11 @@ Load only what is needed:
 - 实际改造点：
 - 与 impact.md 不一致或新增的影响：
 - 残余风险：
+
+## 知识库影响
+- 产品知识是否变化：
+- 技术知识是否变化：
+- 是否需要补 `knowledge-candidates.md`：
 
 ## 测试/上下文缺口
 - ...

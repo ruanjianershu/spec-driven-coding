@@ -2,6 +2,18 @@
 
 All notable changes to SDC are documented here.
 
+## Unreleased
+
+## 1.1.11 - 2026-06-01
+
+- Added a first-class project knowledge system under `.sdc/knowledge/`, split into product knowledge and technical knowledge with a short `knowledge/index.md` routing file.
+- Added `.sdc/memory/` for candidate knowledge, reusable procedures, and episodic summaries; memory is explicitly lower authority than confirmed knowledge.
+- Added `context-pack.md` and `knowledge-candidates.md` to confirmed change flows so execution agents receive short handoffs and archive can promote durable knowledge intentionally.
+- Updated init, change, plan, apply, check, validate, archive, shared references, README, and marketplace docs to enforce knowledge-source reading, candidate-vs-confirmed boundaries, and archive-time knowledge compaction.
+- Added deterministic SDC flow evals under `evals/sdc-flow/` plus `npm run eval:sdc`, with an optional promptfoo config for CI environments that support promptfoo.
+- Added anti-guess execution gates: unconfirmed assumptions, open Knowledge Gaps, and incomplete knowledge candidates now block validate/apply/archive readiness.
+- Expanded safe `sdc init` repair so stale managed constitution, discovery, design, context-pack, and knowledge-candidate templates are backed up and upgraded to the current evidence schema.
+
 ## 1.1.10
 
 - Fixed the remaining Claude Code duplicate UX where public slash commands such as `sdc:apply` still appeared beside equivalent plugin skills such as `sdc:sdc-apply`.

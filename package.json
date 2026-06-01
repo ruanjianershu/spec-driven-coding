@@ -1,13 +1,14 @@
 {
   "name": "sdc-spec",
-  "version": "1.1.10",
-  "description": "SDC is a lightweight spec-driven coding workflow for Claude Code and Codex: role prompt contracts, requirement discovery, legacy impact analysis, SCN/REQ/AC traceability, consent gates, delivery checks, archived specs, and knowledge compaction.",
+  "version": "1.1.11",
+  "description": "SDC is a lightweight spec-driven coding workflow for Claude Code and Codex: requirement discovery, product/technical knowledge, context packs, legacy impact analysis, traceability, delivery checks, and knowledge compaction.",
   "engines": {
     "node": ">=14.0.0"
   },
   "type": "module",
   "scripts": {
-    "audit": "node scripts/audit-release.mjs"
+    "audit": "node scripts/audit-release.mjs",
+    "eval:sdc": "python3 evals/sdc-flow/run_sdc_flow.py"
   },
   "bin": {
     "sdc": "bin/install.js",
@@ -17,6 +18,10 @@
   "files": [
     "bin/",
     "commands/",
+    "evals/sdc-flow/README.md",
+    "evals/sdc-flow/promptfooconfig.yaml",
+    "evals/sdc-flow/run_sdc_flow.py",
+    "evals/sdc-flow/sdc_flow_provider.py",
     "scripts/",
     "skills/",
     ".claude-plugin/",
@@ -48,6 +53,8 @@
     "ai-coding",
     "sdd",
     "traceability",
+    "knowledge-base",
+    "context-pack",
     "consent-gates",
     "discovery",
     "legacy",

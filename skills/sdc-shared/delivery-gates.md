@@ -9,6 +9,11 @@ Validate artifacts for the target stage, not only file existence.
 Check:
 
 - `.sdc/constitution.md` exists and does not conflict with `AGENTS.md`.
+- `.sdc/knowledge/index.md` exists and relevant product/technical knowledge sources are listed in final spec/design/context-pack.
+- `.sdc/memory/` candidates are not treated as confirmed facts.
+- Final spec/design/context-pack/tasks/impact do not contain `Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, or open Knowledge Gaps.
+- Knowledge rows include evidence identity: Status, Source, Verified At, Verified Against, and Scope where applicable.
+- Candidate rows include Source, Evidence Needed, Target, and Promotion Gate.
 - Specs contain Glossary, invariants, SCN/REQ/AC, acceptance criteria, validation strategy, and traceability.
 - Tasks use `T### [REQ-*] [AC-*] [Phase] [Size]`.
 - Task sizes are only `S` or `M`.
@@ -16,6 +21,7 @@ Check:
 - Decision Ledger exists for high-impact decisions.
 - `Proposed`, `Assumed`, `TBD`, and `Conflict` items do not enter final REQ/AC/design/tasks/apply.
 - Brownfield changes have a current `impact.md` with no blocking open questions.
+- Discovery Closed changes have a `context-pack.md` for execution handoff and `knowledge-candidates.md` for apply/check discoveries.
 - Artifacts are not empty templates.
 
 Conclusion must be either ready for next stage or blocked with concrete repair guidance.
@@ -103,6 +109,7 @@ Include:
 - Data and public contract clues.
 - Quality and maintainability risks.
 - Suggested `.sdc/specs`, `.sdc/standards`, and `AGENTS.md` updates.
+- Suggested `.sdc/knowledge/product`, `.sdc/knowledge/technical`, and `.sdc/memory` updates when repo or change evidence justifies them.
 - Evidence index.
 
 ## Archive Gate
@@ -131,6 +138,9 @@ Knowledge Compact Gate must evaluate:
 - `.sdc/specs/` promotion.
 - `.sdc/changes/archive/` preservation.
 - `.sdc/decisions/` for long-lived product, technical, architecture, data, permission, rollout, or security decisions.
+- `.sdc/knowledge/product/` for durable product goals, roles, flows, business rules, non-goals, or product decisions.
+- `.sdc/knowledge/technical/` for durable stack, architecture, module, data/interface, operations, or testing knowledge.
+- `.sdc/memory/` for useful procedures, lessons, gotchas, and candidate knowledge that should remain reviewable.
 - `.sdc/standards/` for reusable engineering rules.
 - `AGENTS.md` through `sdc-harness` for AI execution guardrails.
 - `.sdc/reports/bug/` for durable root-cause records.

@@ -16,6 +16,7 @@ Claude Code uses the plugin version as a cache key. If the version is not bumped
 
 ```bash
 node scripts/audit-release.mjs
+python3 evals/sdc-flow/run_sdc_flow.py
 node --check bin/install.js
 claude plugin validate .
 npm pack --dry-run
@@ -57,6 +58,7 @@ For Codex, verify SDC skills are visible in the model prompt context or through 
 Default Codex install should expose plugin skills (`sdc:*`) and should not leave stale `~/.agents/skills/sdc-*` direct skills unless `SDC_CODEX_DIRECT_SKILLS=1` was intentionally used. It should also remove the old direct plugin copy at `~/.codex/plugins/sdc`.
 
 Archive output should include Knowledge Compact Gate and must not write optional decisions, standards, reports, AGENTS.md, project.md, or project-cognition.md updates without explicit confirmation.
+It should also evaluate product knowledge, technical knowledge, memory, context-pack, and knowledge-candidate updates without silently writing conditional assets.
 
 ## Publish
 

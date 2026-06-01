@@ -10,12 +10,40 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 ├── constitution.md
 ├── project.md
 ├── project-cognition.md
+├── knowledge/
+│   ├── README.md
+│   ├── index.md
+│   ├── current.md
+│   ├── product/
+│   │   ├── README.md
+│   │   ├── overview.md
+│   │   ├── roles.md
+│   │   ├── domain.md
+│   │   ├── flows.md
+│   │   ├── rules.md
+│   │   └── decisions.md
+│   └── technical/
+│       ├── README.md
+│       ├── stack.md
+│       ├── architecture.md
+│       ├── modules.md
+│       ├── data-and-interfaces.md
+│       ├── operations.md
+│       └── testing.md
+├── memory/
+│   ├── README.md
+│   ├── candidates.md
+│   ├── procedures.md
+│   └── episodic/
+│       └── README.md
 ├── current/
 │   ├── discovery.md
 │   ├── spec.md
 │   ├── plan.md
 │   ├── tasks.md
-│   └── apply.md
+│   ├── apply.md
+│   ├── context-pack.md
+│   └── knowledge-candidates.md
 ├── changes/
 │   ├── active/
 │   ├── archive/
@@ -50,6 +78,9 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 │   ├── stop-line-report.md
 │   ├── bug-analysis.md
 │   ├── change-impact.md
+│   ├── context-pack.md
+│   ├── knowledge-candidates.md
+│   ├── knowledge-index.md
 │   └── repo-analysis.md
 └── .gitignore
 ```
@@ -61,6 +92,11 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 | `.sdc/constitution.md` | Highest project-level engineering governance and decision priority. |
 | `.sdc/project.md` | Long-lived project context, users, stack, constraints, and validation commands. |
 | `.sdc/project-cognition.md` | Brownfield project map based on code evidence. |
+| `.sdc/knowledge/` | Confirmed project knowledge split into product and technical knowledge. |
+| `.sdc/knowledge/index.md` | Short routing index read before non-trivial change, plan, apply, and check work. |
+| `.sdc/knowledge/product/` | Product goals, roles, domain concepts, flows, business rules, and product decisions. |
+| `.sdc/knowledge/technical/` | Stack, architecture, modules, data/interfaces, operations, and testing knowledge. |
+| `.sdc/memory/` | Project memory, procedures, episodic notes, and knowledge candidates. Memory does not override confirmed knowledge. |
 | `.sdc/current/` | Shortcut workspace for the current active requirement. |
 | `.sdc/changes/active/` | Active requirement changes. One directory per independent change. |
 | `.sdc/changes/archive/` | Completed change histories. |
@@ -92,6 +128,8 @@ Discovery Closed changes may use the full structure:
 ├── tasks.md
 ├── design.md
 ├── spec.md
+├── context-pack.md
+├── knowledge-candidates.md
 └── notes.md
 ```
 
@@ -111,6 +149,8 @@ Name rules:
 | `impact.md` | Brownfield per-change impact analysis after requirement confirmation. |
 | `design.md` | Confirmed technical design, tradeoffs, impact boundaries, rollback and migration notes. |
 | `tasks.md` | Thin, test-first, traceable execution tasks. |
+| `context-pack.md` | Short handoff package for execution agents: goal, knowledge sources, boundaries, forbidden assumptions, validation commands. |
+| `knowledge-candidates.md` | Candidate knowledge discovered during apply/check; archive decides what becomes durable. |
 | `notes.md` | Implementation notes, changed files, validation evidence, issues, decisions made during execution. |
 
 ## Artifact Creation Levels
@@ -121,9 +161,61 @@ Use the smallest durable artifact set that matches the certainty level:
 | --- | --- | --- |
 | Intake only | User has not confirmed intake answers | No `.sdc/changes/active/*` files |
 | Discovery Open | Intake confirmed, but Open Questions or high-impact decisions remain | `discovery.md`, optional Draft `proposal.md`, brief `notes.md` |
-| Discovery Closed | MVP, acceptance direction, and high-impact decisions are confirmed or explicitly deferred | Full change artifacts may be created |
+| Discovery Closed | MVP, acceptance direction, and high-impact decisions are confirmed or explicitly deferred | Full change artifacts may be created, including `context-pack.md` and `knowledge-candidates.md` |
 
-Do not create `spec.md`, `design.md`, `tasks.md`, or `impact.md` while Discovery Open. This keeps token use low and prevents speculative documents from looking authoritative.
+Do not create `spec.md`, `design.md`, `tasks.md`, `impact.md`, `context-pack.md`, or `knowledge-candidates.md` while Discovery Open. This keeps token use low and prevents speculative documents from looking authoritative.
+
+## Knowledge And Memory Responsibilities
+
+SDC separates durable knowledge from project memory:
+
+- Knowledge is confirmed, shared, auditable project truth.
+- Product knowledge answers why the project exists, who uses it, which workflows matter, and what business rules must hold.
+- Technical knowledge answers how the system is built, where capabilities live, how contracts work, and how to verify or operate the system.
+- Memory records candidates, procedures, lessons, and episodic summaries that may help future agents recall context.
+- Memory cannot override confirmed knowledge, current specs, user confirmation, or code evidence.
+
+Knowledge item states:
+
+| State | Meaning | Can drive spec/plan/apply? |
+| --- | --- | --- |
+| Confirmed | Explicitly confirmed by user, authoritative project docs, archived spec, decision record, or code evidence where technical fact is current behavior | Yes |
+| Candidate | Proposed durable knowledge awaiting archive/user confirmation | No |
+| Assumed | Temporary working assumption | No |
+| Stale | May be outdated and needs refresh | No, unless reconfirmed |
+| Conflict | Contradicts another source | No |
+| Deprecated | Preserved for history, no longer active | No |
+
+Before final spec, plan, apply, or check, agents must read `.sdc/knowledge/index.md` and only the relevant product/technical files. If relevant knowledge is missing or stale, record a Knowledge Gap and ask whether to refresh it.
+
+Every durable knowledge row should record:
+
+- Status.
+- Source.
+- Verified At.
+- Verified Against.
+- Scope.
+
+Every candidate knowledge row should record:
+
+- Candidate.
+- Type.
+- Scope.
+- Source.
+- Status.
+- Target.
+- Evidence Needed.
+- Promotion Gate.
+
+The evidence contract is:
+
+```text
+No Evidence, No Fact.
+No Confirmation, No Execution.
+No Impact, No Brownfield Change.
+```
+
+Open Knowledge Gaps and `Assumed`, `Proposed`, `TBD`, `Conflict`, or `Stale` entries are allowed in discovery and candidates, but not in final execution inputs.
 
 ## Minimum Constitution Content
 
@@ -131,6 +223,7 @@ Do not create `spec.md`, `design.md`, `tasks.md`, or `impact.md` while Discovery
 
 - Governance priority.
 - Fact priority.
+- Knowledge and memory discipline.
 - Core chain: discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive.
 - Stop-line rules.
 - Traceability rules.
@@ -155,6 +248,7 @@ Create or maintain:
 A durable spec should include:
 
 - Document metadata and status: `Draft` or `Confirmed`.
+- Knowledge sources used.
 - Current understanding and source status table.
 - Decision Ledger.
 - Discovery summary.
@@ -176,6 +270,7 @@ A durable spec should include:
 
 `design.md` should include:
 
+- Knowledge sources used.
 - Solution summary.
 - Impact scope and non-scope.
 - Key tradeoffs.
@@ -185,6 +280,19 @@ A durable spec should include:
 - REQ/AC to design decision mapping.
 
 `tasks.md` must use the shared task format from `workflow-standards.md`.
+
+`context-pack.md` should include:
+
+- Goal.
+- Knowledge sources used.
+- Knowledge gaps, empty only when none remain.
+- Confirmed product knowledge.
+- Confirmed technical knowledge.
+- Execution boundaries.
+- Forbidden assumptions.
+- Task and traceability summary.
+- Validation commands.
+- Knowledge candidate routing.
 
 ## Archive Shape
 
@@ -210,7 +318,7 @@ Never delete change history to make it look cleaner.
 
 ## Knowledge Compact Gate Shape
 
-Knowledge Compact Gate is part of archive. It decides what long-lived project memory should be updated after a completed change.
+Knowledge Compact Gate is part of archive. It decides what long-lived project knowledge and memory should be updated after a completed change.
 
 Required durable updates:
 
@@ -219,6 +327,9 @@ Required durable updates:
 
 Conditional durable updates:
 
+- `.sdc/knowledge/product/` when the change creates or changes long-lived product goals, roles, flows, business rules, non-goals, or product decisions.
+- `.sdc/knowledge/technical/` when the change creates or changes long-lived stack, architecture, module, data/interface, operations, or testing knowledge.
+- `.sdc/memory/` when the change leaves reusable procedures, lessons, gotchas, or candidate knowledge that is not yet confirmed enough for durable knowledge.
 - `.sdc/decisions/` when a product, technical, architecture, data, permission, rollout, or security decision is long-lived.
 - `.sdc/standards/` when the change creates or corrects a reusable engineering standard.
 - `AGENTS.md` through `sdc-harness` when the change exposes a recurring AI execution rule or project guardrail.

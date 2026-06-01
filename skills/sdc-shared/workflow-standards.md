@@ -9,8 +9,37 @@ System and developer instructions always remain above project files. Inside a pr
 - Governance priority: `.sdc/constitution.md` > `AGENTS.md` > current conversation instructions > skill guidance.
 - Fact priority: `discovery.md` > `spec.md` > `impact.md` > `design.md` / `plan.md` > `tasks.md` > code.
 - Execution chain: discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive.
+- Knowledge priority: confirmed `.sdc/knowledge/` and `.sdc/specs/` facts guide discovery/spec/plan; `.sdc/memory/` only helps recall and cannot override confirmed knowledge, current specs, user confirmation, or code evidence.
 
 When these sources conflict, stop and report the conflict instead of guessing.
+
+## Knowledge And Memory Discipline
+
+Before creating final SDC artifacts or editing code, read `.sdc/knowledge/index.md` and only the relevant product/technical knowledge files.
+
+Use this split:
+
+- Product knowledge: goals, users, roles, permissions, domain concepts, flows, business rules, acceptance logic, product decisions, non-goals.
+- Technical knowledge: stack, architecture, modules, data models, APIs, events, integrations, operations, testing, deployment, rollback.
+- Memory: candidates, procedures, lessons, gotchas, episodic summaries. Memory is not project truth until confirmed and promoted.
+
+Every final `spec.md`, `design.md`, and `context-pack.md` must list the knowledge sources used. If knowledge is missing, stale, or conflicts with the change, write a Knowledge Gap or Stop-Line Report instead of guessing.
+
+During apply/check, record durable discoveries in `knowledge-candidates.md` rather than silently editing long-lived knowledge. Archive decides what gets promoted.
+
+Hard rules:
+
+```text
+No Evidence, No Fact.
+No Confirmation, No Execution.
+No Impact, No Brownfield Change.
+```
+
+Every durable knowledge item needs Status, Source, Verified At, Verified Against, and Scope. Missing evidence creates a Knowledge Gap; it does not authorize an assumption.
+
+`Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, and open Knowledge Gaps may appear in discovery or candidates, but they must not drive final spec, design, context-pack, tasks, impact, apply, or archive.
+
+For Brownfield/Legacy technical knowledge, code/config/test/build/runtime evidence is required. README files, comments, old docs, and memory are clues only.
 
 ## Traceability
 
@@ -101,6 +130,7 @@ When a high-impact decision is unconfirmed, offer 2-3 options, mark them as `Pro
 Stop and produce a report when:
 
 - Required SDC artifacts are missing, contradictory, or still templates.
+- Relevant knowledge is missing, stale, unconfirmed, or conflicts with the current change.
 - Requirements, acceptance criteria, high-impact decisions, or impact boundaries are unresolved.
 - Implementation requires changing behavior, public contracts, data, permissions, security, architecture, or scope beyond the approved artifacts.
 - Validation cannot prove the relevant acceptance criteria.

@@ -1,0 +1,112 @@
+description: SDC deterministic CLI flow evals
+
+prompts:
+  - "{{scenario}}"
+
+providers:
+  - id: file://evals/sdc-flow/sdc_flow_provider.py
+    label: sdc-cli-flow
+    config:
+      pythonExecutable: python3
+
+tests:
+  - description: init creates knowledge and memory workspace
+    vars:
+      scenario: init_greenfield
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "knowledge/index.md: exists"
+      - type: contains
+        value: "memory/candidates.md: exists"
+      - type: contains
+        value: "current/context-pack.md: exists"
+
+  - description: init upgrades stale managed templates with backups
+    vars:
+      scenario: init_upgrades_stale_managed_templates
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "constitution anti-guess: yes"
+      - type: contains
+        value: "candidate evidence: yes"
+
+  - description: confirmed-intake change stays discovery-open and minimal
+    vars:
+      scenario: change_discovery_open
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "Discovery Open"
+      - type: contains
+        value: "spec.md: absent"
+      - type: contains
+        value: "context-pack.md: absent"
+
+  - description: discovery-open blocks premature context-pack
+    vars:
+      scenario: discovery_open_blocks_context_pack
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: discovery-open context-pack"
+
+  - description: brownfield confirmed change requires impact.md
+    vars:
+      scenario: brownfield_requires_impact
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: brownfield missing impact"
+
+  - description: archive emits product technical memory compact gate
+    vars:
+      scenario: archive_knowledge_compact_gate
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: ".sdc/knowledge/product/"
+      - type: contains
+        value: ".sdc/knowledge/technical/"
+      - type: contains
+        value: ".sdc/memory/ or .sdc/knowledge/"
+
+  - description: unconfirmed assumptions block execution artifacts
+    vars:
+      scenario: unconfirmed_assumption_blocks_execution
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: unconfirmed assumption"
+      - type: contains
+        value: "Assumed"
+
+  - description: open knowledge gaps block context handoff
+    vars:
+      scenario: open_knowledge_gap_blocks_execution
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: open knowledge gap"
+      - type: contains
+        value: "未闭合"
+
+  - description: incomplete knowledge candidates block archive readiness
+    vars:
+      scenario: incomplete_candidate_blocks_archive_readiness
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: incomplete knowledge candidate"
+      - type: contains
+        value: "候选知识缺少必填字段"

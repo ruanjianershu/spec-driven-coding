@@ -31,10 +31,11 @@ Load only what is needed:
 ## 执行规则
 
 1. 优先建议用户使用 `/sdc:apply`。
-2. 必须有 confirmed spec、plan/design、tasks，以及 Brownfield/Legacy 所需的 `impact.md`。
+2. 必须有 confirmed spec、plan/design、tasks、context-pack，以及 Brownfield/Legacy 所需的 `impact.md`。
 3. 按任务顺序执行，优先测试，再最小实现。
-4. 每完成一个任务，更新任务状态、notes 和验证证据。
-5. 遇到范围、契约、数据、安全、架构或影响边界问题，输出 Stop-Line Report。
+4. 实现前读取 `.sdc/knowledge/index.md`、相关知识文件和 `context-pack.md`。
+5. 每完成一个任务，更新任务状态、notes、验证证据和必要的 `knowledge-candidates.md`。
+6. 遇到范围、契约、数据、安全、架构、知识冲突或影响边界问题，输出 Stop-Line Report。
 
 ## 输出格式
 
@@ -63,3 +64,4 @@ Load only what is needed:
 - 不能绕过 `/sdc:apply` 的治理、事实优先级、TDD、停线规则。
 - 不能“自己解决”需要用户确认的高影响决策。
 - 不能跳过验证或不更新 SDC 记录。
+- 不能把 memory candidate 当作 confirmed knowledge。

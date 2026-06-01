@@ -48,6 +48,23 @@ if (packageJson.files?.includes('.claude/')) {
 if (!packageJson.scripts?.audit) {
   fail('package.json must expose npm run audit.');
 }
+if (!packageJson.scripts?.['eval:sdc']) {
+  fail('package.json must expose npm run eval:sdc.');
+}
+const expectedEvalFiles = [
+  'evals/sdc-flow/README.md',
+  'evals/sdc-flow/promptfooconfig.yaml',
+  'evals/sdc-flow/run_sdc_flow.py',
+  'evals/sdc-flow/sdc_flow_provider.py',
+];
+for (const evalFile of expectedEvalFiles) {
+  if (!packageJson.files?.includes(evalFile)) {
+    fail(`package.json files must include ${evalFile}.`);
+  }
+}
+if (packageJson.files?.includes('evals/')) {
+  fail('package.json files must list eval files explicitly so __pycache__ is not published.');
+}
 
 const publicCommands = ['sdc', 'init', 'change', 'plan', 'apply', 'check', 'archive', 'harness'];
 const commandFiles = fs
@@ -150,6 +167,32 @@ if (!cli.includes('归档目录已存在，不能重复归档')) {
 if (!cli.includes('../../../specs/{change_id}.md')) {
   fail('sdc-cli.py archive.md must link from archived change directory back to .sdc/specs using ../../../specs.');
 }
+if (!cli.includes('"knowledge/index.md"') || !cli.includes('"memory/candidates.md"')) {
+  fail('sdc-cli.py init must create knowledge/index.md and memory/candidates.md.');
+}
+if (!cli.includes('"templates/context-pack.md"') || !cli.includes('"templates/knowledge-candidates.md"')) {
+  fail('sdc-cli.py must ship context-pack and knowledge-candidates templates.');
+}
+if (!cli.includes('validate_context_pack')) {
+  fail('sdc-cli.py validate must check context-pack.md.');
+}
+if (!cli.includes('.sdc/knowledge/product/') || !cli.includes('.sdc/knowledge/technical/')) {
+  fail('sdc-cli.py archive Knowledge Compact Gate must evaluate product and technical knowledge updates.');
+}
+for (const marker of [
+  'No Evidence, No Fact',
+  'No Confirmation, No Execution',
+  'No Impact, No Brownfield Change',
+  'validate_no_unconfirmed_execution_inputs',
+  'validate_knowledge_candidates_file',
+  'Knowledge Gap',
+  'Evidence Needed',
+  'Promotion Gate',
+]) {
+  if (!cli.includes(marker)) {
+    fail(`sdc-cli.py must enforce anti-guess knowledge gates; missing marker: ${marker}`);
+  }
+}
 
 const readme = readText('README.md');
 if (readme.includes('├── standards/') && readme.match(/├── standards\//g)?.length > 1) {
@@ -160,6 +203,29 @@ if (readme.includes('`/sdc:spec`、`/sdc:implement`')) {
 }
 if (!readme.includes('Knowledge Compact Gate')) {
   fail('README.md must document archive Knowledge Compact Gate.');
+}
+if (!readme.includes('.sdc/knowledge/product/') || !readme.includes('.sdc/knowledge/technical/') || !readme.includes('context-pack.md')) {
+  fail('README.md must document product/technical knowledge and context-pack usage.');
+}
+
+const evalRunner = readText('evals/sdc-flow/run_sdc_flow.py');
+const evalProvider = readText('evals/sdc-flow/sdc_flow_provider.py');
+if (!evalRunner.includes('All {len(SCENARIOS)} evals passed')) {
+  fail('SDC flow eval runner must report all scenario results.');
+}
+for (const scenario of ['init_greenfield', 'init_upgrades_stale_managed_templates', 'discovery_open_blocks_context_pack', 'brownfield_requires_impact', 'archive_knowledge_compact_gate']) {
+  if (!evalProvider.includes(scenario)) {
+    fail(`SDC flow eval provider is missing scenario: ${scenario}`);
+  }
+}
+for (const scenario of [
+  'unconfirmed_assumption_blocks_execution',
+  'open_knowledge_gap_blocks_execution',
+  'incomplete_candidate_blocks_archive_readiness',
+]) {
+  if (!evalProvider.includes(scenario)) {
+    fail(`SDC anti-guess eval provider is missing scenario: ${scenario}`);
+  }
 }
 
 const publicDocs = [

@@ -9,9 +9,10 @@ Before creating or updating any `.sdc/changes/active/*` files, ALWAYS run Change
 The first response to a new `/sdc:change ...` request must:
 
 1. Restate only what the user has said.
-2. Ask 4 intake questions, one for each required category below.
-3. Wait for explicit user confirmation before writing files.
-4. Avoid assuming tech stack, timeline, scope, database, framework, deployment, integrations, roles, permissions, or success criteria.
+2. If `.sdc/knowledge/index.md` exists, use it to prefill known context and reduce repetitive questioning, but mark unconfirmed or memory-derived content as `Candidate`.
+3. Ask 4 intake questions, one for each required category below.
+4. Wait for explicit user confirmation before writing files.
+5. Avoid assuming tech stack, timeline, scope, database, framework, deployment, integrations, roles, permissions, or success criteria.
 
 Required intake categories:
 
@@ -96,6 +97,10 @@ Use a lightweight sequence:
 ## Decision Ledger
 | ID | Decision | Status | Source | Impact | Next Step |
 | --- | --- | --- | --- | --- | --- |
+
+## Knowledge Sources Used
+| Source | Status | Why It Matters |
+| --- | --- | --- |
 
 ## Open Questions
 | ID | Question | Why It Matters | Options | Required Before |

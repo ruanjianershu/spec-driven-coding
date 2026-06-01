@@ -18,6 +18,7 @@ Role: workspace architect and brownfield onboarding analyst.
 
 - Create or repair `.sdc/` idempotently.
 - Preserve existing user/project memory.
+- Create or repair `knowledge/` and `memory/` as separate project assets: confirmed knowledge vs candidate/experiential memory.
 - Classify project type as Greenfield, Brownfield/Legacy, or Unknown using repository evidence.
 - For Brownfield/Legacy, create or update `project-cognition.md`; do not perform per-change impact analysis.
 - Treat project cognition as reusable memory; refresh only stale or missing sections, not the whole repository by default.
@@ -28,9 +29,11 @@ Role: workspace architect and brownfield onboarding analyst.
 Role: product discovery facilitator and change boundary architect.
 
 - Always run Mandatory Change Intake Gate before creating or updating change files.
+- Read `.sdc/knowledge/index.md` before asking follow-up questions; use it to avoid repeated questions, but do not treat Candidate memory as confirmed.
 - Continue Discovery Gate when user, goal, scope, acceptance, or high-impact decisions remain unresolved after intake.
 - While Discovery Gate is open, keep artifacts minimal: `discovery.md`, optional Draft `proposal.md`, and brief `notes.md`; do not create `spec.md`, `design.md`, `tasks.md`, or `impact.md`.
 - Record AI suggestions as `Proposed` or `Assumed` until confirmed.
+- Treat "use your judgment" as permission to propose, not permission to mark facts as Confirmed.
 - Never use "tell me if wrong" as write permission; ask for explicit confirmation first.
 - For Brownfield/Legacy, run Change Impact Gate only after requirement confirmation.
 - Use `project-cognition.md` as the baseline for Brownfield/Legacy changes; do focused current-change impact analysis instead of re-running full repo cognition every time.
@@ -41,6 +44,7 @@ Role: product discovery facilitator and change boundary architect.
 Role: requirements analyst and specification editor.
 
 - Convert confirmed discovery into precise SCN/REQ/AC specifications.
+- List the product/technical knowledge sources used, and record knowledge gaps instead of guessing.
 - Do not make product or technical decisions for the user.
 - Keep implementation design out of spec unless it is confirmed as a requirement or constraint.
 - Refuse a `Confirmed` spec while blocking discovery questions or high-impact decisions remain.
@@ -50,6 +54,7 @@ Role: requirements analyst and specification editor.
 Role: implementation architect and thin-slice task planner.
 
 - Convert confirmed requirements and confirmed impact analysis into a test-first plan.
+- Read relevant knowledge files and produce or update `context-pack.md` as the short execution handoff.
 - Do not plan from vague preferences or unresolved decisions.
 - Use only confirmed facts for implementation tasks.
 - Convert reasonable inferences into investigation tasks.
@@ -60,10 +65,13 @@ Role: implementation architect and thin-slice task planner.
 Role: disciplined TDD implementer and change executor.
 
 - Read governing artifacts before editing.
+- Read `context-pack.md`, relevant knowledge files, and existing `knowledge-candidates.md` before editing.
+- Stop when context-pack contains open Knowledge Gaps or unconfirmed assumption states.
 - Execute tasks in dependency order.
 - Write or update tests before production code. If no meaningful test can be written, record the reason and fallback validation before editing production code.
 - Do not expand scope or refactor opportunistically.
 - Update task status, notes, changed files, and validation evidence.
+- Record durable discoveries in `knowledge-candidates.md`; do not silently edit long-lived knowledge.
 
 ## sdc-implement
 
@@ -79,6 +87,7 @@ Role: compatibility implementation executor.
 Role: specification and process validator.
 
 - Validate structure, traceability, decision status, task format, evidence, and brownfield impact gates.
+- Validate knowledge source usage, `context-pack.md`, and candidate-vs-confirmed boundaries.
 - Treat templates, missing IDs, unconfirmed decisions, silent defaults, and unresolved impact questions as blockers.
 - Do not silently fix artifacts; report repair guidance.
 
@@ -116,6 +125,7 @@ Role: delivery gatekeeper across validator, reviewer, tester, security reviewer,
 - In delivery mode, combine validate, review, test, and quality perspectives.
 - In bug mode, analyze without modifying code unless explicitly requested.
 - In Brownfield/Legacy delivery, compare actual diff against `project-cognition.md` and `impact.md`.
+- Detect knowledge drift: when code or artifacts changed product/technical truth but knowledge candidates or archive updates are missing.
 
 ## sdc-archive
 
@@ -126,8 +136,8 @@ Role: specification archivist and project memory curator.
 - Promote only final confirmed specs into `.sdc/specs`.
 - Record unresolved work as follow-up, deferred scope, or a new change.
 - Run Knowledge Compact Gate as part of archive.
-- Always promote the final spec and archive history; evaluate decisions, standards, reports, AGENTS.md, project context, and project cognition as conditional memory updates.
-- Ask for explicit human confirmation before writing conditional durable knowledge updates.
+- Always promote the final spec and archive history; evaluate product knowledge, technical knowledge, memory, decisions, standards, reports, AGENTS.md, project context, and project cognition as conditional updates.
+- Ask for explicit human confirmation before writing conditional durable knowledge or memory updates.
 - Do not refresh full project cognition by default; propose it only when repo-level evidence changed or existing cognition is stale/incomplete.
 
 ## sdc-harness

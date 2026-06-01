@@ -7,6 +7,7 @@ The goal is not to copy every OpenSpec, Superpowers, or internal workflow comman
 - OpenSpec: change lifecycle, validation, archive.
 - Superpowers: lightweight skill-pack distribution.
 - Karpathy-style skills and internal workflow practice: think before coding, thin slices, TDD, stop-line reports, evidence over vibes.
+- Memory/knowledge-base systems: short indexes, task-focused loading, candidate knowledge, and reviewable archive-time promotion.
 
 ## Public Surface
 
@@ -64,7 +65,69 @@ Fact priority:
 discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code
 ```
 
+Knowledge priority:
+
+```text
+confirmed .sdc/knowledge/ + .sdc/specs/ + .sdc/decisions/ > .sdc/memory/ candidates > AI inference
+```
+
 When these sources conflict, the agent should stop and produce a Stop-Line Report instead of guessing.
+
+## Project Knowledge And Memory
+
+SDC treats the knowledge base as the project brain, not as a document dump.
+
+`/sdc:init` creates two related but separate assets:
+
+```text
+.sdc/knowledge/
+├── index.md
+├── current.md
+├── product/
+└── technical/
+
+.sdc/memory/
+├── candidates.md
+├── procedures.md
+└── episodic/
+```
+
+The split is intentional:
+
+- Product knowledge answers why the project exists, who uses it, what flows and business rules matter, and what is explicitly out of scope.
+- Technical knowledge answers how the system is built, where capabilities live, how data and interfaces work, and how to test, deploy, roll back, or debug it.
+- Memory records candidates, procedures, lessons, and episodic summaries. It helps future agents recall context but does not override confirmed knowledge.
+
+Required knowledge states:
+
+| State | Meaning | Can drive implementation |
+| --- | --- | --- |
+| Confirmed | User-confirmed, archived, decision-backed, or code-evidence-backed technical fact | Yes |
+| Candidate | Proposed durable knowledge waiting for archive/user confirmation | No |
+| Assumed | Temporary working assumption | No |
+| Stale | May be outdated | No |
+| Conflict | Contradicts another source | No |
+| Deprecated | No longer active | No |
+
+Every non-trivial change should follow this loop:
+
+```text
+read knowledge index -> load relevant product/technical knowledge -> create spec/design/context-pack -> apply -> record knowledge-candidates -> archive promotion gate
+```
+
+Final `spec.md`, `design.md`, and `context-pack.md` must list Knowledge Sources Used. If relevant knowledge is missing, stale, or conflicting, the agent should record a Knowledge Gap or Stop-Line Report instead of guessing.
+
+Hard rules:
+
+```text
+No Evidence, No Fact.
+No Confirmation, No Execution.
+No Impact, No Brownfield Change.
+```
+
+Every durable knowledge item should record Status, Source, Verified At, Verified Against, and Scope. Every candidate should record Source, Evidence Needed, Target, and Promotion Gate.
+
+`Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, and open Knowledge Gaps may appear in discovery and candidates. They must not become final REQ/AC/INV, design decisions, context-pack instructions, implementation tasks, impact claims, code changes, or archive truth.
 
 ## Consent Gates
 
@@ -110,7 +173,7 @@ Mandatory Change Intake Gate always asks project context, core scope, technical 
 - acceptance direction.
 - high-impact product or technical decisions.
 
-While Discovery Gate is open, keep artifacts intentionally small. The default output is the next 3-5 confirmation questions in chat. If persistence is needed after intake confirmation, create or update only `discovery.md`, optional Draft `proposal.md`, and brief `notes.md`. Do not create or update `spec.md`, `design.md`, `tasks.md`, or `impact.md` until the gate exits.
+While Discovery Gate is open, keep artifacts intentionally small. The default output is the next 3-5 confirmation questions in chat. If persistence is needed after intake confirmation, create or update only `discovery.md`, optional Draft `proposal.md`, and brief `notes.md`. Do not create or update `spec.md`, `design.md`, `tasks.md`, `impact.md`, `context-pack.md`, or `knowledge-candidates.md` until the gate exits.
 
 `discovery.md` should contain current understanding, candidate directions, tradeoffs, recommended MVP, Decision Ledger, open questions, and exit criteria.
 
@@ -137,7 +200,7 @@ After `/sdc:change` exits Discovery Gate and the spec is confirmed, the current 
 project-cognition.md -> confirmed spec.md -> impact.md -> plan -> apply
 ```
 
-`impact.md` is per-change and focused. It should use `project-cognition.md` plus current code evidence to identify only the necessary impact radius: change entry points, direct modification points, cascading impacts, contracts, data/config changes, security/observability effects, regression strategy, rollout order, rollback boundary, and open questions.
+`impact.md` is per-change and focused. It should use `project-cognition.md`, relevant product/technical knowledge, and current code evidence to identify only the necessary impact radius: change entry points, direct modification points, cascading impacts, contracts, data/config changes, security/observability effects, regression strategy, rollout order, rollback boundary, and open questions.
 
 Important rule: only confirmed impact can become implementation tasks. Reasonable inferences may become investigation tasks. Open questions that affect scope, acceptance, contracts, data, permissions, security, or rollout must stop plan/apply.
 
@@ -150,7 +213,7 @@ After `/sdc:check` passes, `/sdc:archive` is the normal way to close a requireme
 The archive flow is:
 
 ```text
-check -> archive -> Knowledge Compact Gate -> confirmed durable memory updates
+check -> archive -> Knowledge Compact Gate -> confirmed durable knowledge/memory updates
 ```
 
 Required archive writes:
@@ -161,6 +224,9 @@ Required archive writes:
 
 Conditional memory updates:
 
+- `.sdc/knowledge/product/` for durable product goals, roles, flows, business rules, non-goals, or product decisions.
+- `.sdc/knowledge/technical/` for durable stack, architecture, module, data/interface, operations, or testing knowledge.
+- `.sdc/memory/` for useful procedures, lessons, gotchas, and candidate knowledge that should remain reviewable.
 - `.sdc/decisions/` for long-lived product, technical, architecture, data, permission, rollout, or security decisions.
 - `.sdc/standards/` for reusable engineering rules.
 - `AGENTS.md` through `/sdc:harness` for AI execution guardrails.

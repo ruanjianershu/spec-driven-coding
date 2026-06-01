@@ -28,12 +28,13 @@ Load only what is needed:
 
 ## 执行步骤
 
-1. 读取当前 spec/tasks/notes，识别 REQ/AC。
+1. 读取当前 spec/tasks/context-pack/notes 和 `.sdc/knowledge/technical/testing.md`，识别 REQ/AC。
 2. 确认已有测试覆盖哪些 AC。
 3. 根据项目实际工具运行相关测试。
 4. 如果不能运行测试，说明阻塞原因和替代验证路径。
 5. 分析失败、缺失覆盖、边界、错误、安全、兼容性和回归风险。
 6. 给出需要新增或修正的测试建议。
+7. 如果发现新的稳定测试命令或回归策略，记录到 `knowledge-candidates.md`。
 
 ## 测试层级
 

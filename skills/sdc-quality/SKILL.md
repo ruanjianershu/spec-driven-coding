@@ -35,6 +35,7 @@ Load only what is needed:
 - apply/implementation notes。
 - review evidence。
 - test evidence。
+- context-pack and knowledge-candidates evidence.
 
 缺少关键证据时，不能给出可交付结论。
 
@@ -47,6 +48,7 @@ Load only what is needed:
 - Performance：启动、核心路径、资源使用的明显风险。
 - Operability：配置、日志、部署/发布、回滚或降级。
 - Validation evidence：测试、手动验证、截图或命令输出。
+- Knowledge readiness：本次变更是否需要更新产品知识、技术知识、memory、standards 或 AGENTS.md。
 
 ## 输出格式
 

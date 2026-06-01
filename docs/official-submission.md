@@ -6,13 +6,14 @@ For Claude Code specific marketplace behavior, install commands, and user-facing
 
 ## Short Description
 
-SDC is a lightweight spec-driven coding workflow for Claude Code. It uses role prompt contracts, requires intake confirmation before creating change files, keeps unresolved requirements in minimal draft discovery artifacts, analyzes legacy impact after requirements are confirmed, preserves SCN/REQ/AC traceability, confirms high-impact decisions, applies tasks, runs delivery checks, archives stable specs, and compacts durable project knowledge in local files.
+SDC is a lightweight spec-driven coding workflow for Claude Code. It uses role prompt contracts, requires intake confirmation before creating change files, keeps unresolved requirements in minimal draft discovery artifacts, separates product knowledge from technical knowledge, analyzes legacy impact after requirements are confirmed, preserves SCN/REQ/AC traceability, confirms high-impact decisions, applies tasks from a short context pack, runs delivery checks, archives stable specs, and compacts durable project knowledge in local files.
 
 ## Long Description
 
 SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills:
 
 - initialize a `.sdc/` workspace
+- create local product knowledge, technical knowledge, and memory candidate areas
 - use shared English role prompt contracts for expert behavior, evidence rules, and output discipline
 - create structured requirement changes
 - require intake confirmation before creating change files, then continue Discovery Gate with minimal draft artifacts when needed
@@ -24,7 +25,7 @@ SDC packages a complete spec-driven development lifecycle into a small set of Cl
 - execute implementation tasks incrementally
 - run combined validation, review, test, quality, bug, impact, and repo checks
 - archive completed changes into stable project specs
-- run Knowledge Compact Gate to recommend durable updates to decisions, standards, reports, AGENTS.md, project context, or project cognition
+- run Knowledge Compact Gate to recommend durable updates to product knowledge, technical knowledge, memory, decisions, standards, reports, AGENTS.md, project context, or project cognition
 - generate project-level AI guardrails
 
 The plugin is intentionally narrow. It does not add external services, network integrations, MCP servers, default hooks, telemetry, or background processes.

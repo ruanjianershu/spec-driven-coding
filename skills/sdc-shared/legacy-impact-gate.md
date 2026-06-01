@@ -12,7 +12,7 @@ init or sdc-check repo -> project-cognition.md -> change/discovery -> confirmed 
 
 Do not perform per-change impact analysis during `sdc-init`; init only creates or updates project-level cognition.
 
-Do not re-run full project cognition for every change. `project-cognition.md` is reusable project memory. For each confirmed change, read it first, then perform a focused impact analysis for the current requirement only.
+Do not re-run full project cognition for every change. `project-cognition.md` is reusable project memory. For each confirmed change, read it together with `.sdc/knowledge/index.md` and the relevant technical/product knowledge, then perform a focused impact analysis for the current requirement only.
 
 ## Brownfield / Legacy Signals
 
@@ -53,6 +53,8 @@ Change impact analysis is not a full repository audit. It must start from:
 ```text
 confirmed spec.md + project-cognition.md + current code evidence
 ```
+
+Also read relevant `.sdc/knowledge/product/` and `.sdc/knowledge/technical/` files. If those files are stale or conflict with code evidence, record the conflict and ask whether to refresh knowledge before final plan/apply.
 
 Then identify only the necessary impact radius for the current change: entry points, direct modification points, cascading impacts, contracts/data/config/security/observability effects, regression tests, rollout, rollback, and open questions.
 
@@ -100,6 +102,7 @@ Minimum trigger:
 
 - Code, configuration, build files, tests, CI, scripts, database scripts, API definitions, and runtime entrypoints are primary evidence.
 - README, comments, old docs, and historical notes are clues only.
+- Brownfield/Legacy technical knowledge requires code/config/test/build/runtime evidence. Memory and old documentation cannot confirm technical facts by themselves.
 - Start from the changed entrypoint, then trace the call chain and data/contract boundaries.
 - Do not list the whole repository. Identify the necessary impact radius.
 - If evidence is missing, write "insufficient evidence" instead of guessing.
