@@ -4,7 +4,7 @@ All notable changes to SDC are documented here.
 
 ## Unreleased
 
-## 1.1.11 - 2026-06-01
+## 1.2.0 - 2026-06-01
 
 - Added a first-class project knowledge system under `.sdc/knowledge/`, split into product knowledge and technical knowledge with a short `knowledge/index.md` routing file.
 - Added `.sdc/memory/` for candidate knowledge, reusable procedures, and episodic summaries; memory is explicitly lower authority than confirmed knowledge.

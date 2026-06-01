@@ -283,7 +283,7 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.1.11
+- Schema: SDC 1.2.0
 - Source:
 
 ## 1. Knowledge Sources Used
@@ -999,7 +999,7 @@ YYYY-MM-DD-short-title.md
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.1.11
+- Schema: SDC 1.2.0
 - Source:
 
 ## 1. Knowledge Sources Used
