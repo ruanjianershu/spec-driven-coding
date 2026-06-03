@@ -1,81 +1,60 @@
-# 🔧 SDC - Spec-Driven Coding for AI Agents
+# SDC - Spec-Driven Coding
 
-> 用少量入口，把 AI 编码从临场发挥收敛成 `spec -> plan -> tasks -> apply -> check -> archive` 的可追溯闭环。
-
-## ✨ 是什么
-
-SDC 是一套**纯声明式 AI 开发技能集**。它不是把 slash command 做得越多越好，而是用少量稳定入口，让 AI 助手在每次需求迭代中做到：
-
-- 📂 先建立标准 `.sdc/` 工作区，长期记录需求迭代
-- 🧠 维护项目知识库，把产品知识和技术知识分开，避免 AI 每次从零理解项目
-- 🎭 使用英文 shared references 承载角色契约、门禁规则和工件标准，`SKILL.md` 保持短小清晰
-- 🧭 存量/遗留项目先建立项目整体认知，再处理具体变更
-- 🧾 像 OpenSpec 一样记录 change、validate、archive 的核心生命周期
-- 📐 生成项目专属开发规范，让后续开发有章可循
-- 📋 先把需求转成 SCN/REQ/AC，再写代码
-- 🗓️ 任务拆成可验证的 T### 薄切片
-- 🧪 测试驱动，先写测试再写代码
-- 🔍 用 `/sdc:check` 合并 validate、review、test、quality
-- ✅ 完成后 archive，并通过 Knowledge Compact Gate 判断该沉淀哪些长期知识
-- 🪄 将执行过程中的新发现先放进 memory candidates，确认后再进入长期知识库
-
-v1.1 的核心不是增加更多指令，而是强化内部纪律：
+SDC 是一套本地优先的 AI 编码工作流技能集，用少量入口把需求落地收敛成：
 
 ```text
-治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
-事实优先级：discovery.md > spec.md > impact.md > design.md/plan.md > tasks.md > code
-知识优先级：confirmed knowledge/specs/decisions > memory candidates > AI 推断
-追溯链：SCN-* -> REQ-* -> AC-* -> T### -> 验证证据
-确认门禁：高影响决策必须 Confirmed，不能 Silent Default
-探索门禁：不确定需求必须先 discovery，再 spec
-轻量草稿：Open Questions 未闭合时只保留 discovery/Draft proposal，不生成完整 spec/design/tasks
-遗留门禁：init 做项目整体认知，change 需求确认后做 impact，再 plan/apply
-知识门禁：change/plan/apply 前读取 knowledge index，apply/check 只记录候选知识，archive 再确认沉淀
-反乱猜门禁：No Evidence, No Fact; No Confirmation, No Execution; No Impact, No Brownfield Change
+init -> change -> plan -> apply -> check -> archive
 ```
 
-**零服务，零遥测，纯文本技能。** SDC 基于 Superpowers 的轻量 skill-pack 思路，吸收 OpenSpec 的核心需求生命周期，并加入 SDD/Karpathy-style 的“先思考、薄切片、TDD、证据链”工程纪律。
+它的目标不是增加更多命令，而是让 AI 在写代码前先确认需求、读取项目知识、保留追溯链、执行检查，并在完成后沉淀长期知识。
 
-v1.1.4 起，SDC 补充了英文 `Role Prompt Contract`。当前结构会把这些标准规则统一维护在共享 reference 中：
+## 核心能力
 
-```text
-Role -> Operating Contract -> Evidence Rules -> Output Contract
-```
+- 标准 `.sdc/` 工作区：记录需求、规范、任务、决策、知识库和交付证据。
+- Mandatory Change Intake Gate：创建 change 前必须先问清项目背景、范围、技术偏好和验收约束。
+- Discovery Gate：需求没确认时只保留轻量草稿，不生成完整 spec/design/tasks。
+- 知识库与 memory：区分产品知识、技术知识、候选知识和过程记忆。
+- Brownfield impact gate：存量项目在需求确认后做当前变更影响面分析。
+- 追溯链：`SCN-* -> REQ-* -> AC-* -> T### -> validation evidence`。
+- 反乱猜门禁：`No Evidence, No Fact; No Confirmation, No Execution; No Impact, No Brownfield Change`。
+- `check` 合并 validate、review、test、quality。
+- `archive` 归档完成变更，并通过 Knowledge Compact Gate 判断哪些知识需要沉淀。
 
-这让每个 `SKILL.md` 只保留触发条件、核心使命、执行骨架和需要读取的 reference；复杂规则按需加载，避免把所有上下文一次性塞进 skill。
+## 安装 / 更新
 
-普通模式只需要记住：
+推荐所有机器统一使用：
 
 ```bash
-/sdc:init
-/sdc:change 支持用户登录
-/sdc:plan
-/sdc:apply
-/sdc:check
-/sdc:archive
+npx sdc-spec@latest
 ```
 
-`/sdc:harness` 可选，用于从 `.sdc/standards/` 生成项目级 `AGENTS.md` 执行护栏。
+卸载：
 
----
-
-## 🧭 实际工作流
-
-一次标准 SDC 迭代会留下完整证据链：
-
-```text
-1. init      创建 .sdc/ 工作区、constitution、knowledge、memory、standards、templates
-2. change    先读 knowledge index，再做 Mandatory Change Intake Gate，用户确认后创建 .sdc/changes/active/<change-id>/
-3. discovery intake 后仍有不确定项时，只保留轻量 Draft，继续收敛 MVP 和 Decision Ledger
-4. spec      基于 confirmed discovery 和相关 product/technical knowledge 收敛为 SCN -> REQ -> AC
-5. impact    遗留项目在需求确认后结合 project-cognition、knowledge 和代码证据分析当前 change 的影响面
-6. plan      生成 design/tasks/context-pack，并建立 SCN -> REQ -> AC -> T### 追溯
-7. apply     按 T### 薄切片执行，记录 notes、验证证据和 knowledge-candidates
-8. check     合并 validate/review/test/quality，检查知识漂移，并支持 bug/impact/repo 分析模式
-9. archive   将完成的 change 沉淀到 .sdc/specs/ 和 archive/，并确认是否更新 product knowledge、technical knowledge、memory、standards、decisions 或 AGENTS.md
+```bash
+npx sdc-spec@latest uninstall
 ```
 
-Claude Code 用户可以直接使用 slash commands：
+本地 clone 调试：
+
+```bash
+git clone https://github.com/ruanjianershu/spec-driven-coding.git
+cd spec-driven-coding
+node bin/install.js
+```
+
+从 GitHub main 直接安装：
+
+```bash
+npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec
+```
+
+更新后请重启对应客户端，让 skills / plugins 重新加载。
+
+## 客户端使用
+
+### Claude Code
+
+Claude Code 使用 slash commands：
 
 ```text
 /sdc:init
@@ -83,154 +62,28 @@ Claude Code 用户可以直接使用 slash commands：
 /sdc:plan
 /sdc:apply
 /sdc:check
-/sdc:archive 2026-05-15-login-flow
+/sdc:archive 2026-06-03-login-flow
+/sdc:harness
 ```
 
-Codex 用户使用自然语言或 `/skills` 触发同名 SDC skills：
+Claude 插件只把公共工作流暴露为 slash commands；高级能力如 `sdc-spec`、`sdc-review`、`sdc-test`、`sdc-quality`、`sdc-validate` 仍作为 skills 存在，避免重复入口。
+
+### Codex
+
+Codex 当前应把 SDC 当作 skill plugin 使用，不依赖 `/sdc:*` slash commands。
+
+安装后重启 Codex CLI / Codex App，可通过自然语言触发：
 
 ```text
 用 SDC 初始化这个项目
-用 SDC 为登录流程创建 change；先完成 intake 问题并确认，再创建 change 文件
-用 SDC 先读取项目知识库，再基于已确认产品/技术知识澄清需求
-如果还有待确认问题，只记录 discovery 草稿，不要生成 spec/design/tasks
-如果这是遗留项目，用 SDC 在需求确认后做当前 change 的影响面分析
-用 SDC 基于已确认 discovery 和相关 knowledge 生成 spec、plan 和 context-pack
-用 SDC apply 执行当前任务
-用 SDC check 检查是否可以交付
-用 SDC archive 归档这个变更，并判断是否需要沉淀 product knowledge、technical knowledge、memory、decisions、standards、AGENTS 或 reports
-```
-
----
-
-## 🚀 快速开始
-
-### 方式 1：通用安装 / 更新（推荐 ⭐）
-
-无论是首次安装还是更新老版本，优先使用这一条：
-
-```bash
-npx sdc-spec@latest
-```
-
-它会自动检测你安装的 AI 工具（Claude Code / Codex / Hermes Agent），一键安装到对应目录。
-
-安装器会为 Claude Code 注册本地 marketplace 并启用 `sdc@sdc-local` 插件；为 Codex 注册本地 marketplace、启用插件，并动态生成 Codex 公共 workflow skills，同时清理旧版直扫 skills，避免同一个 SDC 能力出现两套。
-
-> Claude Code 安装后需要完全重启应用，`/sdc:*` slash commands 才会刷新到命令列表。
-> SDC 会在 Claude 插件缓存中生成标准 `.claude/skills/` 结构，兼容新版 Claude Code 的 skill 扫描规则。Claude 只把高级能力作为 skills 暴露；`init/change/plan/apply/check/archive/harness` 等公共工作流只通过 slash commands 暴露，避免同一能力出现两套入口。
->
-> Codex 当前应把 SDC 当作 **skill plugin** 使用，而不是 slash command plugin。Codex CLI 可以加载 SDC plugin/skills，但当前不支持插件自定义 `/sdc:*` slash commands。
-> Codex plugin 中会包含 `sdc:sdc-init`、`sdc:sdc-change`、`sdc:sdc-plan`、`sdc:sdc-apply`、`sdc:sdc-check`、`sdc:sdc-archive`、`sdc:sdc-harness` 和高级 skills；Claude 则继续用 slash commands 暴露公共流程。
-> 旧版 Codex 如果只能扫描 `~/.agents/skills`，可临时使用 `SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest` 启用 legacy 直扫 skills。
-
-后续更新 SDC 也使用同一个命令：
-```bash
-npx sdc-spec@latest
-```
-
-### 更新命令速查
-
-| 安装来源 | 通用更新命令 | 说明 |
-| --- | --- | --- |
-| npm / npx（推荐） | `npx sdc-spec@latest` | 首次安装和更新都用这一条。 |
-| npm 全局安装 | `npm install -g sdc-spec@latest && sdc` | 已经习惯使用全局 `sdc` 命令的机器用这一条。 |
-| GitHub 原生安装 | `npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec` | 不走 npm registry，直接使用 GitHub `main` 分支最新版。 |
-| 本地 clone 安装 | `git pull && node bin/install.js` | 在本地克隆的 `spec-driven-coding` 目录里执行。 |
-| 手动复制安装 | `npx sdc-spec@latest` | 推荐改用安装器同步，避免漏复制插件、skills 或命令文件。 |
-
-### 各客户端更新后生效方式
-
-| 客户端 | 推荐更新命令 | 更新后操作 | 验证方式 |
-| --- | --- | --- | --- |
-| Claude Code | `npx sdc-spec@latest` | 完全退出并重新打开 Claude Code。 | 输入 `/sdc:init`、`/sdc:change` 或 `/sdc:check`。 |
-| Codex CLI | `npx sdc-spec@latest` | 退出当前 CLI 会话后重新进入。 | 在 skill 列表中看到 `SDC` 或 `sdc:*`，或直接用自然语言调用 SDC。 |
-| Codex App | `npx sdc-spec@latest` | 完全退出并重新打开 Codex App。 | 新会话的 skill 列表中出现 `SDC` 或 `sdc:*`。 |
-| Hermes Agent | `npx sdc-spec@latest` | 重启或重新加载 Hermes Agent 会话。 | skill 列表中出现 `sdc` / `sdc-*`。 |
-
-如果某台机器必须从 GitHub 更新，把上表里的更新命令统一替换为：
-
-```bash
-npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec
-```
-
-如果某台机器使用本地 clone 更新，请在克隆目录里执行：
-
-```bash
-git pull && node bin/install.js
-```
-
-如果更新后仍显示旧版本，先关闭对应客户端，再重新执行一次推荐更新命令即可。
-
-一键卸载：
-```bash
-npx sdc-spec@latest uninstall
-```
-
-如果你已经全局安装，也可以使用：
-```bash
-sdc uninstall
-```
-
-如果你希望在终端里长期保留 `sdc` 命令，需要全局安装：
-```bash
-npm install -g sdc-spec@latest
-sdc
-```
-
-如果你想绕过 npm registry，直接从 GitHub 安装最新代码：
-```bash
-npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec
-```
-
-### 方式 2：本地加载
-```bash
-git clone https://github.com/ruanjianershu/spec-driven-coding.git
-cd spec-driven-coding
-```
-
-本地 clone 调试也推荐运行安装器，它会为 Claude Code 生成只包含 `.claude/skills/` 的专用 marketplace，避免根 `skills/` 和 `.claude/skills/` 被重复注册：
-
-```bash
-node bin/install.js
-```
-
-不要直接把仓库根目录 `claude plugin marketplace add "$(pwd)"` 作为 Claude marketplace；仓库根目录同时包含 Codex/Hermes 使用的 `skills/` 和 Claude 使用的 `.claude/skills/`，直接加载可能出现重复 skill。
-
-Codex 可通过 `node bin/install.js` 或 `npx sdc-spec@latest` 完成本地 marketplace 和 plugin skills 同步。默认不会再写入 `~/.agents/skills/sdc-*`，避免和 plugin skills 重复。
-
-### 方式 3：手动复制技能
-直接把 `skills/` 目录复制到你的 AI 工具的 skills 目录。
-
----
-
-## Codex 使用方式
-
-SDC 在 Codex 中的定位是 **skill plugin**：
-
-- 不依赖 `/sdc:init` 这类 slash command
-- 通过 SDC skills 让 Codex 理解并执行规范驱动开发流程
-- 安装器会注册本地 Codex marketplace、启用 `sdc@sdc-local` 插件，动态生成公共 workflow skills，并清理旧版直扫 skills，避免重复注册
-
-### Codex CLI
-
-安装：
-
-```bash
-npx sdc-spec@latest
-```
-
-安装后完全重启 Codex CLI。使用时推荐直接用自然语言触发：
-
-```text
-用 sdc init 初始化项目
 用 SDC 创建一个登录需求变更
 用 SDC plan 生成实现计划
 用 SDC apply 执行当前任务
 用 SDC check 检查是否可以交付
-用 SDC archive 归档这个变更，并判断长期知识沉淀
+用 SDC archive 归档这个变更
 ```
 
-如果你的 Codex CLI 支持 `/skills`，也可以在 `/skills` 中选择 SDC 相关 skills，例如：
+如果支持 `/skills`，可以选择：
 
 ```text
 sdc:sdc-init
@@ -239,507 +92,129 @@ sdc:sdc-plan
 sdc:sdc-apply
 sdc:sdc-check
 sdc:sdc-archive
+sdc:sdc-harness
 ```
 
-注意：Codex CLI 当前不会把 SDC 插件中的 `commands/*.md` 注册成 `/sdc:init`、`/sdc:plan` 这类 slash commands。看到 skill 存在、但 `/sdc:init` 不存在，是当前 Codex CLI 的预期行为，不代表 SDC 安装失败。
-
-如果你使用的旧版 Codex CLI 只能扫描 `~/.agents/skills`，可以临时启用 legacy fallback：
+旧版 Codex 如果只能扫描直装 skills，可临时使用：
 
 ```bash
 SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 ```
 
-这会额外同步裸 `sdc-*` skills。新版 Codex 不建议这样做，因为会和 `sdc:*` plugin skills 同时出现。
+新版 Codex 不建议这样做，避免 plugin skills 和直装 skills 重复。
 
-### Codex App
+### Hermes Agent
 
-安装：
+安装器会同步 `sdc` / `sdc-*` skills 到 Hermes skills 目录。重启或重新加载 Hermes 后使用。
 
-```bash
-npx sdc-spec@latest
-```
-
-然后完全退出并重新打开 Codex App。打开项目后，可以这样使用：
+## 工作流
 
 ```text
-用 SDC 初始化这个项目，创建 .sdc 工作区和开发规范
-用 SDC 为“支持用户登录”创建一次 change
-如果这是遗留项目，用 SDC 在需求确认后先更新 impact.md
-用 SDC 基于当前 change 生成 plan
-用 SDC 执行 apply
-用 SDC 做 check，给出验证、审查、测试和质量结论
+1. init
+   创建 .sdc/ 工作区、constitution、standards、knowledge、memory、templates。
+
+2. change
+   先完成 intake 问题并等待确认；未确认时只保留 discovery/proposal/notes 草稿。
+
+3. plan
+   基于 confirmed spec、必要的 impact.md 和相关知识库生成 design/tasks/context-pack。
+
+4. apply
+   按 T### 薄切片执行，记录 notes、验证证据和 knowledge-candidates。
+
+5. check
+   综合 validate/review/test/quality，判断是否可以交付或归档。
+
+6. archive
+   归档到 .sdc/specs 和 .sdc/changes/archive，并建议需要沉淀的长期知识。
 ```
 
-在 Codex App 中，SDC 的能力来自已安装的 plugin skills，而不是应用内 slash command。只要当前会话的 skills/plugin 列表中能看到 `SDC` 或 `sdc:*` skills，就表示 Codex 已经可以使用 SDC。
-
----
-
-### 📌 关于 `/plugin add` 命令
-
-目前 `/plugin install sdc@claude-plugins-official` 还不能直接使用，因为这需要 Claude Code 官方 marketplace 收录。
-
-我们正在申请收录，敬请期待！
-
-如果 SDC 被 Claude Code 官方市场接受，用户将可以直接安装：
-
-```text
-/plugin install sdc@claude-plugins-official
-```
-
-安装后 reload plugins，即可使用 `/sdc:init`、`/sdc:plan`、`/sdc:check` 等 Claude Code slash commands。
-
-### 官方市场提交准备
-
-SDC 已补齐官方市场审核需要的基础材料：
-
-- [安全说明](SECURITY.md)
-- [隐私说明](PRIVACY.md)
-- [变更记录](CHANGELOG.md)
-- [官方提交说明](docs/official-submission.md)
-- [Claude Code 市场说明](docs/claude-code-marketplace.md)
-- [发布检查清单](docs/release-checklist.md)
-
-发布前推荐执行：
-
-```bash
-npm run audit
-npm run eval:sdc
-npm pack --dry-run
-```
-
----
-
-## 📦 Claude Code 普通模式
-
-下列 slash commands 适用于 Claude Code。Codex 当前请使用 `/skills` 或自然语言调用同名 SDC skills。
-
-| 命令 | 作用 |
-|------|------|
-| `/sdc:init` | 创建/修复标准 `.sdc/` 工作区、知识库和 memory 骨架；遗留项目先建立项目整体认知；旧托管模板会备份后安全升级 |
-| `/sdc:change <name>` | 创建一次需求迭代；先完成 Mandatory Change Intake Gate，Open Questions 未闭合时只保留轻量 Draft，确认后再进入 Change Impact Gate |
-| `/sdc:plan` | 基于已确认 spec、必要的 impact.md 和相关知识库生成或更新 design/tasks/context-pack |
-| `/sdc:apply` | 按 tasks 执行当前变更，并把新发现记录到 knowledge-candidates |
-| `/sdc:check` | 综合执行校验、审查、测试、质量检查和知识漂移检查 |
-| `/sdc:archive <change-id>` | 归档需求迭代，沉淀稳定规范，并运行 Knowledge Compact Gate |
-| `/sdc:harness` | 生成项目级 AI 规则 |
-
-### 高级能力
-
-如果你需要精确控制某一步，可以通过 skills 或自然语言调用细分能力：
-
-`sdc`、`sdc-spec`、`sdc-implement`、`sdc-review`、`sdc-test`、`sdc-quality`、`sdc-validate`
-
-Claude Code 普通 slash command 包默认只暴露少量公共入口；这些细分能力仍作为 skills 存在，不要求用户记忆成一组新的 slash commands。
-
----
-
-## 📖 使用示例
-
-### 场景：开发一个 Todo 应用
-
-```bash
-/sdc:init
-/sdc:change todo-app
-/sdc:plan
-/sdc:apply
-/sdc:check
-/sdc:archive 2026-05-15-todo-app
-```
-
-执行后，项目里会留下：
-
-```text
-.sdc/changes/archive/2026-05-15-todo-app/
-.sdc/specs/2026-05-15-todo-app.md
-```
-
-普通模式只暴露少量公共入口；详细模式保留 `spec`、`validate`、`review`、`test`、`quality` 等细分能力。
-
-日常心智模型：`change` 是入口，`spec` 是 change 内的规格细化。新项目第一版、后续迭代、Bug 修复都先用 `change`；只有当 change 已存在并且需要补清楚 SCN/REQ/AC 时，才直接用 `spec`。
-
-遗留项目心智模型：`init` 只建立项目整体认知，不分析某个还不存在的需求；具体变更的影响面分析发生在 `change` 需求确认后，写入当前 change 的 `impact.md`，再进入 `plan/apply`。
-
-项目整体认知不是每次 change 都重跑。第一次接入存量项目，或项目结构、核心模块、数据模型、集成、构建/部署方式明显变化时，用 `sdc-check repo` 刷新 `.sdc/project-cognition.md`。日常每个 change 只读取这份长期认知，再围绕当前已确认需求做局部 `impact.md`。
-
-### 知识库怎么创建和维护？
-
-SDC 把知识库解释成“项目大脑”，但它不是一堆聊天记录。它分成两本账：
-
-| 分层 | 回答的问题 | 典型内容 |
-| --- | --- | --- |
-| 产品知识库 | 为什么做、给谁用、业务规则是什么 | 产品目标、用户角色、领域术语、业务流程、业务规则、非目标、产品决策 |
-| 技术知识库 | 系统怎么实现、怎么运行、怎么安全地改 | 技术栈、架构边界、模块地图、数据/API/集成、测试命令、部署回滚、排障方式 |
+## `.sdc/` 工作区
 
 `/sdc:init` 会创建：
 
 ```text
-.sdc/knowledge/
-├── index.md            # 短索引，每次 change/plan/apply 前优先读取
-├── current.md          # 当前项目状态和开放知识缺口
-├── product/            # 产品知识库
-└── technical/          # 技术知识库
-
-.sdc/memory/
-├── candidates.md       # 候选知识，等待 archive 确认
-├── procedures.md       # 可复用流程、经验和踩坑记录
-└── episodic/           # 重要事件短摘要
-```
-
-知识库的生命周期是：
-
-```text
-init 创建骨架
--> change/plan 前读取 index 和相关知识
--> spec/design/context-pack 记录 Knowledge Sources Used
--> apply/check 只写 knowledge-candidates
--> archive 请求确认后再沉淀到 product/technical/memory/standards/decisions
-```
-
-关键纪律：
-
-- `knowledge/` 是确认过的项目事实。
-- `memory/` 是经验和候选知识，帮助召回，但不能覆盖 confirmed knowledge。
-- 每条知识都要有 Status、Source、Verified At、Verified Against 和 Scope。
-- 缺证据时写 Knowledge Gap，不允许用“我猜应该是”推进。
-- `Assumed`、`Proposed`、`TBD`、`Conflict`、`Stale` 只能停留在 discovery 或 candidates，不能进入 final spec/design/tasks/context-pack。
-- 如果知识库和代码、spec 或用户确认冲突，必须停线，而不是让 AI 自己选。
-- 不保存整段对话，只保存下次能减少沟通、减少误改、减少重复探索的信息。
-
-### 需求完成后如何沉淀知识库？
-
-日常只需要记住：先 `/sdc:check`，再 `/sdc:archive <change-id>`。
-
-`/sdc:archive` 内置 Knowledge Compact Gate，会自动判断本次需求应该沉淀到哪里：
-
-| 类型 | 什么时候更新 | 是否自动写入 |
-| --- | --- | --- |
-| `.sdc/specs/` | 每个已完成需求的最终 Confirmed spec | 是，归档必需 |
-| `.sdc/changes/archive/` | 每个已完成需求的完整历史和证据 | 是，归档必需 |
-| `.sdc/knowledge/product/` | 新增或改变长期产品目标、角色、流程、业务规则、非目标或产品决策 | 先建议，等确认 |
-| `.sdc/knowledge/technical/` | 新增或改变长期技术栈、架构、模块、数据/API、测试、部署或运行知识 | 先建议，等确认 |
-| `.sdc/memory/` | 候选知识、可复用流程、踩坑经验或重要事件摘要值得保留 | 先建议，等确认 |
-| `.sdc/decisions/` | 产生长期产品、技术、架构、权限、安全或发布决策 | 先建议，等确认 |
-| `.sdc/standards/` | 沉淀出可复用代码、测试、架构、安全、Git 或 AI 协作规则 | 先建议，等确认 |
-| `AGENTS.md` | 需要把规则变成 AI 执行护栏，或发现重复 AI 失误 | 先建议，等确认 |
-| `.sdc/reports/bug/` | 缺陷根因、复现路径、防回归策略值得长期保留 | 先建议，等确认 |
-| `.sdc/reports/impact/` | 存量项目需要保留最终影响复核 | 先建议，等确认 |
-| `.sdc/project.md` | 项目背景、技术栈、验证命令、部署或长期约束变化 | 先建议，等确认 |
-| `.sdc/project-cognition.md` | 仓库结构、核心模块、数据模型、公共契约或集成方式发生长期变化 | 先建议，等确认 |
-
-也就是说，用户不需要在 `archive`、`harness`、`standards`、`decisions`、`product knowledge`、`technical knowledge`、`memory` 之间自己判断。SDC 会给出“建议更新哪些长期资产、为什么、写到哪里”，但条件项必须等你明确 yes/no 后才写入。
-
-SDC 不新增公开 compact 指令。知识压缩和沉淀是 archive 的内部门禁，避免再增加一个需要记忆和选择的入口。
-
-### SDC 更适合什么场景？
-
-SDC 同时支持新项目和老项目，但价值侧重点不同：
-
-| 场景 | 适配度 | SDC 的主要价值 |
-| --- | --- | --- |
-| 存量/遗留项目迭代 | 最强 | 降低误改老系统的风险，用 `project-cognition.md`、`impact.md`、追溯链和最终影响复核约束 AI 不乱改。 |
-| 新项目从 0 到 1 | 很适合 | 从第一天建立 `.sdc/`、产品/技术知识库、开发规范、需求历史、SCN/REQ/AC 和测试先行习惯，避免项目很快变成“无文档遗留项目”。 |
-| 小型一次性脚本 | 可选 | 只有在需求会持续迭代、需要验收证据或多人/多 AI 协作时才值得使用完整流程。 |
-
-一句话：**SDC 的护城河在老项目安全迭代；它也适合新项目搭建，但新项目更像提前铺好纪律和记忆。**
-
----
-
-## 🗂️ SDC 工作区
-
-`/sdc:init` 会生成项目长期使用的 SDC 工作区：
-
-```text
 .sdc/
-├── constitution.md  # 最高工程裁决规则
-├── project.md       # 项目背景、技术栈、约束和验证命令
-├── project-cognition.md # 遗留项目整体认知，基于代码证据维护
-├── knowledge/       # 项目知识库：产品知识 + 技术知识
-├── memory/          # 候选知识、流程经验和重要事件记忆
-├── current/         # 当前需求快捷工作区
-├── changes/         # 需求迭代：这次为什么改、怎么改、如何验收
-├── specs/           # 稳定业务规范：项目应该做什么
-├── standards/       # 开发规范：代码、测试、架构、安全、Git、AI 协作规则
-├── decisions/       # 架构/产品/技术关键决策
-├── reviews/         # 审查报告
-├── reports/         # bug、impact、repo-analysis 等分析报告
-└── templates/       # spec、plan、tasks、project-cognition、impact 等模板
+├── constitution.md
+├── project.md
+├── project-cognition.md
+├── knowledge/
+│   ├── index.md
+│   ├── current.md
+│   ├── product/
+│   └── technical/
+├── memory/
+│   ├── candidates.md
+│   ├── procedures.md
+│   └── episodic/
+├── current/
+├── changes/
+│   ├── active/
+│   └── archive/
+├── specs/
+├── standards/
+├── decisions/
+├── reports/
+├── reviews/
+└── templates/
 ```
 
-其中 `standards/` 是项目专属开发规范：
+### Knowledge vs Memory
 
-```text
-.sdc/standards/
-├── README.md
-├── coding.md
-├── testing.md
-├── architecture.md
-├── security.md
-├── git.md
-└── ai.md
+- `knowledge/` 是 confirmed 项目事实，分为产品知识和技术知识。
+- `memory/` 是候选知识、经验和过程记忆，不能直接覆盖 confirmed knowledge。
+- 常用入口是 `.sdc/knowledge/product/`、`.sdc/knowledge/technical/` 和每次 plan 生成的 `context-pack.md`。
+- 每条长期知识应记录 `Status / Source / Verified At / Verified Against / Scope`。
+- 缺证据时写 Knowledge Gap，不允许把推断写成事实。
+
+## 关键规则
+
+- Open Questions 未闭合时，只能生成 Draft，不允许生成 Confirmed spec/design/tasks。
+- 禁止“如果不对告诉我，我先改”。必须先问 yes/no 或选项确认。
+- 高影响推断必须进入 Decision Ledger，状态为 `Proposed` 或 `Assumed`，不能直接写成事实。
+- `Assumed / Proposed / TBD / Conflict / Stale` 不能进入 final spec/design/tasks/context-pack/apply/archive。
+- 存量项目的技术事实必须有代码、配置、测试、构建或运行证据。
+- `archive` 可以写必需归档资产；更新 knowledge、memory、standards、decisions、AGENTS.md 等长期资产前必须等待用户确认。
+
+## 公开命令
+
+| 命令 | 用途 |
+| --- | --- |
+| `init` | 创建或修复 `.sdc/` 工作区 |
+| `change` | 创建需求迭代并执行 intake/discovery |
+| `plan` | 生成 design、tasks、context-pack |
+| `apply` | 按任务执行实现并记录证据 |
+| `check` | validate + review + test + quality |
+| `archive` | 归档完成变更并触发知识沉淀建议 |
+| `harness` | 生成或更新项目级 `AGENTS.md` 护栏 |
+
+高级 skills：`sdc-spec`、`sdc-implement`、`sdc-review`、`sdc-test`、`sdc-quality`、`sdc-validate`。
+
+## 开发与发布检查
+
+```bash
+npm run audit
+npm run eval:sdc
+node --check bin/install.js
+npm pack --dry-run
 ```
 
-`.sdc/standards/` 是完整规范，适合长期维护；`AGENTS.md` 是 AI 执行护栏，可以由 `/sdc:harness` 从 standards 中提炼。
+可选：
 
-其中 `knowledge/` 是项目知识库：
-
-```text
-.sdc/knowledge/
-├── index.md
-├── current.md
-├── product/
-│   ├── overview.md
-│   ├── roles.md
-│   ├── domain.md
-│   ├── flows.md
-│   ├── rules.md
-│   └── decisions.md
-└── technical/
-    ├── stack.md
-    ├── architecture.md
-    ├── modules.md
-    ├── data-and-interfaces.md
-    ├── operations.md
-    └── testing.md
+```bash
+claude plugin validate .
 ```
 
-其中 `memory/` 只保存候选和经验，不直接作为事实来源：
+## 项目材料
 
-```text
-.sdc/memory/
-├── candidates.md
-├── procedures.md
-└── episodic/
-```
+- [CHANGELOG.md](CHANGELOG.md)
+- [SECURITY.md](SECURITY.md)
+- [PRIVACY.md](PRIVACY.md)
+- [docs/sdc-discipline-core.md](docs/sdc-discipline-core.md)
+- [docs/release-checklist.md](docs/release-checklist.md)
+- [docs/claude-code-marketplace.md](docs/claude-code-marketplace.md)
+- [docs/official-submission.md](docs/official-submission.md)
 
-更多 v1.1 纪律内核说明见 [docs/sdc-discipline-core.md](docs/sdc-discipline-core.md)。
+## License
 
----
-
-## 🎯 设计理念
-
-### 1. 规范先行
-> 任何模糊的需求，最终都会变成 Bug。
-
-先把需求拆成**可验证**的子任务，每个任务都有明确的验收标准。
-不要把一句模糊描述直接交给 AI 去自由发挥。
-
-### 2. 测试驱动
-> 没有测试的代码，都是遗留代码。
-
-每个功能先写测试，再写代码。
-测试不是负担，是你思考的草稿。
-
-### 3. 质量内建
-> 质量不是最后检查出来的，是整个过程做出来的。
-
-每一步都有质量检查，不是到最后才来补。
-
-### 4. 纯声明式
-> 最好的代码，是不需要写的代码。
-
-SDC 核心是一组纯文本技能文件，**零运行时代码**。
-兼容所有主流 AI 编码工具，没有锁定。
-
-### 5. 工程纪律内建
-> 没有证据，就不算完成。
-
-SDC 的公共 Skill 内置四类纪律机制：
-
-| 机制 | 作用 |
-|------|------|
-| 裁决链 | `.sdc/constitution.md > AGENTS.md`，`discovery > spec > design/plan > tasks > code` |
-| 知识门禁 | `knowledge/index.md` 路由产品/技术知识，memory candidates 不能当 confirmed fact |
-| 追溯链 | `SCN -> REQ -> AC -> T### -> 验证证据` |
-| 探索门禁 | 不确定需求先进入 Discovery Gate，确认 MVP 后再生成 spec |
-| 草稿瘦身 | Open Questions 未闭合时只维护 discovery / Draft proposal / 简短 notes，不展开完整 spec/design/tasks |
-| 确认门禁 | 高影响产品/技术决策必须进入 Decision Ledger，确认后才能 apply |
-| 遗留门禁 | init / repo 模式建可复用项目整体认知；change 需求确认后只做当前需求 impact，再 plan/apply |
-| 角色契约 | `skills/sdc-shared/role-contracts.md` 统一维护英文 Role Prompt Contract，约束角色、工作方式、证据和输出 |
-| 禁止静默默认值 | AI 可以提出 Proposed/Assumed，但不能把默认值写成事实 |
-| 停线报告 | 文档、代码、任务或验收冲突时先停线，不猜测推进 |
-| 反合理化表 | 对抗 AI “这个很简单不用测”“看起来没问题”等偷懒借口 |
-| 红旗警告 | 明确出现哪些迹象必须暂停、修正或阻止归档 |
-| 证据门槛 | 要求输出测试、审查、文件路径、检查结论等具体证据 |
-| 多视角检查 | `/sdc:check` 同时覆盖 delivery、bug、impact、repo 分析模式 |
-
----
-
-## 🧩 架构
-
-```
-┌─────────────────────────────────────────────┐
-│              用户输入命令                     │
-└─────────────────┬───────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────┐
-│         技能触发匹配（纯文本）                │
-│  ┌───────────────────────────────────────┐ │
-│  │ 普通模式：init change plan apply       │ │
-│  │          check archive harness         │ │
-│  │ 详细模式：spec review test quality...  │ │
-│  └───────────────────────────────────────┘ │
-└─────────────────┬───────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────┐
-│         AI 执行（不需要代码）                 │
-└─────────────────────────────────────────────┘
-```
-
----
-
-## 📋 每个技能的输出保证
-
-### `/sdc:init` 输出包含
-- ✅ 标准 `.sdc/` 工作区结构
-- ✅ `.sdc/constitution.md` 最高裁决规则
-- ✅ 当前迭代目录 `current/`
-- ✅ 长期变更目录 `changes/`
-- ✅ 项目背景文件 `project.md`
-- ✅ 产品/技术知识库目录 `knowledge/`
-- ✅ 候选知识和项目记忆目录 `memory/`
-- ✅ 项目开发规范目录 `standards/`
-- ✅ 需求、任务、停线、bug、impact、repo-analysis 模板
-- ✅ 旧版 SDC 托管模板的安全升级记录（如发生，会保留 `.bak-*`）
-
-### `/sdc:change` 输出包含
-- ✅ 独立 change 目录
-- ✅ Discovery Open 时只包含 `discovery.md`、Draft `proposal.md`、简短 `notes.md`
-- ✅ Discovery Closed 后再生成完整 proposal/spec/design/tasks/impact/context-pack/knowledge-candidates/notes
-- ✅ 明确的 change-id
-- ✅ 读取 knowledge index 后提出更少、更准的问题
-- ✅ 待确认项、Decision Ledger 和下一批问题
-- ✅ 下一步校验建议
-
-### `sdc-spec` 输出包含
-- ✅ Glossary / 统一语言
-- ✅ 业务场景 `SCN-*`
-- ✅ 需求规则 `REQ-*`
-- ✅ 验收标准 `AC-*`
-- ✅ 验证策略、风险、假设和待确认项
-- ✅ Knowledge Sources Used
-- ✅ 追溯关系矩阵
-- ✅ 明确的下一步建议
-
-### `/sdc:plan` 输出包含
-- ✅ 设计摘要和影响范围
-- ✅ `SCN/REQ/AC -> T###` 追溯矩阵
-- ✅ 按依赖排序的任务列表
-- ✅ 每个任务不超过 2 小时
-- ✅ 每个任务的 `REQ/AC/Phase/Size/Verify/Source`
-- ✅ 测试先行策略
-- ✅ `context-pack.md` 执行交接包
-- ✅ 明确的交付清单
-
-### `/sdc:apply` 输出包含
-- ✅ 当前 change 和任务
-- ✅ 当前任务对应的 `REQ-* / AC-*`
-- ✅ 任务执行记录
-- ✅ 修改文件
-- ✅ 测试结果
-- ✅ 更新 `tasks.md` 和 `notes.md`
-- ✅ 新发现写入 `knowledge-candidates.md`
-- ✅ 必要时输出 Stop-Line Report
-
-### `sdc-implement` 输出包含
-- ✅ 每个任务的测试代码
-- ✅ 每个任务的实现代码
-- ✅ 测试运行结果
-- ✅ 覆盖率报告
-- ✅ 遇到的问题记录
-
-### `sdc-review` 输出包含
-- ✅ 至少 3 个问题发现
-- ✅ 问题具体到文件和行号
-- ✅ 每个问题的修复建议
-- ✅ 做得好的地方
-- ✅ 明确的修复优先级
-
-### `sdc-test` 输出包含
-- ✅ 测试通过率
-- ✅ 覆盖率报告
-- ✅ 失败测试的详细信息
-- ✅ 覆盖率不足的文件
-- ✅ 测试改进建议
-
-### `sdc-quality` 输出包含
-- ✅ 全维度检查结果
-- ✅ 冒烟测试记录
-- ✅ 交付清单确认
-- ✅ 明确的"可以交付/不可以交付"结论
-
-### `/sdc:check` 输出包含
-- ✅ delivery 模式：validate/review/test/quality 结论
-- ✅ bug 模式：根因候选、证据链和修复建议（默认只分析）
-- ✅ impact 模式：影响范围、回归风险、测试矩阵和回滚建议
-- ✅ repo 模式：存量项目结构、事实证据、风险和 SDC 建议
-- ✅ 明确的可以交付/需要修复/仅分析结论
-
-### `sdc-validate` 输出包含
-- ✅ 结构完整性检查
-- ✅ `.sdc/constitution.md` 检查
-- ✅ SCN/REQ/AC 追溯检查
-- ✅ 任务强格式检查
-- ✅ 模板占位检查
-- ✅ 明确的通过/不通过结论
-
-### `/sdc:archive` 输出包含
-- ✅ change 归档记录
-- ✅ 稳定规范沉淀到 `specs/`
-- ✅ `REQ/AC/T###` 最终覆盖摘要
-- ✅ 原始变更历史保留
-- ✅ Knowledge Compact Gate：判断 product knowledge、technical knowledge、memory、decisions、standards、AGENTS、reports、project、project-cognition 是否需要更新
-- ✅ 归档结论和下一步建议
-
----
-
-## 🚦 质量红线（每个技能都严格遵守）
-
-| 规则 | 违反后果 |
-|------|---------|
-| 输出必须有明确的结构化格式 | 输出无效，重做 |
-| 必须包含具体可执行的步骤 | 输出无效，重做 |
-| 必须有明确的下一步建议 | 输出无效，重做 |
-| 不能有"你懂的"这种废话 | 输出无效，重做 |
-| 不能跳过 `spec -> plan -> tasks -> verify` | 变更不可追溯 |
-| 发现裁决链冲突必须停线 | 继续执行会污染规范 |
-
----
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 PR！
-
-1. Fork 本仓库
-2. 创建你的特性分支 (`git checkout -b feature/xxx`)
-3. 提交你的改动 (`git commit -m 'Add xxx'`)
-4. 推送到分支 (`git push origin feature/xxx`)
-5. 开启一个 Pull Request
-
----
-
-## 📄 开源协议
-
-MIT License - 详见 [LICENSE](LICENSE) 文件
-
----
-
-## 🙏 致谢
-
-- 灵感来自 [Superpowers](https://github.com/obra/superpowers) - 168k+ stars 的纯声明式 AI 技能框架
-- 借鉴 OpenSpec 的 change / validate / archive 生命周期
-- 借鉴 Karpathy-style skills 和本地流程实践中的“先思考、薄切片、TDD、证据链”工程纪律
-- 感谢所有贡献者的努力
-
----
-
-## 💬 反馈
-
-有任何问题或建议，欢迎：
-- 提交 [Issue](https://github.com/ruanjianershu/spec-driven-coding/issues)
-- 或者在思否上 @我
-
----
-
-> "编程是思考的过程，不是打字的过程。"
-> 
-> 思考清楚了，代码自然就出来了。
+MIT
