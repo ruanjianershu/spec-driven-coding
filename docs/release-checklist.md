@@ -55,7 +55,7 @@ Confirm the four intake answers before expecting any change files.
 ```
 
 For Codex, verify SDC skills are visible in the model prompt context or through `/skills` where supported.
-Default Codex install should expose plugin skills (`sdc:*`) and should not leave stale `~/.agents/skills/sdc-*` direct skills unless `SDC_CODEX_DIRECT_SKILLS=1` was intentionally used. It should also remove the old direct plugin copy at `~/.codex/plugins/sdc`.
+Default Codex install should expose public workflow plugin skills such as `sdc:sdc-init`, `sdc:sdc-change`, `sdc:sdc-plan`, `sdc:sdc-apply`, `sdc:sdc-check`, and `sdc:sdc-archive`. It should not leave stale `~/.agents/skills/sdc-*` direct skills unless `SDC_CODEX_DIRECT_SKILLS=1` was intentionally used. It should also remove the old direct plugin copy at `~/.codex/plugins/sdc`.
 
 Archive output should include Knowledge Compact Gate and must not write optional decisions, standards, reports, AGENTS.md, project.md, or project-cognition.md updates without explicit confirmation.
 It should also evaluate product knowledge, technical knowledge, memory, context-pack, and knowledge-candidate updates without silently writing conditional assets.

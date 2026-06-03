@@ -4,6 +4,8 @@ All notable changes to SDC are documented here.
 
 ## Unreleased
 
+- Fixed Codex/Hermes local installs so public workflow skills are generated from command definitions while Claude Code continues to expose those workflows only as slash commands.
+
 ## 1.2.0 - 2026-06-01
 
 - Added a first-class project knowledge system under `.sdc/knowledge/`, split into product knowledge and technical knowledge with a short `knowledge/index.md` routing file.

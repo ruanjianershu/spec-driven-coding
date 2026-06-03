@@ -114,12 +114,13 @@ npx sdc-spec@latest
 
 它会自动检测你安装的 AI 工具（Claude Code / Codex / Hermes Agent），一键安装到对应目录。
 
-安装器会为 Claude Code 注册本地 marketplace 并启用 `sdc@sdc-local` 插件；为 Codex 注册本地 marketplace、启用插件，并清理旧版直扫 skills，避免同一个 SDC 能力出现两套。
+安装器会为 Claude Code 注册本地 marketplace 并启用 `sdc@sdc-local` 插件；为 Codex 注册本地 marketplace、启用插件，并动态生成 Codex 公共 workflow skills，同时清理旧版直扫 skills，避免同一个 SDC 能力出现两套。
 
 > Claude Code 安装后需要完全重启应用，`/sdc:*` slash commands 才会刷新到命令列表。
 > SDC 会在 Claude 插件缓存中生成标准 `.claude/skills/` 结构，兼容新版 Claude Code 的 skill 扫描规则。Claude 只把高级能力作为 skills 暴露；`init/change/plan/apply/check/archive/harness` 等公共工作流只通过 slash commands 暴露，避免同一能力出现两套入口。
 >
 > Codex 当前应把 SDC 当作 **skill plugin** 使用，而不是 slash command plugin。Codex CLI 可以加载 SDC plugin/skills，但当前不支持插件自定义 `/sdc:*` slash commands。
+> Codex plugin 中会包含 `sdc:sdc-init`、`sdc:sdc-change`、`sdc:sdc-plan`、`sdc:sdc-apply`、`sdc:sdc-check`、`sdc:sdc-archive`、`sdc:sdc-harness` 和高级 skills；Claude 则继续用 slash commands 暴露公共流程。
 > 旧版 Codex 如果只能扫描 `~/.agents/skills`，可临时使用 `SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest` 启用 legacy 直扫 skills。
 
 后续更新 SDC 也使用同一个命令：
@@ -208,7 +209,7 @@ SDC 在 Codex 中的定位是 **skill plugin**：
 
 - 不依赖 `/sdc:init` 这类 slash command
 - 通过 SDC skills 让 Codex 理解并执行规范驱动开发流程
-- 安装器会注册本地 Codex marketplace、启用 `sdc@sdc-local` 插件，并清理旧版直扫 skills，避免重复注册
+- 安装器会注册本地 Codex marketplace、启用 `sdc@sdc-local` 插件，动态生成公共 workflow skills，并清理旧版直扫 skills，避免重复注册
 
 ### Codex CLI
 

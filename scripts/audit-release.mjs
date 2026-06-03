@@ -139,6 +139,18 @@ if (/'sdc-(core|init|change|plan|apply|check|archive|harness)'/.test(installJs.s
 if (!installJs.includes("'sdc-spec'") || !installJs.includes("path.join(claudeSkillsRoot, skillName)")) {
   fail('Claude skill layout must generate advanced sdc-* skill directories.');
 }
+for (const marker of [
+  'PUBLIC_WORKFLOW_SKILLS',
+  "dir: 'sdc-core'",
+  "name: 'sdc-init'",
+  'ensurePublicWorkflowSkills',
+  'writeCompleteAgentSkillLayout',
+  'includePublicWorkflowSkills: true',
+]) {
+  if (!installJs.includes(marker)) {
+    fail(`Installer must generate public workflow skills for Codex/Hermes without adding them to source skills/: missing ${marker}`);
+  }
+}
 
 const cli = readText('sdc-cli.py');
 const currentSchema = `Schema: SDC ${version}`;

@@ -40,6 +40,26 @@ const SDC_MARKETPLACE_NAME = 'sdc-local';
 const SDC_PLUGIN_ID = 'sdc@sdc-local';
 const SDC_CLAUDE_PLUGIN_ID = 'sdc@sdc-local';
 
+const ADVANCED_SKILL_NAMES = [
+  'sdc-spec',
+  'sdc-implement',
+  'sdc-review',
+  'sdc-test',
+  'sdc-quality',
+  'sdc-validate'
+];
+
+const PUBLIC_WORKFLOW_SKILLS = [
+  { dir: 'sdc-core', name: 'sdc', command: 'sdc' },
+  { dir: 'sdc-init', name: 'sdc-init', command: 'init' },
+  { dir: 'sdc-change', name: 'sdc-change', command: 'change' },
+  { dir: 'sdc-plan', name: 'sdc-plan', command: 'plan' },
+  { dir: 'sdc-apply', name: 'sdc-apply', command: 'apply' },
+  { dir: 'sdc-check', name: 'sdc-check', command: 'check' },
+  { dir: 'sdc-archive', name: 'sdc-archive', command: 'archive' },
+  { dir: 'sdc-harness', name: 'sdc-harness', command: 'harness' }
+];
+
 const IGNORED_ENTRIES = new Set([
   '.DS_Store',
   '.git',
@@ -95,6 +115,7 @@ function copyIfExists(src, dest) {
 function copyPlugin(dest, options = {}) {
   const includeRootSkills = options.includeRootSkills !== false;
   const claudeSkillSourceRoot = options.claudeSkillSourceRoot || path.join(dest, 'skills');
+  const includePublicWorkflowSkills = options.includePublicWorkflowSkills === true;
 
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
@@ -108,6 +129,10 @@ function copyPlugin(dest, options = {}) {
   }
 
   ensureClaudeSkillLayout(dest, claudeSkillSourceRoot);
+
+  if (includeRootSkills && includePublicWorkflowSkills) {
+    ensurePublicWorkflowSkills(path.join(dest, 'skills'));
+  }
 
   if (!includeRootSkills) {
     fs.rmSync(path.join(dest, 'skills'), { recursive: true, force: true });
@@ -128,21 +153,71 @@ function ensureClaudeSkillLayout(pluginRoot, sourceRoot = path.join(pluginRoot, 
     copyDir(shared, path.join(claudeSkillsRoot, 'sdc-shared'));
   }
 
-  const skillNames = [
-    'sdc-spec',
-    'sdc-implement',
-    'sdc-review',
-    'sdc-test',
-    'sdc-quality',
-    'sdc-validate'
-  ];
-
-  for (const skillName of skillNames) {
+  for (const skillName of ADVANCED_SKILL_NAMES) {
     const src = path.join(sourceRoot, skillName);
     if (fs.existsSync(src)) {
       copyDir(src, path.join(claudeSkillsRoot, skillName));
     }
   }
+}
+
+function parseCommandFile(commandName) {
+  const commandPath = path.join(projectRoot, 'commands', `${commandName}.md`);
+  const raw = fs.readFileSync(commandPath, 'utf8').replace(/\r\n/g, '\n');
+  const match = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!match) {
+    return { description: `Run the SDC ${commandName} workflow.`, body: raw };
+  }
+
+  const descriptionMatch = match[1].match(/^description:\s*(.+)$/m);
+  return {
+    description: descriptionMatch ? descriptionMatch[1].trim().replace(/^"|"$/g, '') : `Run the SDC ${commandName} workflow.`,
+    body: match[2].trimStart()
+  };
+}
+
+function writeGeneratedWorkflowSkill(skillsRoot, workflow) {
+  const { description, body } = parseCommandFile(workflow.command);
+  const skillRoot = path.join(skillsRoot, workflow.dir);
+  fs.rmSync(skillRoot, { recursive: true, force: true });
+  fs.mkdirSync(skillRoot, { recursive: true });
+  fs.writeFileSync(path.join(skillRoot, 'SKILL.md'), `---
+name: ${workflow.name}
+description: ${JSON.stringify(description)}
+---
+
+> Codex/Hermes workflow skill generated from \`commands/${workflow.command}.md\`.
+> Treat the user's current request as \`$ARGUMENTS\`. In Codex/Hermes, route to the matching SDC skill/workflow instead of expecting \`/sdc:*\` slash-command support.
+
+${body}`);
+}
+
+function ensurePublicWorkflowSkills(skillsRoot) {
+  fs.mkdirSync(skillsRoot, { recursive: true });
+  for (const workflow of PUBLIC_WORKFLOW_SKILLS) {
+    writeGeneratedWorkflowSkill(skillsRoot, workflow);
+  }
+}
+
+function writeCompleteAgentSkillLayout(targetRoot) {
+  fs.mkdirSync(targetRoot, { recursive: true });
+
+  for (const workflow of PUBLIC_WORKFLOW_SKILLS) {
+    fs.rmSync(path.join(targetRoot, workflow.dir), { recursive: true, force: true });
+  }
+  for (const skillName of ADVANCED_SKILL_NAMES) {
+    fs.rmSync(path.join(targetRoot, skillName), { recursive: true, force: true });
+  }
+  fs.rmSync(path.join(targetRoot, 'sdc-shared'), { recursive: true, force: true });
+
+  const skillsRoot = path.join(projectRoot, 'skills');
+  for (const skillName of [...ADVANCED_SKILL_NAMES, 'sdc-shared']) {
+    const srcPath = path.join(skillsRoot, skillName);
+    if (fs.existsSync(srcPath)) {
+      copyDir(srcPath, path.join(targetRoot, skillName));
+    }
+  }
+  ensurePublicWorkflowSkills(targetRoot);
 }
 
 function packageVersion() {
@@ -155,7 +230,7 @@ function writeLocalCodexMarketplace(home) {
   const marketplaceFile = path.join(marketplaceRoot, '.agents', 'plugins', 'marketplace.json');
   const pluginRoot = path.join(marketplaceRoot, 'plugins', 'sdc');
 
-  copyPlugin(pluginRoot);
+  copyPlugin(pluginRoot, { includePublicWorkflowSkills: true });
   fs.mkdirSync(path.dirname(marketplaceFile), { recursive: true });
   fs.writeFileSync(marketplaceFile, JSON.stringify({
     name: SDC_MARKETPLACE_NAME,
@@ -223,7 +298,7 @@ function writeCodexPluginCache(home) {
   const versionedPluginRoot = path.join(cachePluginRoot, packageVersion());
 
   fs.rmSync(cachePluginRoot, { recursive: true, force: true });
-  copyPlugin(versionedPluginRoot);
+  copyPlugin(versionedPluginRoot, { includePublicWorkflowSkills: true });
 
   return versionedPluginRoot;
 }
@@ -298,22 +373,9 @@ function installCodexSkills(home) {
   const installedPaths = [];
   const skillTargets = [path.join(home, '.agents', 'skills')];
   const legacyTargetRoot = path.join(home, '.codex', 'skills');
-  const skillsRoot = path.join(projectRoot, 'skills');
 
   for (const targetRoot of skillTargets) {
-    fs.mkdirSync(targetRoot, { recursive: true });
-
-    for (const entry of fs.readdirSync(skillsRoot, { withFileTypes: true })) {
-      if (!entry.isDirectory()) {
-        continue;
-      }
-
-      const srcPath = path.join(skillsRoot, entry.name);
-      const destPath = path.join(targetRoot, entry.name);
-      fs.rmSync(destPath, { recursive: true, force: true });
-      copyDir(srcPath, destPath);
-    }
-
+    writeCompleteAgentSkillLayout(targetRoot);
     installedPaths.push(targetRoot);
   }
 
@@ -487,7 +549,7 @@ function installToPlatform(platform) {
   
   if (platform.type === 'hermes') {
     // Hermes 只需要 skills 目录
-    copyDir(path.join(projectRoot, 'skills'), destPath);
+    writeCompleteAgentSkillLayout(destPath);
   } else if (platform.type === 'codex') {
     // Codex uses the local marketplace/cache flow below. Remove the old direct
     // plugin copy so Codex builds that scan ~/.codex/plugins do not see SDC twice.
@@ -523,7 +585,7 @@ function installToPlatform(platform) {
       console.log('  已清理旧版 Codex 直扫 SDC skills，避免重复注册：');
       removedSkillPaths.forEach((p) => console.log(`  - ${p}`));
     } else {
-      console.log('  Codex 使用 plugin skills；未写入 legacy 直扫 skills。');
+      console.log('  Codex 使用 plugin skills；已生成公共 workflow skills，未写入 legacy 直扫 skills。');
     }
   } else if (platform.type === 'claude') {
     const home = process.env.HOME || process.env.USERPROFILE;
@@ -616,7 +678,7 @@ if (installedTypes.has('claude')) {
 if (installedTypes.has('codex')) {
   console.log('\nCodex skill plugin：');
   console.log('  Codex 当前版本不支持插件自定义 /sdc:* slash commands。');
-  console.log('  请通过 /skills 查看 SDC / sdc:* skills，或用自然语言触发：使用 SDC 初始化项目、使用 SDC 创建 change。');
+  console.log('  请通过 /skills 查看 sdc:sdc-init / sdc:sdc-change / sdc:sdc-plan 等 skills，或用自然语言触发：使用 SDC 初始化项目、使用 SDC 创建 change。');
 }
 
 if (installedTypes.has('hermes')) {
