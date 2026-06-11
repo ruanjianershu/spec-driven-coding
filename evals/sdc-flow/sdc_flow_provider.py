@@ -517,9 +517,51 @@ def incomplete_candidate_blocks_archive_readiness(root: Path) -> str:
     ])
 
 
+def standards_pack_import(root: Path) -> str:
+    source = root / "spec-rules"
+    source.mkdir()
+    source.joinpath("code-generation.md").write_text(
+        """# Code Generation
+
+Use project conventions when generating service and entity scaffolds.
+"""
+    )
+    source.joinpath("testing.md").write_text(
+        """# Testing
+
+Behavior tests should prove acceptance criteria before implementation details.
+"""
+    )
+    source.joinpath(".DS_Store").write_text("system file should not be imported")
+
+    code, output = run_sdc(root, "init", "--standards", str(source))
+    target = root / ".sdc" / "standards" / "company"
+    index = target / "README.md"
+    index_text = index.read_text() if index.exists() else ""
+    checks = [
+        marker(root, ".sdc/standards/company/code-generation.md"),
+        marker(root, ".sdc/standards/company/testing.md"),
+        marker(root, ".sdc/standards/company/.DS_Store"),
+        "routing index: yes" if "Agents must read this index first" in index_text else "routing index: no",
+        "code hint: yes" if "Read when creating new code scaffolds" in index_text else "code hint: no",
+        "path leak: no" if str(source) not in index_text else "path leak: yes",
+    ]
+    expected = (
+        code == 0
+        and any(check.endswith("code-generation.md: exists") for check in checks)
+        and any(check.endswith("testing.md: exists") for check in checks)
+        and any(check.endswith(".DS_Store: absent") for check in checks)
+        and "routing index: yes" in checks
+        and "code hint: yes" in checks
+        and "path leak: no" in checks
+    )
+    return "\n".join([output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
 SCENARIOS = {
     "init_greenfield": init_greenfield,
     "init_upgrades_stale_managed_templates": init_upgrades_stale_managed_templates,
+    "standards_pack_import": standards_pack_import,
     "change_discovery_open": change_discovery_open,
     "discovery_open_blocks_context_pack": discovery_open_blocks_context_pack,
     "brownfield_requires_impact": brownfield_requires_impact,

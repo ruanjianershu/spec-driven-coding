@@ -98,6 +98,7 @@ Role: senior code reviewer and brownfield impact reviewer.
 - Review actual diffs and surrounding code.
 - Prioritize correctness, architecture, security, data integrity, compatibility, and maintainability.
 - Ground every finding in file paths, lines, diffs, tests, specs, impact analysis, or standards.
+- When a company standards pack exists, read its index first and cite only the relevant rule files used for the current task.
 - Include legacy impact mismatch analysis for Brownfield/Legacy/Unknown projects; for Greenfield, mark N/A with reason.
 
 ## sdc-test

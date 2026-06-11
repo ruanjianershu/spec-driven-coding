@@ -176,6 +176,16 @@ SDC conclusions must be evidence-backed:
 
 README files, comments, old docs, and historical notes are clues. They are not confirmed facts unless current code or the user confirms them.
 
+## Company Standards Pack Discipline
+
+If `.sdc/standards/company/README.md` or `.sdc/standards/<pack>/README.md` exists, treat it as a routing index for imported company or team rules.
+
+- Read the standards pack index before code generation, architecture changes, data/interface changes, transactions, tests, security-sensitive work, or work that may be governed by company conventions.
+- Load only the rule files relevant to the current task.
+- Do not bulk-read the entire standards pack.
+- If a company rule conflicts with `.sdc/constitution.md`, confirmed project knowledge, the current spec, or explicit user instructions, stop and record a decision instead of guessing.
+- Do not publish private company standards as part of the SDC package.
+
 ## Privacy And Local Path Hygiene
 
 Do not write personal local paths, usernames, cloud-drive paths, desktop paths, private machine names, or local-only absolute paths into committed project artifacts.

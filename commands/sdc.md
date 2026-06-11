@@ -7,6 +7,7 @@ description: SDC main entry. Route init, change, plan, apply, check, archive, an
 Use this command as the unified SDC entry. Interpret "$ARGUMENTS" as the user's current intent and route to the correct SDC stage:
 
 - initialize workspace -> `/sdc:init`
+- import existing company/team standards -> initialize first, then place or import them into `.sdc/standards/company/` with a routing index
 - new requirement/change -> read knowledge index, `/sdc:change`, then confirmed specification and `/sdc:plan`
 - implement current change -> `/sdc:apply`
 - delivery check -> `/sdc:check`

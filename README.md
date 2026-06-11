@@ -112,6 +112,7 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 ```text
 1. init
    创建 .sdc/ 工作区、constitution、standards、knowledge、memory、templates。
+   如已有团队规范，可同时导入：`sdc init --standards /path/to/spec-rules`。
 
 2. change
    先完成 intake 问题并等待确认；未确认时只保留 discovery/proposal/notes 草稿。
@@ -153,6 +154,7 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 │   └── archive/
 ├── specs/
 ├── standards/
+│   └── company/      # 可选：公司/团队规范包索引与规则文件
 ├── decisions/
 ├── reports/
 ├── reviews/
@@ -166,6 +168,16 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 - 常用入口是 `.sdc/knowledge/product/`、`.sdc/knowledge/technical/` 和每次 plan 生成的 `context-pack.md`。
 - 每条长期知识应记录 `Status / Source / Verified At / Verified Against / Scope`。
 - 缺证据时写 Knowledge Gap，不允许把推断写成事实。
+
+### Company Standards Pack
+
+SDC 不内置任何公司私有规范。已有团队规范建议放进业务项目的 `.sdc/standards/company/`，由索引按需读取：
+
+```bash
+sdc standards import /path/to/spec-rules
+```
+
+AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关规则文件，避免一次性吞掉整包规范。
 
 ## 关键规则
 

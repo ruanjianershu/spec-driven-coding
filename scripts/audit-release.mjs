@@ -182,6 +182,16 @@ if (!cli.includes('../../../specs/{change_id}.md')) {
 if (!cli.includes('"knowledge/index.md"') || !cli.includes('"memory/candidates.md"')) {
   fail('sdc-cli.py init must create knowledge/index.md and memory/candidates.md.');
 }
+for (const marker of [
+  'cmd_import_standards',
+  '--standards',
+  'standards/company/README.md',
+  'SDC-MANAGED-STANDARDS-PACK',
+]) {
+  if (!cli.includes(marker)) {
+    fail(`sdc-cli.py must support company standards pack import: missing ${marker}`);
+  }
+}
 if (!cli.includes('"templates/context-pack.md"') || !cli.includes('"templates/knowledge-candidates.md"')) {
   fail('sdc-cli.py must ship context-pack and knowledge-candidates templates.');
 }
@@ -219,6 +229,9 @@ if (!readme.includes('Knowledge Compact Gate')) {
 if (!readme.includes('.sdc/knowledge/product/') || !readme.includes('.sdc/knowledge/technical/') || !readme.includes('context-pack.md')) {
   fail('README.md must document product/technical knowledge and context-pack usage.');
 }
+if (!readme.includes('.sdc/standards/company/') || !readme.includes('sdc standards import /path/to/spec-rules')) {
+  fail('README.md must document company standards pack import.');
+}
 
 const evalRunner = readText('evals/sdc-flow/run_sdc_flow.py');
 const evalProvider = readText('evals/sdc-flow/sdc_flow_provider.py');
@@ -234,6 +247,7 @@ for (const scenario of [
   'unconfirmed_assumption_blocks_execution',
   'open_knowledge_gap_blocks_execution',
   'incomplete_candidate_blocks_archive_readiness',
+  'standards_pack_import',
 ]) {
   if (!evalProvider.includes(scenario)) {
     fail(`SDC anti-guess eval provider is missing scenario: ${scenario}`);

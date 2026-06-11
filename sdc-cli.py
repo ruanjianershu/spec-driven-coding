@@ -5,6 +5,8 @@ SDC CLI - 规范驱动开发 薄运行层
 
 用法：
   sdc init          # 初始化标准 SDC 工作区
+  sdc init --standards <path> # 初始化并导入公司/团队规范包到 .sdc/standards/company/
+  sdc standards import <path> # 导入公司/团队规范包
   sdc change <name> # 提出 intake 问题，不写 change 文件
   sdc change <name> --confirmed-intake # intake 确认后创建 Discovery Open 草稿
   sdc validate [target] # 校验 current 或某个 change
@@ -25,6 +27,7 @@ SDC CLI - 规范驱动开发 薄运行层
 
 import os
 import re
+import shutil
 import sys
 import subprocess
 from datetime import date, datetime
@@ -62,8 +65,26 @@ DIRS = [
     "reviews",
     "specs",
     "standards",
+    "standards/company",
     "templates",
 ]
+
+STANDARD_PACK_MARKER = "<!-- SDC-MANAGED-STANDARDS-PACK -->"
+STANDARD_PACK_DOC_SUFFIXES = {".md", ".markdown", ".txt", ".rst", ".adoc", ".yaml", ".yml", ".json"}
+STANDARD_PACK_IGNORED_NAMES = {
+    ".DS_Store",
+    ".git",
+    ".hg",
+    ".svn",
+    ".idea",
+    ".vscode",
+    "__pycache__",
+    "node_modules",
+    "dist",
+    "build",
+    "target",
+    "coverage",
+}
 
 INIT_FILES = {
     "README.md": """# SDC Workspace
@@ -105,9 +126,10 @@ INIT_FILES = {
 - `changes/` - 需求迭代：这次为什么改、怎么改、如何验收
 - `knowledge/` - 项目知识：产品事实、业务规则、技术事实和运行方式
 - `standards/` - 开发规范：代码、测试、架构、安全、Git 和 AI 协作规则
+- `standards/company/` - 可选公司/团队规范包，通过索引按需读取
 - `memory/` - 项目记忆：候选知识、经验、流程和可回顾的工作片段
 
-## SDC v1.1 纪律内核
+## SDC v1.2 纪律内核
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
@@ -725,11 +747,43 @@ YYYY-MM-DD-short-event.md
 - `security.md` - 输入校验、敏感信息、权限、依赖安全
 - `git.md` - 分支、提交、PR、变更粒度
 - `ai.md` - AI 助手必须遵守的项目规则
+- `company/` - 可选公司/团队规范包。放置外部规范时先读 `company/README.md`，再按任务读取相关文件。
 
 ## 与 AGENTS.md 的关系
 
 `.sdc/standards/` 是完整开发规范，适合长期维护。
 `AGENTS.md` 是 AI 执行护栏，可以由 `/sdc:harness` 从 standards 中提炼。
+
+## Company Standards Packs
+
+如果团队已有现成规范，请放在 `company/` 下，或运行：
+
+```bash
+sdc standards import /path/to/spec-rules
+```
+
+AI 不应一次性读取整个规范包。先读 `company/README.md`，再按任务加载相关规范文件。
+""",
+    "standards/company/README.md": """# Company Standards Pack
+
+<!-- SDC-MANAGED-STANDARDS-PACK -->
+
+这里放公司/团队已有开发规范。默认不内置任何公司私有规则；请通过导入命令或手工复制维护。
+
+## Recommended Import
+
+```bash
+sdc standards import /path/to/spec-rules
+```
+
+## Routing Rule
+
+Agents must read this index first, then load only the relevant rule files for the current task. Do not bulk-load the whole standards pack.
+
+## Imported Files
+
+| File | Title | When To Read |
+|------|-------|--------------|
 """,
     "standards/coding.md": """# Coding Standard
 
@@ -830,6 +884,7 @@ YYYY-MM-DD-short-event.md
 - 开始新需求前确认 `.sdc/` 是否存在
 - 先读 `.sdc/constitution.md`，再读 `AGENTS.md`
 - 非平凡需求先读 `.sdc/knowledge/index.md`，再按任务读取相关产品/技术知识
+- 如果 `.sdc/standards/company/README.md` 存在且当前任务涉及代码生成、架构、接口、数据、事务、测试、安全或公司约定，先读该索引，再只读取相关公司规范文件
 - 新需求进入 `.sdc/changes/active/`
 - 遗留项目先读 `.sdc/project-cognition.md`
 - 实现前先看 `discovery.md`、`proposal.md`、`spec.md`、`impact.md`、`design.md`、`tasks.md`、`context-pack.md`
@@ -848,6 +903,7 @@ YYYY-MM-DD-short-event.md
 - 不要覆盖用户编写的 `.sdc/` 文件；SDC 托管模板升级必须保留备份
 - 不要删除 change 历史
 - 不要忽略 `.sdc/standards/` 中的项目规范
+- 不要一次性读取整个 `.sdc/standards/company/`；先读索引，按任务按需加载
 - 不要把 `.sdc/memory/` 中的 Candidate/Assumed 当作 confirmed 项目事实
 """,
     "decisions/README.md": """# Decisions
@@ -1454,6 +1510,7 @@ def is_stale_managed_template(relative_path, text):
     """Detect SDC-generated old templates that can be upgraded safely."""
     normalized = text.replace("\r\n", "\n")
     template_paths = {
+        "README.md",
         "constitution.md",
         "knowledge/index.md",
         "current/discovery.md",
@@ -1468,17 +1525,35 @@ def is_stale_managed_template(relative_path, text):
         "templates/context-pack.md",
         "templates/knowledge-candidates.md",
         "templates/knowledge-index.md",
+        "standards/README.md",
+        "standards/ai.md",
+        "standards/company/README.md",
         "current/tasks.md",
         "templates/tasks.md",
     }
     if relative_path not in template_paths:
         return False
 
+    if relative_path == "README.md":
+        return "# SDC Workspace" in normalized and (
+            "standards/company/" not in normalized
+            or "SDC v1.1" in normalized
+        )
+
     if relative_path == "constitution.md":
         return "# SDC Project Constitution" in normalized and (
             "Knowledge and Memory Discipline" not in normalized
             or "No Evidence, No Fact" not in normalized
         )
+
+    if relative_path == "standards/README.md":
+        return "# Development Standards" in normalized and "Company Standards Packs" not in normalized
+
+    if relative_path == "standards/ai.md":
+        return "# AI Collaboration Standard" in normalized and ".sdc/standards/company/README.md" not in normalized
+
+    if relative_path == "standards/company/README.md":
+        return "# Company Standards Pack" in normalized and "Routing Rule" not in normalized
 
     if relative_path in {"knowledge/index.md", "templates/knowledge-index.md"}:
         return "# Knowledge Index" in normalized and (
@@ -1564,6 +1639,181 @@ def write_or_upgrade_managed(relative_path, content):
     return None
 
 
+def standards_pack_slug(name):
+    slug = re.sub(r"[^a-zA-Z0-9_-]+", "-", (name or "").strip().lower()).strip("-")
+    return slug or "company"
+
+
+def is_standard_pack_source_file(path, source_root):
+    if not path.is_file():
+        return False
+    try:
+        relative_parts = path.relative_to(source_root).parts
+    except ValueError:
+        relative_parts = path.parts
+
+    if any(part.startswith(".") or part in STANDARD_PACK_IGNORED_NAMES for part in relative_parts):
+        return False
+
+    return path.suffix.lower() in STANDARD_PACK_DOC_SUFFIXES
+
+
+def iter_standard_pack_files(source):
+    if source.is_file():
+        return [source] if is_standard_pack_source_file(source, source.parent) else []
+    return [
+        path
+        for path in sorted(source.rglob("*"))
+        if is_standard_pack_source_file(path, source)
+    ]
+
+
+def file_bytes_equal(left, right):
+    if not left.exists() or not right.exists():
+        return False
+    return left.read_bytes() == right.read_bytes()
+
+
+def standards_title(path):
+    try:
+        for line in path.read_text(errors="ignore").splitlines()[:80]:
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                return stripped.lstrip("#").strip() or path.stem.replace("-", " ").title()
+    except UnicodeDecodeError:
+        pass
+    return path.stem.replace("-", " ").replace("_", " ").title()
+
+
+def standards_routing_hint(relative_path):
+    lower = str(relative_path).lower()
+    rules = [
+        (("code-generation", "scaffold", "generator"), "Read when creating new code scaffolds, entities, services, or generated files."),
+        (("surgical", "refactor", "edit"), "Read before making focused changes to existing code."),
+        (("aggregate", "valueobject", "domain"), "Read when touching aggregates, value objects, domain models, or domain invariants."),
+        (("application-service", "controller", "facade", "orchestration"), "Read when touching application services, controllers, facades, or orchestration logic."),
+        (("repository", "client", "acl", "infrastructure"), "Read when touching repositories, external clients, ACLs, or infrastructure adapters."),
+        (("data-objects", "dto", "request", "response", "money", "time"), "Read when defining DTOs, request/response objects, money/time fields, or data conversion."),
+        (("enum", "schema"), "Read when adding or changing enums, schemas, or value constraints."),
+        (("transaction", "tx"), "Read when changing transaction boundaries, consistency rules, or rollback behavior."),
+        (("logging", "log"), "Read when adding logs, diagnostic fields, trace IDs, or operational messages."),
+        (("exception", "monitoring", "error"), "Read when changing exceptions, monitoring, alarms, or error-code behavior."),
+        (("middleware", "redis", "mq", "lock", "job"), "Read when touching Redis, MQ, locks, jobs, cache, or middleware integration."),
+        (("loop", "query", "performance", "single-record"), "Read when changing queries, loops, N+1 risks, or performance-sensitive reads."),
+        (("naming", "name"), "Read when naming packages, classes, methods, fields, constants, or files."),
+        (("comment", "javadoc"), "Read when writing comments, JavaDoc, or documentation inside code."),
+        (("configuration", "properties", "config"), "Read when adding configuration properties, feature flags, or environment settings."),
+        (("testing", "test"), "Read when writing or changing tests, fixtures, mocks, or validation commands."),
+    ]
+    for needles, hint in rules:
+        if any(needle in lower for needle in needles):
+            return hint
+    return "Read when the current task touches this topic."
+
+
+def standards_pack_index_content(pack_name, entries):
+    lines = [
+        "# Company Standards Pack" if pack_name == "company" else f"# {pack_name} Standards Pack",
+        "",
+        STANDARD_PACK_MARKER,
+        "",
+        "This index routes company or team engineering standards. The SDC package does not ship private rules; imported rules live in the project workspace.",
+        "",
+        "## Routing Rule",
+        "",
+        "Agents must read this index first, then load only the relevant rule files for the current task. Do not bulk-load the whole standards pack.",
+        "",
+        "## Imported Files",
+        "",
+        "| File | Title | When To Read |",
+        "|------|-------|--------------|",
+    ]
+    for relative_file, title, hint in entries:
+        safe_file = str(relative_file).replace("\\", "/")
+        lines.append(f"| `{safe_file}` | {title} | {hint} |")
+    if not entries:
+        lines.append("| _none yet_ |  |  |")
+    lines.extend([
+        "",
+        "## Maintenance",
+        "",
+        "- Re-run `sdc standards import <path>` when the external standards pack changes.",
+        "- If a file conflicts with an existing project rule, record the decision in `.sdc/decisions/` before using it as execution guidance.",
+        "- Keep private company standards inside the target project workspace or private repositories; do not publish them with SDC itself.",
+        "",
+    ])
+    return "\n".join(lines)
+
+
+def write_standards_pack_index(target_dir, pack_name, entries):
+    readme = target_dir / "README.md"
+    index_path = readme
+    if readme.exists() and STANDARD_PACK_MARKER not in read_text(readme):
+        index_path = target_dir / "IMPORT-INDEX.md"
+    index_path.write_text(standards_pack_index_content(pack_name, entries))
+    return index_path
+
+
+def cmd_import_standards(source_path, pack_name="company"):
+    if not SDC_DIR.exists():
+        print_color(RED, "❌ 请先运行: sdc init")
+        return False
+
+    source = Path(source_path).expanduser()
+    if not source.exists():
+        print_color(RED, f"❌ 规范目录不存在: {source_path}")
+        return False
+
+    pack_slug = standards_pack_slug(pack_name)
+    target_dir = SDC_DIR / "standards" / pack_slug
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    source_root = source.parent if source.is_file() else source
+    source_files = iter_standard_pack_files(source)
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    imported_entries = []
+    copied = []
+    skipped = []
+    conflicts = []
+
+    for source_file in source_files:
+        relative = source_file.relative_to(source_root)
+        destination = target_dir / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+
+        actual_destination = destination
+        if destination.exists():
+            if file_bytes_equal(source_file, destination):
+                skipped.append(str(destination.relative_to(target_dir)))
+            else:
+                actual_destination = destination.with_name(f"{destination.stem}.import-{timestamp}{destination.suffix}")
+                conflicts.append(f"{destination.relative_to(target_dir)} -> {actual_destination.name}")
+
+        if not actual_destination.exists():
+            shutil.copy2(source_file, actual_destination)
+            copied.append(str(actual_destination.relative_to(target_dir)))
+
+        entry_relative = actual_destination.relative_to(target_dir)
+        imported_entries.append((entry_relative, standards_title(actual_destination), standards_routing_hint(entry_relative)))
+
+    index_path = write_standards_pack_index(target_dir, pack_slug, imported_entries)
+
+    print_color(GREEN, "✅ Standards pack 已导入")
+    print(f"   Pack: {pack_slug}")
+    print(f"   Target: {target_dir}")
+    print(f"   Index: {index_path.relative_to(SDC_DIR)}")
+    print(f"   Files: {len(imported_entries)} indexed, {len(copied)} copied, {len(skipped)} unchanged")
+    if conflicts:
+        print("   Conflicts saved as timestamped imports:")
+        for item in conflicts[:10]:
+            print(f"  - {item}")
+        if len(conflicts) > 10:
+            print(f"  - ... {len(conflicts) - 10} more")
+    if not imported_entries:
+        print_color(YELLOW, "⚠️  未发现可导入的规范文档；支持 .md/.txt/.rst/.adoc/.yaml/.yml/.json")
+    return True
+
+
 def detect_project_kind():
     """Best-effort hint for whether init is running in a new or existing project."""
     marker_names = {
@@ -1609,7 +1859,7 @@ def detect_project_kind():
     return "greenfield", markers, source_count
 
 
-def cmd_init():
+def cmd_init(standards_source=None, standards_name="company"):
     """初始化标准 SDC 工作区"""
     created = []
     upgraded = []
@@ -1667,6 +1917,10 @@ def cmd_init():
     print(f"  {BLUE}sdc apply{ENDC}   - 执行当前需求迭代")
     print(f"  {BLUE}sdc change login-flow{ENDC} - 创建一次需求迭代")
     print(f"  {BLUE}sdc status{ENDC}  - 查看工作区状态")
+
+    if standards_source:
+        print()
+        cmd_import_standards(standards_source, standards_name)
 
 
 def print_change_intake(name):
@@ -2310,6 +2564,16 @@ def cmd_status():
     print()
 
 
+def option_value(args, option_name):
+    if option_name not in args:
+        return None
+    index = args.index(option_name)
+    if index + 1 >= len(args) or args[index + 1].startswith("--"):
+        print_color(RED, f"❌ {option_name} 需要一个参数")
+        sys.exit(1)
+    return args[index + 1]
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
@@ -2318,7 +2582,19 @@ def main():
     cmd = sys.argv[1]
 
     if cmd == "init":
-        cmd_init()
+        args = sys.argv[2:]
+        standards_source = option_value(args, "--standards")
+        standards_name = option_value(args, "--standards-name") or "company"
+        cmd_init(standards_source=standards_source, standards_name=standards_name)
+    elif cmd == "standards":
+        if len(sys.argv) < 4 or sys.argv[2] != "import":
+            print_color(RED, "❌ 用法: sdc standards import <path> [--name company]")
+            return
+        args = sys.argv[3:]
+        source_path = args[0]
+        pack_name = option_value(args[1:], "--name") or "company"
+        if not cmd_import_standards(source_path, pack_name):
+            sys.exit(1)
     elif cmd == "change":
         if len(sys.argv) < 3:
             print_color(RED, "❌ 用法: sdc change <short-name> [--confirmed-intake]")

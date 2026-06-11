@@ -52,6 +52,8 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 │   └── README.md
 ├── standards/
 │   ├── README.md
+│   ├── company/
+│   │   └── README.md
 │   ├── coding.md
 │   ├── testing.md
 │   ├── architecture.md
@@ -102,6 +104,7 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 | `.sdc/changes/archive/` | Completed change histories. |
 | `.sdc/specs/` | Stable business specifications promoted from completed changes. |
 | `.sdc/standards/` | Long-lived engineering standards for code, tests, architecture, security, git, and AI collaboration. |
+| `.sdc/standards/company/` | Optional imported company/team standards pack. Read `README.md` first, then only the relevant rule files. |
 | `.sdc/decisions/` | Durable product, technical, and architecture decisions. |
 | `.sdc/reviews/` | Review reports. |
 | `.sdc/reports/` | Bug, impact, repo-analysis, test, and quality reports. |

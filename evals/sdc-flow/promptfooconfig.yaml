@@ -34,6 +34,19 @@ tests:
       - type: contains
         value: "candidate evidence: yes"
 
+  - description: init imports company standards pack with routing index
+    vars:
+      scenario: standards_pack_import
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "routing index: yes"
+      - type: contains
+        value: ".DS_Store: absent"
+      - type: contains
+        value: "path leak: no"
+
   - description: confirmed-intake change stays discovery-open and minimal
     vars:
       scenario: change_discovery_open

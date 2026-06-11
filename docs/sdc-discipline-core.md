@@ -129,6 +129,24 @@ Every durable knowledge item should record Status, Source, Verified At, Verified
 
 `Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, and open Knowledge Gaps may appear in discovery and candidates. They must not become final REQ/AC/INV, design decisions, context-pack instructions, implementation tasks, impact claims, code changes, or archive truth.
 
+## Company Standards Packs
+
+Existing team or company rules should not be bundled into public SDC releases. Import them into the business project as a private standards pack:
+
+```bash
+sdc standards import /path/to/spec-rules
+```
+
+The imported pack lives under `.sdc/standards/company/` by default. Its `README.md` is a routing index: agents read the index first, then load only the rule files relevant to the current task.
+
+Use this boundary:
+
+- `.sdc/knowledge/` says what is true about the product and system.
+- `.sdc/standards/` says how this project should be built, tested, reviewed, and operated.
+- `.sdc/standards/company/` adapts existing organization rules into the project without publishing private content in SDC itself.
+
+If a company rule conflicts with the project constitution, confirmed knowledge, the current spec, or explicit user direction, stop and record a decision instead of treating the rule as an automatic fact.
+
 ## Consent Gates
 
 SDC v1.1.1 adds consent gates to prevent AI-generated defaults from becoming project truth.

@@ -5,6 +5,7 @@ All notable changes to SDC are documented here.
 ## Unreleased
 
 - Fixed Codex/Hermes local installs so public workflow skills are generated from command definitions while Claude Code continues to expose those workflows only as slash commands.
+- Added company/team standards pack support: `sdc init --standards <path>` and `sdc standards import <path>` import private rules into `.sdc/standards/company/` with a routing index and no bundled private content.
 
 ## 1.2.0 - 2026-06-01
 

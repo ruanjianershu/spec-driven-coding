@@ -12,6 +12,7 @@ The local runner does not call an LLM or require API keys. It creates temporary 
 
 - `init` knowledge/memory workspace creation
 - safe `init` upgrade of stale managed SDC templates with backups
+- importing a company/team standards pack with a routing index and no local path leak
 - Discovery Open minimal artifacts
 - blocking premature `context-pack.md`
 - blocking Brownfield changes without `impact.md`
