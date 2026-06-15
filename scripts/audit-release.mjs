@@ -211,6 +211,12 @@ if (!cli.includes('validate_context_pack')) {
 if (!cli.includes('## Common Ground Used') || !cli.includes('## Expert Profiles Used')) {
   fail('sdc-cli.py context-pack templates must include Common Ground Used and Expert Profiles Used.');
 }
+if (!cli.includes('["Knowledge Sources Used", "Common Ground Used", "Decision Ledger"')) {
+  fail('sdc-cli.py spec validation must require Common Ground Used.');
+}
+if (!cli.includes('"## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used"')) {
+  fail('sdc-cli.py design/context validation must require Common Ground Used.');
+}
 if (!cli.includes('.sdc/knowledge/product/') || !cli.includes('.sdc/knowledge/technical/')) {
   fail('sdc-cli.py archive Knowledge Compact Gate must evaluate product and technical knowledge updates.');
 }
@@ -222,8 +228,11 @@ for (const marker of [
   'No Confirmation, No Execution',
   'No Impact, No Brownfield Change',
   'validate_no_unconfirmed_execution_inputs',
+  'validate_common_ground_execution_inputs',
   'validate_knowledge_candidates_file',
   'Knowledge Gap',
+  'OPEN Common Ground',
+  'WORKING Common Ground',
   'Evidence Needed',
   'Promotion Gate',
 ]) {
@@ -270,6 +279,8 @@ for (const marker of ['.sdc/common-ground.md', '.sdc/expert-routing.md', '## Exp
 for (const scenario of [
   'unconfirmed_assumption_blocks_execution',
   'open_knowledge_gap_blocks_execution',
+  'open_common_ground_blocks_execution',
+  'working_common_ground_blocks_final_execution',
   'incomplete_candidate_blocks_archive_readiness',
   'standards_pack_import',
 ]) {

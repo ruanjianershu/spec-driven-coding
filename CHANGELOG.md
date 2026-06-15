@@ -4,6 +4,7 @@ All notable changes to SDC are documented here.
 
 ## Unreleased
 
+- Fixed Common Ground validation so `OPEN` and final-execution `WORKING` Common Ground rows now block validate/apply/archive readiness instead of passing as documentation-only warnings.
 ## 1.2.1 - 2026-06-15
 
 - Added SDC Common Ground: projects now initialize `.sdc/common-ground.md` to keep `ESTABLISHED / WORKING / OPEN` assumptions visible and block OPEN/high-impact WORKING assumptions from final execution.

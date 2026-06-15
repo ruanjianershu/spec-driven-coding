@@ -420,6 +420,11 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |--------|-------------------|----------------|--------|-----------|--------|
 
+## 1.2 Common Ground Used
+
+| ID | Tier | Statement | Source | Why It Matters |
+|----|------|-----------|--------|----------------|
+
 ## 2. Decision Ledger / 决策台账
 
 | ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
@@ -1144,6 +1149,11 @@ YYYY-MM-DD-short-title.md
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |--------|-------------------|----------------|--------|-----------|--------|
 
+## Common Ground Used
+
+| ID | Tier | Statement | Source | Why It Matters |
+|----|------|-----------|--------|----------------|
+
 ## Solution Summary / 方案摘要
 
 ## Impact Scope / 影响范围
@@ -1179,6 +1189,11 @@ YYYY-MM-DD-short-title.md
 
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |--------|-------------------|----------------|--------|-----------|--------|
+
+## 1.2 Common Ground Used
+
+| ID | Tier | Statement | Source | Why It Matters |
+|----|------|-----------|--------|----------------|
 
 ## 2. Decision Ledger / 决策台账
 
@@ -1615,6 +1630,35 @@ def validate_no_unconfirmed_execution_inputs(errors, filepath):
         if any(re.search(pattern, text, re.IGNORECASE) for pattern in open_gap_patterns):
             errors.append(f"{filepath} 存在未闭合 Knowledge Gap，不能进入执行或归档")
 
+    validate_common_ground_execution_inputs(errors, filepath, text)
+
+
+def validate_common_ground_execution_inputs(errors, filepath, text):
+    """Block OPEN/WORKING Common Ground from final execution inputs."""
+    blocked_rows = []
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") or stripped.startswith("|---"):
+            continue
+
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) < 2:
+            continue
+
+        item_id = cells[0]
+        tier = cells[1].upper()
+        if not re.match(r"^CG-[A-Za-z0-9_-]+$", item_id, re.IGNORECASE):
+            continue
+
+        if tier == "OPEN":
+            blocked_rows.append((item_id, tier, "OPEN Common Ground 不能驱动 final spec/design/context-pack/tasks/apply/archive"))
+        elif tier == "WORKING":
+            blocked_rows.append((item_id, tier, "WORKING Common Ground 不能作为 final execution input；请先确认或改成 investigation task"))
+
+    for item_id, tier, reason in blocked_rows:
+        errors.append(f"{filepath} 包含不可执行 Common Ground: {item_id}={tier}；{reason}")
+
 
 def validate_spec_trace(errors, filepath):
     text = read_text(filepath)
@@ -1764,6 +1808,7 @@ def is_stale_managed_template(relative_path, text):
     if relative_path in {"current/context-pack.md", "templates/context-pack.md"}:
         return "# Context Pack" in normalized and (
             "## Knowledge Gaps" not in normalized
+            or "## Common Ground Used" not in normalized
             or "## Forbidden Assumptions" not in normalized
             or "## Expert Profiles Used" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
@@ -1784,6 +1829,7 @@ def is_stale_managed_template(relative_path, text):
     if relative_path == "templates/design.md":
         return "# Design" in normalized and (
             "## Knowledge Gaps" not in normalized
+            or "## Common Ground Used" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
         )
 
@@ -1793,7 +1839,10 @@ def is_stale_managed_template(relative_path, text):
             or "## 场景" in normalized
             or "## Requirements" in normalized
         )
-        return looks_generated and "INV-" not in normalized
+        return looks_generated and (
+            "INV-" not in normalized
+            or "## 1.2 Common Ground Used" not in normalized
+        )
 
     if relative_path.endswith("tasks.md"):
         old_task_shape = (
@@ -2241,7 +2290,7 @@ def validate_spec_file(errors, warnings, filepath):
         errors,
         warnings,
         filepath,
-        ["Knowledge Sources Used", "Decision Ledger", "Business Invariants / 业务不变量", "Acceptance Criteria / 验收标准", "追溯关系矩阵"],
+        ["Knowledge Sources Used", "Common Ground Used", "Decision Ledger", "Business Invariants / 业务不变量", "Acceptance Criteria / 验收标准", "追溯关系矩阵"],
     )
     if not filepath.exists():
         return
@@ -2257,7 +2306,7 @@ def validate_design_file(errors, warnings, filepath):
         errors,
         warnings,
         filepath,
-        ["## Knowledge Sources Used", "## Knowledge Gaps", "## Solution Summary", "## Impact Scope", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
+        ["## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Solution Summary", "## Impact Scope", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
     )
     validate_no_unconfirmed_execution_inputs(errors, filepath)
 

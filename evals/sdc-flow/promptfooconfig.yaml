@@ -113,6 +113,28 @@ tests:
       - type: contains
         value: "未闭合"
 
+  - description: open common ground blocks context handoff
+    vars:
+      scenario: open_common_ground_blocks_execution
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: open common ground"
+      - type: contains
+        value: "OPEN"
+
+  - description: working common ground blocks final execution
+    vars:
+      scenario: working_common_ground_blocks_final_execution
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: working common ground"
+      - type: contains
+        value: "WORKING"
+
   - description: incomplete knowledge candidates block archive readiness
     vars:
       scenario: incomplete_candidate_blocks_archive_readiness

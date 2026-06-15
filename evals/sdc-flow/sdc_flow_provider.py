@@ -204,6 +204,12 @@ No blocking risks remain for the MVP.
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |---|---|---|---|---|---|
 
+## Common Ground Used
+
+| ID | Tier | Statement | Source | Why It Matters |
+|---|---|---|---|---|
+| CG-01 | ESTABLISHED | Meeting room booking MVP is confirmed | eval fixture | Allows design planning |
+
 ## Solution Summary / 方案摘要
 Add conflict checking before persisting a booking.
 
@@ -398,6 +404,7 @@ def init_upgrades_stale_managed_templates(root: Path) -> str:
     checks = [
         "constitution anti-guess: yes" if "No Evidence, No Fact" in upgraded_files[0].read_text() else "constitution anti-guess: no",
         "design gaps: yes" if "## Knowledge Gaps" in upgraded_files[1].read_text() else "design gaps: no",
+        "design common ground: yes" if "## Common Ground Used" in upgraded_files[1].read_text() else "design common ground: no",
         "context forbidden: yes" if "## Forbidden Assumptions" in upgraded_files[2].read_text() else "context forbidden: no",
         "context profiles: yes" if "## Expert Profiles Used" in upgraded_files[2].read_text() else "context profiles: no",
         "candidate evidence: yes" if "Evidence Needed" in upgraded_files[3].read_text() else "candidate evidence: no",
@@ -406,7 +413,7 @@ def init_upgrades_stale_managed_templates(root: Path) -> str:
     expected = (
         code == 0
         and "已安全升级" in output
-        and all(check.endswith("yes") for check in checks[:5])
+        and all(check.endswith("yes") for check in checks[:6])
         and len(backups) >= 4
     )
     return "\n".join([output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
@@ -519,6 +526,48 @@ def open_knowledge_gap_blocks_execution(root: Path) -> str:
     ])
 
 
+def open_common_ground_blocks_execution(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "meeting-room", "--confirmed-intake")
+    change = active_change(root, "meeting-room")
+    write_confirmed_change(change)
+    context = change / "context-pack.md"
+    context.write_text(
+        context.read_text().replace(
+            "| CG-01 | ESTABLISHED | Meeting room booking MVP is confirmed | eval fixture | Allows execution |",
+            "| CG-01 | OPEN | Permission model is not confirmed | eval fixture | Blocks access rules |",
+        )
+    )
+    code, output = run_sdc(root, "validate", change.name)
+    expected = code != 0 and "Common Ground" in output and "OPEN" in output and "不可执行" in output
+    return "\n".join([
+        output,
+        "EXPECTED_BLOCK: open common ground" if expected else "UNEXPECTED_PASS: open common ground",
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def working_common_ground_blocks_final_execution(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "meeting-room", "--confirmed-intake")
+    change = active_change(root, "meeting-room")
+    write_confirmed_change(change)
+    context = change / "context-pack.md"
+    context.write_text(
+        context.read_text().replace(
+            "| CG-01 | ESTABLISHED | Meeting room booking MVP is confirmed | eval fixture | Allows execution |",
+            "| CG-01 | WORKING | Room approval policy looks simple but is not confirmed | eval fixture | Could change scope |",
+        )
+    )
+    code, output = run_sdc(root, "validate", change.name)
+    expected = code != 0 and "Common Ground" in output and "WORKING" in output and "不可执行" in output
+    return "\n".join([
+        output,
+        "EXPECTED_BLOCK: working common ground" if expected else "UNEXPECTED_PASS: working common ground",
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
 def incomplete_candidate_blocks_archive_readiness(root: Path) -> str:
     run_sdc(root, "init")
     run_sdc(root, "change", "meeting-room", "--confirmed-intake")
@@ -592,6 +641,8 @@ SCENARIOS = {
     "archive_knowledge_compact_gate": archive_knowledge_compact_gate,
     "unconfirmed_assumption_blocks_execution": unconfirmed_assumption_blocks_execution,
     "open_knowledge_gap_blocks_execution": open_knowledge_gap_blocks_execution,
+    "open_common_ground_blocks_execution": open_common_ground_blocks_execution,
+    "working_common_ground_blocks_final_execution": working_common_ground_blocks_final_execution,
     "incomplete_candidate_blocks_archive_readiness": incomplete_candidate_blocks_archive_readiness,
 }
 
