@@ -1,0 +1,136 @@
+version: "1.2"
+name: "SDC workflow manifest"
+public_commands:
+  - init
+  - change
+  - plan
+  - apply
+  - check
+  - archive
+  - harness
+hidden_skills:
+  - sdc-spec
+  - sdc-implement
+  - sdc-review
+  - sdc-test
+  - sdc-quality
+  - sdc-validate
+shared_references:
+  - role-contracts.md
+  - workflow-standards.md
+  - discovery-gate.md
+  - legacy-impact-gate.md
+  - common-ground.md
+  - expert-routing.md
+  - artifact-schemas.md
+  - delivery-gates.md
+flow:
+  init:
+    purpose: "Create or repair .sdc, seed knowledge, memory, common ground, expert routing, standards, and project cognition."
+    inputs:
+      - repository evidence
+      - optional standards pack
+      - user-provided project context
+    outputs:
+      - .sdc/constitution.md
+      - .sdc/common-ground.md
+      - .sdc/expert-routing.md
+      - .sdc/project.md
+      - .sdc/project-cognition.md
+      - .sdc/knowledge/
+      - .sdc/memory/
+      - .sdc/standards/
+      - .sdc/templates/
+    gates:
+      - "Do not invent product facts."
+      - "Classify Brownfield/Legacy using evidence."
+      - "Do not perform per-change impact analysis during init."
+  change:
+    purpose: "Run mandatory intake and discovery before creating final artifacts."
+    inputs:
+      - user requirement
+      - .sdc/common-ground.md
+      - .sdc/knowledge/index.md
+      - .sdc/expert-routing.md
+    outputs:
+      - discovery.md
+      - optional draft proposal.md
+      - brief notes.md
+    gates:
+      - "Ask the required intake questions before writing change files."
+      - "Keep artifacts minimal while Discovery Gate is open."
+      - "High-impact decisions remain Proposed or Assumed until confirmed."
+  spec:
+    purpose: "Convert confirmed discovery into SCN/REQ/AC with traceability."
+    inputs:
+      - confirmed discovery
+      - established common ground
+      - confirmed knowledge
+      - decision ledger
+    outputs:
+      - spec.md
+    gates:
+      - "No OPEN Common Ground item may drive final REQ/AC/INV."
+      - "No Proposed or Assumed decision may enter final requirements."
+  plan:
+    purpose: "Generate design, tasks, and context-pack from confirmed scope and impact."
+    inputs:
+      - confirmed spec.md
+      - impact.md when required
+      - .sdc/common-ground.md
+      - .sdc/expert-routing.md
+      - relevant knowledge and standards
+    outputs:
+      - design.md
+      - tasks.md
+      - context-pack.md
+    gates:
+      - "Select relevant expert profiles internally."
+      - "Tasks must be traceable, test-first, and size S or M."
+      - "Unconfirmed assumptions become investigation tasks or Stop-Line Reports."
+  apply:
+    purpose: "Implement planned tasks and record evidence."
+    inputs:
+      - context-pack.md
+      - tasks.md
+      - spec.md
+      - design.md
+      - relevant knowledge and standards
+    outputs:
+      - code changes
+      - notes.md
+      - updated tasks.md
+      - knowledge-candidates.md
+    gates:
+      - "Do not implement from OPEN or high-impact WORKING Common Ground."
+      - "Do not expand scope without updating plan/context-pack."
+  check:
+    purpose: "Combine validate, review, test, quality, impact, and knowledge drift checks."
+    inputs:
+      - artifacts
+      - actual diff
+      - test/build/manual evidence
+      - common ground
+      - expert routing
+    outputs:
+      - readiness conclusion
+      - findings
+      - required fixes
+      - knowledge compact recommendations
+    gates:
+      - "Traceability, decision, common-ground, and expert-profile gaps block delivery."
+  archive:
+    purpose: "Preserve completed change and propose durable knowledge updates."
+    inputs:
+      - completed checked change
+      - final spec
+      - validation evidence
+      - knowledge candidates
+    outputs:
+      - .sdc/specs/<change-id>.md
+      - .sdc/changes/archive/<change-id>/
+      - archive.md
+      - recommended durable updates
+    gates:
+      - "Required archive writes may proceed."
+      - "Common Ground, expert routing, knowledge, memory, standards, decisions, AGENTS.md, project.md, and project-cognition updates require explicit confirmation."

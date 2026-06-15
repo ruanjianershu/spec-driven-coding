@@ -95,6 +95,8 @@ INIT_FILES = {
 
 - `project.md` - 项目长期背景、目标用户、技术约束和验证命令
 - `project-cognition.md` - 遗留项目整体认知，基于代码证据建立维护地图
+- `common-ground.md` - 共同认知层：区分 ESTABLISHED / WORKING / OPEN，防止 AI 隐性假设
+- `expert-routing.md` - 专家路由层：按任务自动选择产品、架构、数据、测试、安全等内部专家视角
 - `constitution.md` - 项目最高工程裁决规则
 - `knowledge/` - 项目确认知识库，分为产品知识和技术知识
 - `memory/` - 项目记忆与候选知识，默认不高于 confirmed knowledge
@@ -112,10 +114,10 @@ INIT_FILES = {
 
 1. `/sdc:change <name>` 创建 `changes/active/<name>/` 的轻量 Discovery Open 草稿
 2. 需求不确定时只更新 `discovery.md`、Draft `proposal.md` 和简短 `notes.md`
-3. 需求确认后读取 `knowledge/index.md` 和相关产品/技术知识，再生成 spec
+3. 需求确认后读取 `common-ground.md`、`knowledge/index.md` 和相关产品/技术知识，再生成 spec
 4. `sdc-spec` 将已确认 discovery 收敛为 SCN/REQ/AC
 5. 遗留项目在需求确认后先更新当前 change 的 `impact.md`
-6. `/sdc:plan` 生成 design/tasks/context-pack
+6. `/sdc:plan` 通过 `expert-routing.md` 选择内部专家视角，生成 design/tasks/context-pack
 7. `/sdc:apply` 执行实现，记录验证证据和 `knowledge-candidates.md`
 8. `/sdc:check` 综合校验、审查、测试、质量和知识漂移
 9. `/sdc:archive <name>` 归档到 `changes/archive/`，并运行 Knowledge Compact Gate 判断长期知识沉淀
@@ -124,6 +126,8 @@ INIT_FILES = {
 
 - `specs/` - 业务规范：项目应该做什么
 - `changes/` - 需求迭代：这次为什么改、怎么改、如何验收
+- `common-ground.md` - 共同认知：哪些事实已确认、哪些只是工作假设、哪些必须先问
+- `expert-routing.md` - 专家路由：不增加用户指令，由 AI 根据场景选择内部专家参考
 - `knowledge/` - 项目知识：产品事实、业务规则、技术事实和运行方式
 - `standards/` - 开发规范：代码、测试、架构、安全、Git 和 AI 协作规则
 - `standards/company/` - 可选公司/团队规范包，通过索引按需读取
@@ -138,6 +142,8 @@ INIT_FILES = {
 确认门禁：高影响决策必须 Confirmed，不能 Silent Default
 探索门禁：不确定需求必须先 discovery，再 spec
 知识门禁：change/plan/apply 前读取 knowledge index；memory 只能辅助召回，不能覆盖 confirmed knowledge
+共同认知门禁：OPEN 不能驱动 final spec/plan/apply；WORKING 不能静默升级为 ESTABLISHED
+专家路由门禁：用户只选 SDC 阶段，AI 内部选择专家视角并在 context-pack/check/archive 中披露
 ```
 """,
     "constitution.md": """# SDC Project Constitution
@@ -170,11 +176,23 @@ Assumptions may be recorded only in discovery, Decision Ledger, or knowledge-can
 
 For Brownfield/Legacy technical knowledge, code/config/test/build/runtime evidence is required. README files, comments, old docs, and memory are clues only.
 
-## 4. Core Chain
+## 4. Common Ground And Expert Routing Discipline
+
+`.sdc/common-ground.md` records the shared project understanding. It separates:
+
+- ESTABLISHED: confirmed facts that can drive final artifacts.
+- WORKING: evidence-supported interpretations that require citation and cannot silently become truth.
+- OPEN: unresolved questions or assumptions that block final artifacts when they affect scope, acceptance, data, permissions, architecture, security, rollout, or compatibility.
+
+`.sdc/expert-routing.md` records how SDC selects internal expert lenses without adding public commands. Expert profiles can suggest questions, checks, and investigation tasks, but they cannot create unconfirmed product rules, architecture choices, data models, permissions, or rollout policies.
+
+Before non-trivial change, spec, plan, apply, check, or archive work, read `common-ground.md` and the relevant routing entries in `expert-routing.md`.
+
+## 5. Core Chain
 
 `discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive`
 
-## 5. Stop-The-Line Rules
+## 6. Stop-The-Line Rules
 
 Stop and produce a Stop-Line Report when:
 
@@ -184,16 +202,18 @@ Stop and produce a Stop-Line Report when:
 - validation cannot prove the acceptance criteria
 - required knowledge sources are missing, stale, or contradict the current change
 - final artifacts contain unclosed Knowledge Gaps or unconfirmed assumptions
+- final artifacts depend on OPEN or high-impact WORKING Common Ground
+- the implementation touches a risk area without the matching expert profile or standards review
 
-## 6. Traceability Rules
+## 7. Traceability Rules
 
 - specs must define `SCN-*`, `REQ-*`, and `AC-*` identifiers
 - tasks must reference `REQ-*` and `AC-*`
 - tests or validation notes must reference `AC-*`
 - implementation notes must record validation evidence
-- specs, designs, plans, and context packs must list the knowledge sources they used
+- specs, designs, plans, and context packs must list the knowledge sources and expert profiles they used
 
-## 7. Human Confirmation Rules
+## 8. Human Confirmation Rules
 
 AI may propose options, but humans own high-impact decisions.
 
@@ -205,13 +225,13 @@ Before a high-impact decision enters `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `
 - supported by an authoritative project document
 - explicitly delegated by the user with permission to choose
 
-## 8. No Silent Defaults
+## 9. No Silent Defaults
 
 Do not turn common practice into project truth.
 
 All AI-created defaults must be recorded in a Decision Ledger as `Proposed` or `Assumed` until confirmed. `Proposed`, `Assumed`, `TBD`, and `Conflict` items must not be treated as implementation-ready.
 
-## 9. Discovery Gate
+## 10. Discovery Gate
 
 When requirements are uncertain, start with discovery instead of a confirmed spec.
 
@@ -254,6 +274,8 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 
 ## 知识库入口
 
+- 共同认知入口：`common-ground.md`
+- 专家路由入口：`expert-routing.md`
 - 产品知识索引：`knowledge/product/`
 - 技术知识索引：`knowledge/technical/`
 - 当前工作状态：`knowledge/current.md`
@@ -298,6 +320,86 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 
 ## 13. 证据索引
 """,
+    "common-ground.md": """# Common Ground
+
+> 共同认知层。把 AI 准备依赖的事实、工作假设和开放问题显性化，防止隐性默认进入 spec、plan 或代码。
+
+## Snapshot
+
+- Project:
+- Updated:
+- Source scope:
+
+## ESTABLISHED
+
+| ID | Statement | Type | Source | Verified At | Verified Against | Scope |
+|----|-----------|------|--------|-------------|------------------|-------|
+
+## WORKING
+
+| ID | Statement | Type | Source | Confidence | Risk If Wrong | Next Check |
+|----|-----------|------|--------|------------|---------------|------------|
+
+## OPEN
+
+| ID | Question / Assumption | Type | Blocks | Options | Required Before |
+|----|-----------------------|------|--------|---------|-----------------|
+
+## Changes Since Last Update
+
+| Date | Change | From | To | Source |
+|------|--------|------|----|--------|
+
+## Rules
+
+- ESTABLISHED 可以进入 final spec/plan/apply。
+- WORKING 只能用于探索或低风险 investigation task，不能静默变成事实。
+- OPEN 如果影响范围、验收、数据、权限、架构、安全、发布或兼容性，必须先问用户。
+""",
+    "expert-routing.md": """# Expert Routing
+
+> 专家路由层。用户仍然只使用 init/change/plan/apply/check/archive；SDC 内部根据任务选择相关专家视角和参考资料。
+
+## Project Profile
+
+- Primary domain:
+- Project type: Greenfield / Brownfield / Legacy / Unknown
+- Main stack evidence:
+- Critical risk areas:
+
+## Default Profiles
+
+| Profile | Status | Trigger | Required Reads | Notes |
+|---------|--------|---------|----------------|-------|
+| product-discovery | Candidate | New or unclear requirement | common-ground.md, knowledge/product/*, discovery.md | Questions, MVP, non-goals, acceptance clarity |
+| domain-modeling | Candidate | Roles, permissions, states, business rules | product/domain.md, roles.md, rules.md | Glossary, invariants, state and permission clarity |
+| legacy-modernizer | Candidate | Brownfield/Legacy/Unknown project | project-cognition.md, impact.md, code evidence | Impact radius, regression risk, rollback |
+| architecture | Candidate | Module boundaries or cross-cutting design | technical/architecture.md, modules.md, standards | Boundaries, tradeoffs, maintainability |
+| api-contract | Candidate | Public API, integration, event, contract | technical/data-and-interfaces.md, specs, tests | Compatibility and validation |
+| data | Candidate | Schema, transaction, migration, consistency | technical/data-and-interfaces.md, DB scripts, standards | Data integrity, rollback |
+| backend | Candidate | Services, jobs, integrations | technical stack/modules, standards | Service boundaries, error handling |
+| frontend | Candidate | UI flow, state, forms, accessibility | product flows, frontend modules, testing standards | User journey and interaction states |
+| test-strategy | Candidate | Acceptance coverage or regression risk | technical/testing.md, tasks, tests, CI | Test-first tasks and AC coverage |
+| security | Candidate | Auth, permissions, secrets, destructive ops | security standards, roles, APIs, config | Threat-focused blockers |
+| operations | Candidate | Deployment, config, observability, runtime | technical/operations.md, scripts, CI/CD | Release readiness and rollback |
+| documentation | Candidate | Docs, README, handoff, changelog | specs, archive evidence, project docs | Durable concise documentation |
+
+## Stack-Specific Profiles
+
+| Profile | Applies When | Required Reads | Standards / References |
+|---------|--------------|----------------|------------------------|
+
+## Routing Decisions
+
+| Date | Change / Scope | Profiles Used | Why | Evidence |
+|------|----------------|---------------|-----|----------|
+
+## Rules
+
+- Expert profiles can suggest questions, checks, and investigation tasks.
+- Expert profiles cannot create unconfirmed product facts, architecture choices, data models, permissions, or rollout policy.
+- If a profile recommendation affects scope, data, security, public contracts, or compatibility, put it in the Decision Ledger as Proposed until confirmed.
+""",
     "current/spec.md": """# Current Spec
 
 > 当前需求规范。由 `sdc-spec` 生成或维护。
@@ -305,7 +407,7 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.2.0
+- Schema: SDC 1.2.1
 - Source:
 
 ## 1. Knowledge Sources Used
@@ -445,6 +547,16 @@ Then ...
 
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |--------|-------------------|----------------|--------|-----------|--------|
+
+## Common Ground Used
+
+| ID | Tier | Statement | Source | Why It Matters |
+|----|------|-----------|--------|----------------|
+
+## Expert Profiles Used
+
+| Profile | Why Used | Sources Read | Decisions / Checks Affected |
+|---------|----------|--------------|-----------------------------|
 
 ## Confirmed Product Knowledge
 
@@ -1055,7 +1167,7 @@ YYYY-MM-DD-short-title.md
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.2.0
+- Schema: SDC 1.2.1
 - Source:
 
 ## 1. Knowledge Sources Used
@@ -1225,6 +1337,16 @@ Then ...
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |--------|-------------------|----------------|--------|-----------|--------|
 
+## Common Ground Used
+
+| ID | Tier | Statement | Source | Why It Matters |
+|----|------|-----------|--------|----------------|
+
+## Expert Profiles Used
+
+| Profile | Why Used | Sources Read | Decisions / Checks Affected |
+|---------|----------|--------------|-----------------------------|
+
 ## Confirmed Product Knowledge
 
 ## Confirmed Technical Knowledge
@@ -1251,6 +1373,58 @@ Then ...
 
 | Candidate | Type | Scope | Source | Status | Target | Evidence Needed | Promotion Gate |
 |-----------|------|-------|--------|--------|--------|-----------------|----------------|
+""",
+    "templates/common-ground.md": """# Common Ground
+
+## Snapshot
+
+- Project:
+- Updated:
+- Source scope:
+
+## ESTABLISHED
+
+| ID | Statement | Type | Source | Verified At | Verified Against | Scope |
+|----|-----------|------|--------|-------------|------------------|-------|
+
+## WORKING
+
+| ID | Statement | Type | Source | Confidence | Risk If Wrong | Next Check |
+|----|-----------|------|--------|------------|---------------|------------|
+
+## OPEN
+
+| ID | Question / Assumption | Type | Blocks | Options | Required Before |
+|----|-----------------------|------|--------|---------|-----------------|
+
+## Changes Since Last Update
+
+| Date | Change | From | To | Source |
+|------|--------|------|----|--------|
+""",
+    "templates/expert-routing.md": """# Expert Routing
+
+## Project Profile
+
+- Primary domain:
+- Project type: Greenfield / Brownfield / Legacy / Unknown
+- Main stack evidence:
+- Critical risk areas:
+
+## Default Profiles
+
+| Profile | Status | Trigger | Required Reads | Notes |
+|---------|--------|---------|----------------|-------|
+
+## Stack-Specific Profiles
+
+| Profile | Applies When | Required Reads | Standards / References |
+|---------|--------------|----------------|------------------------|
+
+## Routing Decisions
+
+| Date | Change / Scope | Profiles Used | Why | Evidence |
+|------|----------------|---------------|-----|----------|
 """,
     "templates/knowledge-index.md": """# Knowledge Index
 
@@ -1512,6 +1686,8 @@ def is_stale_managed_template(relative_path, text):
     template_paths = {
         "README.md",
         "constitution.md",
+        "common-ground.md",
+        "expert-routing.md",
         "knowledge/index.md",
         "current/discovery.md",
         "current/spec.md",
@@ -1523,6 +1699,8 @@ def is_stale_managed_template(relative_path, text):
         "templates/design.md",
         "templates/spec.md",
         "templates/context-pack.md",
+        "templates/common-ground.md",
+        "templates/expert-routing.md",
         "templates/knowledge-candidates.md",
         "templates/knowledge-index.md",
         "standards/README.md",
@@ -1537,6 +1715,8 @@ def is_stale_managed_template(relative_path, text):
     if relative_path == "README.md":
         return "# SDC Workspace" in normalized and (
             "standards/company/" not in normalized
+            or "common-ground.md" not in normalized
+            or "expert-routing.md" not in normalized
             or "SDC v1.1" in normalized
         )
 
@@ -1544,6 +1724,20 @@ def is_stale_managed_template(relative_path, text):
         return "# SDC Project Constitution" in normalized and (
             "Knowledge and Memory Discipline" not in normalized
             or "No Evidence, No Fact" not in normalized
+            or "Common Ground And Expert Routing Discipline" not in normalized
+        )
+
+    if relative_path in {"common-ground.md", "templates/common-ground.md"}:
+        return "# Common Ground" in normalized and (
+            "## ESTABLISHED" not in normalized
+            or "## WORKING" not in normalized
+            or "## OPEN" not in normalized
+        )
+
+    if relative_path in {"expert-routing.md", "templates/expert-routing.md"}:
+        return "# Expert Routing" in normalized and (
+            "## Default Profiles" not in normalized
+            or "## Routing Decisions" not in normalized
         )
 
     if relative_path == "standards/README.md":
@@ -1571,6 +1765,7 @@ def is_stale_managed_template(relative_path, text):
         return "# Context Pack" in normalized and (
             "## Knowledge Gaps" not in normalized
             or "## Forbidden Assumptions" not in normalized
+            or "## Expert Profiles Used" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
         )
 
@@ -1910,6 +2105,8 @@ def cmd_init(standards_source=None, standards_name="company"):
         print()
 
     print("下一步:")
+    print(f"  {BLUE}.sdc/common-ground.md{ENDC} - 先确认共同认知：ESTABLISHED / WORKING / OPEN")
+    print(f"  {BLUE}.sdc/expert-routing.md{ENDC} - 查看内部专家路由：产品、架构、数据、测试、安全等")
     print(f"  {BLUE}.sdc/knowledge/index.md{ENDC} - 先补最小产品/技术知识索引")
     print(f"  {BLUE}sdc discovery{ENDC} - 需求不确定时先探索和收敛 MVP")
     print(f"  {BLUE}sdc spec{ENDC}    - 编辑当前需求规范")
@@ -2017,6 +2214,8 @@ def validate_file(errors, warnings, filepath, required_headings, require_content
 def validate_knowledge_workspace(errors, warnings):
     """Validate that the project knowledge/memory skeleton exists."""
     required = [
+        (SDC_DIR / "common-ground.md", ["# Common Ground", "## ESTABLISHED", "## WORKING", "## OPEN"]),
+        (SDC_DIR / "expert-routing.md", ["# Expert Routing", "## Default Profiles", "## Routing Decisions"]),
         (SDC_DIR / "knowledge" / "index.md", ["# Knowledge Index", "## Product Knowledge", "## Technical Knowledge"]),
         (SDC_DIR / "knowledge" / "product" / "README.md", ["# Product Knowledge"]),
         (SDC_DIR / "knowledge" / "technical" / "README.md", ["# Technical Knowledge"]),
@@ -2032,7 +2231,7 @@ def validate_context_pack(errors, warnings, filepath):
         errors,
         warnings,
         filepath,
-        ["## Goal", "## Knowledge Sources Used", "## Knowledge Gaps", "## Execution Boundaries", "## Forbidden Assumptions", "## Validation Commands", "## Knowledge Candidate Routing"],
+        ["## Goal", "## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Expert Profiles Used", "## Execution Boundaries", "## Forbidden Assumptions", "## Validation Commands", "## Knowledge Candidate Routing"],
     )
     validate_no_unconfirmed_execution_inputs(errors, filepath)
 
@@ -2154,13 +2353,14 @@ def cmd_validate(target="current"):
     warnings = []
 
     validate_file(errors, warnings, SDC_DIR / "constitution.md", [
-        "## 1. Governance Priority",
-        "## 2. Fact Priority",
-        "## 3. Knowledge and Memory Discipline",
-        "## 6. Traceability Rules",
-        "## 7. Human Confirmation Rules",
-        "## 8. No Silent Defaults",
-        "## 9. Discovery Gate",
+        "Governance Priority",
+        "Fact Priority",
+        "Knowledge and Memory Discipline",
+        "Common Ground And Expert Routing Discipline",
+        "Traceability Rules",
+        "Human Confirmation Rules",
+        "No Silent Defaults",
+        "Discovery Gate",
     ])
     validate_knowledge_workspace(errors, warnings)
 
@@ -2268,6 +2468,22 @@ def knowledge_compact_rows(source, change_id, spec_status):
             "Recommended",
             ".sdc/knowledge/current.md or Stop-Line Report",
             "Change artifacts mention knowledge gaps, evidence rules, or forbidden assumptions; confirm whether durable knowledge gaps remain",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"Common Ground", r"ESTABLISHED", r"WORKING", r"\bOPEN\b", r"共同认知", r"工作假设", r"开放问题"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/common-ground.md",
+            "Change artifacts may update shared assumptions or open questions; confirm tier changes before writing durable common ground",
+            "Needs confirmation",
+        ))
+
+    if has_any_pattern(text, [r"Expert Profiles Used", r"expert profile", r"Expert Routing", r"专家路由", r"专家视角"]):
+        optional_rows.append((
+            "Recommended",
+            ".sdc/expert-routing.md",
+            "Change artifacts used or refined expert profile routing; confirm whether the routing rule should become durable",
             "Needs confirmation",
         ))
 

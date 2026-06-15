@@ -1,6 +1,6 @@
 # SDC Discipline Core
 
-SDC v1.1 keeps the public command surface small while strengthening the internal engineering discipline.
+SDC v1.2.1 keeps the public command surface small while strengthening the internal engineering discipline.
 
 The goal is not to copy every OpenSpec, Superpowers, or internal workflow command. The goal is to keep their useful core:
 
@@ -8,6 +8,7 @@ The goal is not to copy every OpenSpec, Superpowers, or internal workflow comman
 - Superpowers: lightweight skill-pack distribution.
 - Karpathy-style skills and internal workflow practice: think before coding, thin slices, TDD, stop-line reports, evidence over vibes.
 - Memory/knowledge-base systems: short indexes, task-focused loading, candidate knowledge, and reviewable archive-time promotion.
+- Expert skill libraries: specialist lenses selected internally, without expanding the public command list.
 
 ## Public Surface
 
@@ -72,6 +73,27 @@ confirmed .sdc/knowledge/ + .sdc/specs/ + .sdc/decisions/ > .sdc/memory/ candida
 ```
 
 When these sources conflict, the agent should stop and produce a Stop-Line Report instead of guessing.
+
+## Common Ground And Expert Routing
+
+SDC v1.2.1 adds two project-level coordination files:
+
+```text
+.sdc/common-ground.md
+.sdc/expert-routing.md
+```
+
+`common-ground.md` makes the agent's hidden assumptions visible:
+
+- `ESTABLISHED` items can drive final artifacts when still supported by evidence.
+- `WORKING` items can guide exploration, but cannot silently become project truth.
+- `OPEN` items must be clarified before they affect scope, acceptance, data, permissions, architecture, security, rollout, or compatibility.
+
+`expert-routing.md` borrows the useful part of expert skill libraries without creating command sprawl. Users still choose `init/change/plan/apply/check/archive`; the agent internally selects the smallest useful expert profiles, such as product discovery, domain modeling, legacy modernization, architecture, API contract, data, frontend, backend, test strategy, security, operations, or documentation.
+
+Expert profiles may create questions, checks, and investigation tasks. They may not create unconfirmed product facts, architecture choices, data models, permissions, or rollout policies.
+
+`context-pack.md`, check reports, and archive summaries should disclose `Common Ground Used` and `Expert Profiles Used` when those materially affect execution.
 
 ## Project Knowledge And Memory
 
@@ -242,6 +264,8 @@ Required archive writes:
 
 Conditional memory updates:
 
+- `.sdc/common-ground.md` for confirmed, rejected, promoted, demoted, or newly opened shared assumptions.
+- `.sdc/expert-routing.md` for reusable expert profile triggers, stack-specific profiles, or missing risk coverage.
 - `.sdc/knowledge/product/` for durable product goals, roles, flows, business rules, non-goals, or product decisions.
 - `.sdc/knowledge/technical/` for durable stack, architecture, module, data/interface, operations, or testing knowledge.
 - `.sdc/memory/` for useful procedures, lessons, gotchas, and candidate knowledge that should remain reviewable.
@@ -290,6 +314,8 @@ Common triggers:
 - spec, design, tasks, or code conflict.
 - acceptance criteria are missing or unverifiable.
 - high-impact decisions are Proposed, Assumed, TBD, or Conflict.
+- OPEN or high-impact WORKING Common Ground is used as if it were confirmed.
+- a high-risk change lacks the relevant expert profile or standards review.
 - a plan chooses a concrete technology stack from a vague preference.
 - implementation requires changing scope or public behavior.
 - Brownfield/Legacy change lacks `impact.md` after requirements are confirmed.
@@ -331,5 +357,5 @@ Rules:
 SDC should feel simple to operate and strict when it matters:
 
 - simple outside: a few stable commands.
-- disciplined inside: decision chains, traceability, and evidence gates.
+- disciplined inside: common ground, expert routing, decision chains, traceability, and evidence gates.
 - no ceremony for ceremony's sake.

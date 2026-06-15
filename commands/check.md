@@ -9,10 +9,12 @@ Use "$ARGUMENTS" as the target change or scope. Run the combined validation, rev
 Run the SDC check workflow:
 
 - Validate structure, traceability, decision status, task format, evidence, and Brownfield impact gates.
+- Validate Common Ground usage and block final execution if OPEN or high-impact WORKING items were treated as facts.
+- Validate Expert Profiles Used against actual diff and risk areas.
 - Validate knowledge source usage, `context-pack.md`, and candidate-vs-confirmed boundaries.
 - Validate "No Evidence, No Fact / No Confirmation, No Execution / No Impact, No Brownfield Change".
 - Review actual diffs and surrounding code for correctness, architecture, security, data integrity, compatibility, and maintainability.
 - Run or assess relevant tests against acceptance criteria, boundaries, regressions, and failure modes.
 - Evaluate final quality across user-facing flow, docs, security, performance, maintainability, and release readiness.
-- Report whether product/technical knowledge, memory candidates, standards, or AGENTS.md need archive-time updates.
+- Report whether Common Ground, expert routing, product/technical knowledge, memory candidates, standards, or AGENTS.md need archive-time updates.
 - In bug mode, analyze without modifying code unless explicitly requested.

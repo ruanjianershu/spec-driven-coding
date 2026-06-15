@@ -25,6 +25,7 @@ Load only what is needed:
 
 - Role contract: `../sdc-shared/role-contracts.md`, section `sdc-validate`.
 - Shared validation and decision rules: `../sdc-shared/workflow-standards.md`.
+- Common Ground and expert routing: `../sdc-shared/common-ground.md`, `../sdc-shared/expert-routing.md`.
 - Artifact schemas: `../sdc-shared/artifact-schemas.md`.
 - Validate gate: `../sdc-shared/delivery-gates.md`.
 - Brownfield impact gate: `../sdc-shared/legacy-impact-gate.md`.
@@ -34,6 +35,8 @@ Load only what is needed:
 ### 全局
 
 - `.sdc/constitution.md`
+- `.sdc/common-ground.md`
+- `.sdc/expert-routing.md`
 - `.sdc/knowledge/index.md`
 - `.sdc/knowledge/product/`
 - `.sdc/knowledge/technical/`
@@ -63,6 +66,8 @@ Load only what is needed:
 - 文件是否存在且不是空模板。
 - spec 是否包含 Glossary、INV、SCN、REQ、AC、验证策略、追溯矩阵。
 - spec/design/context-pack 是否记录 Knowledge Sources Used。
+- spec/design/context-pack 是否记录 Common Ground Used。
+- context-pack/check 是否记录 Expert Profiles Used 且与实际风险匹配。
 - memory candidates 是否被错误当作 confirmed facts。
 - final spec/design/context-pack/tasks/impact 是否含有 `Assumed`、`Proposed`、`TBD`、`Conflict`、`Stale` 或未闭合 Knowledge Gap。
 - 知识项是否记录 Status、Source、Verified At、Verified Against、Scope。
@@ -114,3 +119,5 @@ current / change-id
 - 严重缺失不能放行。
 - 追溯链断裂不能放行到 apply/archive。
 - 未确认高影响决策或 Silent Default 不能放行。
+- OPEN 或高影响 WORKING Common Ground 被当成事实时不能放行。
+- 高风险改动缺少对应 expert profile / standards 覆盖时不能放行。

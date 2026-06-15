@@ -9,6 +9,8 @@ Validate artifacts for the target stage, not only file existence.
 Check:
 
 - `.sdc/constitution.md` exists and does not conflict with `AGENTS.md`.
+- `.sdc/common-ground.md` exists and relevant `OPEN` / high-impact `WORKING` items are not used as final execution inputs.
+- `.sdc/expert-routing.md` exists and relevant expert profiles are selected for plan/check when the change touches product, domain, legacy, architecture, API, data, frontend, backend, tests, security, operations, or documentation risk.
 - `.sdc/knowledge/index.md` exists and relevant product/technical knowledge sources are listed in final spec/design/context-pack.
 - `.sdc/memory/` candidates are not treated as confirmed facts.
 - Final spec/design/context-pack/tasks/impact do not contain `Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, or open Knowledge Gaps.
@@ -22,6 +24,7 @@ Check:
 - `Proposed`, `Assumed`, `TBD`, and `Conflict` items do not enter final REQ/AC/design/tasks/apply.
 - Brownfield changes have a current `impact.md` with no blocking open questions.
 - Discovery Closed changes have a `context-pack.md` for execution handoff and `knowledge-candidates.md` for apply/check discoveries.
+- `context-pack.md` lists Common Ground used and Expert Profiles Used when they materially affect execution.
 - Artifacts are not empty templates.
 
 Conclusion must be either ready for next stage or blocked with concrete repair guidance.
@@ -40,6 +43,7 @@ Cover:
 - Performance risks.
 - Maintainability and clarity.
 - Brownfield impact mismatch against `impact.md`.
+- Expert profile mismatch: actual diff touches a risk area that was not routed through the corresponding profile or standards.
 
 Every finding needs a file/line reference, consequence, and actionable fix. If no issues are found, state remaining test or context gaps.
 
@@ -109,6 +113,7 @@ Include:
 - Data and public contract clues.
 - Quality and maintainability risks.
 - Suggested `.sdc/specs`, `.sdc/standards`, and `AGENTS.md` updates.
+- Suggested `.sdc/common-ground.md` and `.sdc/expert-routing.md` updates when repo evidence or repeated checks justify them.
 - Suggested `.sdc/knowledge/product`, `.sdc/knowledge/technical`, and `.sdc/memory` updates when repo or change evidence justifies them.
 - Evidence index.
 
@@ -141,6 +146,8 @@ Knowledge Compact Gate must evaluate:
 - `.sdc/knowledge/product/` for durable product goals, roles, flows, business rules, non-goals, or product decisions.
 - `.sdc/knowledge/technical/` for durable stack, architecture, module, data/interface, operations, or testing knowledge.
 - `.sdc/memory/` for useful procedures, lessons, gotchas, and candidate knowledge that should remain reviewable.
+- `.sdc/common-ground.md` for confirmed, rejected, promoted, demoted, or newly opened shared assumptions.
+- `.sdc/expert-routing.md` for reusable expert profile triggers, stack-specific profiles, or missing risk coverage.
 - `.sdc/standards/` for reusable engineering rules.
 - `AGENTS.md` through `sdc-harness` for AI execution guardrails.
 - `.sdc/reports/bug/` for durable root-cause records.

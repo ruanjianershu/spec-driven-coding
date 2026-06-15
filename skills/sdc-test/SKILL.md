@@ -25,10 +25,11 @@ Load only what is needed:
 - Role contract: `../sdc-shared/role-contracts.md`, section `sdc-test`.
 - Test gate: `../sdc-shared/delivery-gates.md`.
 - Traceability and evidence rules: `../sdc-shared/workflow-standards.md`.
+- Expert routing: `../sdc-shared/expert-routing.md`, profile `test-strategy`.
 
 ## 执行步骤
 
-1. 读取当前 spec/tasks/context-pack/notes 和 `.sdc/knowledge/technical/testing.md`，识别 REQ/AC。
+1. 读取当前 spec/tasks/context-pack/notes、Common Ground、Expert Profiles Used 和 `.sdc/knowledge/technical/testing.md`，识别 REQ/AC。
 2. 确认已有测试覆盖哪些 AC。
 3. 根据项目实际工具运行相关测试。
 4. 如果不能运行测试，说明阻塞原因和替代验证路径。
@@ -77,5 +78,6 @@ Load only what is needed:
 - 测试失败不能进入下一阶段。
 - 未运行测试必须说明原因和风险。
 - AC 未覆盖必须明确标出。
+- context-pack 中的 `test-strategy` 或其他专家风险必须有测试/替代验证响应。
 - 覆盖率不能替代行为验证。
 - 必须覆盖关键异常和边界情况，或说明无法覆盖的风险。

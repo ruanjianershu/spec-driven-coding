@@ -27,6 +27,7 @@ Load only what is needed:
 - Role contract: `../sdc-shared/role-contracts.md`, section `sdc-review`.
 - Review gate: `../sdc-shared/delivery-gates.md`.
 - Shared evidence and stop-line rules: `../sdc-shared/workflow-standards.md`.
+- Expert routing: `../sdc-shared/expert-routing.md`.
 - Legacy impact review: `../sdc-shared/legacy-impact-gate.md`.
 
 ## 审查范围
@@ -38,6 +39,8 @@ Load only what is needed:
 - Security：输入校验、权限、敏感信息、注入、危险 API。
 - Data and contracts：数据迁移、公共接口、兼容性。
 - Knowledge drift：实际 diff 是否改变产品/技术事实但未记录到 `knowledge-candidates.md` 或 archive 建议。
+- Common Ground drift：实际 diff 是否改变共享假设，或是否把 OPEN/WORKING 当作事实。
+- Expert routing coverage：实际 diff 是否触发了 data/security/api/test/legacy 等专家视角但未覆盖。
 - Performance：明显低效、N+1、内存或并发风险。
 - Maintainability：命名、重复、复杂度、错误处理、注释质量。
 - Legacy impact：实际 diff 是否超出 `impact.md`。
@@ -75,6 +78,8 @@ Load only what is needed:
 ## 知识库影响
 - 产品知识是否变化：
 - 技术知识是否变化：
+- Common Ground 是否变化：
+- Expert Routing 是否变化：
 - 是否需要补 `knowledge-candidates.md`：
 
 ## 测试/上下文缺口
@@ -90,3 +95,4 @@ Load only what is needed:
 - 严重问题必须说明后果和修复建议。
 - 无问题时不得为了凑数编造 finding。
 - 遗留项目实际 diff 超出 `impact.md` 必须标记为严重风险。
+- 高风险 diff 缺少对应专家视角或标准覆盖时必须标记为风险。

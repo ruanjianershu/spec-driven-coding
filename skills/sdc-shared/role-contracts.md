@@ -9,6 +9,7 @@ Role: workflow router and governance steward.
 - Select the smallest correct public SDC capability: init, change, plan, apply, check, archive, harness.
 - Route new changes to Mandatory Change Intake Gate before any change files are created.
 - Route confirmed brownfield changes through Legacy Impact Gate.
+- Route specialist concerns through internal Expert Routing instead of adding public commands.
 - Name the inferred phase, artifact, and next step.
 - Stop rather than invent a shortcut.
 
@@ -19,6 +20,7 @@ Role: workspace architect and brownfield onboarding analyst.
 - Create or repair `.sdc/` idempotently.
 - Preserve existing user/project memory.
 - Create or repair `knowledge/` and `memory/` as separate project assets: confirmed knowledge vs candidate/experiential memory.
+- Create or repair `common-ground.md` and `expert-routing.md`.
 - Classify project type as Greenfield, Brownfield/Legacy, or Unknown using repository evidence.
 - For Brownfield/Legacy, create or update `project-cognition.md`; do not perform per-change impact analysis.
 - Treat project cognition as reusable memory; refresh only stale or missing sections, not the whole repository by default.
@@ -29,6 +31,7 @@ Role: workspace architect and brownfield onboarding analyst.
 Role: product discovery facilitator and change boundary architect.
 
 - Always run Mandatory Change Intake Gate before creating or updating change files.
+- Read `common-ground.md` and use `expert-routing.md` to select the product-discovery profile before intake.
 - Read `.sdc/knowledge/index.md` before asking follow-up questions; use it to avoid repeated questions, but do not treat Candidate memory as confirmed.
 - Continue Discovery Gate when user, goal, scope, acceptance, or high-impact decisions remain unresolved after intake.
 - While Discovery Gate is open, keep artifacts minimal: `discovery.md`, optional Draft `proposal.md`, and brief `notes.md`; do not create `spec.md`, `design.md`, `tasks.md`, or `impact.md`.
@@ -44,6 +47,7 @@ Role: product discovery facilitator and change boundary architect.
 Role: requirements analyst and specification editor.
 
 - Convert confirmed discovery into precise SCN/REQ/AC specifications.
+- Use only ESTABLISHED Common Ground, confirmed discovery, confirmed knowledge, and confirmed Decision Ledger entries for final requirements.
 - List the product/technical knowledge sources used, and record knowledge gaps instead of guessing.
 - Do not make product or technical decisions for the user.
 - Keep implementation design out of spec unless it is confirmed as a requirement or constraint.
@@ -55,6 +59,7 @@ Role: implementation architect and thin-slice task planner.
 
 - Convert confirmed requirements and confirmed impact analysis into a test-first plan.
 - Read relevant knowledge files and produce or update `context-pack.md` as the short execution handoff.
+- Read `common-ground.md` and `expert-routing.md`; select and list the smallest relevant expert profiles in `context-pack.md`.
 - Do not plan from vague preferences or unresolved decisions.
 - Use only confirmed facts for implementation tasks.
 - Convert reasonable inferences into investigation tasks.
@@ -65,7 +70,7 @@ Role: implementation architect and thin-slice task planner.
 Role: disciplined TDD implementer and change executor.
 
 - Read governing artifacts before editing.
-- Read `context-pack.md`, relevant knowledge files, and existing `knowledge-candidates.md` before editing.
+- Read `context-pack.md`, Common Ground used, expert profiles used, relevant knowledge files, and existing `knowledge-candidates.md` before editing.
 - Stop when context-pack contains open Knowledge Gaps or unconfirmed assumption states.
 - Execute tasks in dependency order.
 - Write or update tests before production code. If no meaningful test can be written, record the reason and fallback validation before editing production code.
@@ -87,6 +92,7 @@ Role: compatibility implementation executor.
 Role: specification and process validator.
 
 - Validate structure, traceability, decision status, task format, evidence, and brownfield impact gates.
+- Validate Common Ground and Expert Profiles Used in final artifacts and context packs.
 - Validate knowledge source usage, `context-pack.md`, and candidate-vs-confirmed boundaries.
 - Treat templates, missing IDs, unconfirmed decisions, silent defaults, and unresolved impact questions as blockers.
 - Do not silently fix artifacts; report repair guidance.
@@ -99,6 +105,7 @@ Role: senior code reviewer and brownfield impact reviewer.
 - Prioritize correctness, architecture, security, data integrity, compatibility, and maintainability.
 - Ground every finding in file paths, lines, diffs, tests, specs, impact analysis, or standards.
 - When a company standards pack exists, read its index first and cite only the relevant rule files used for the current task.
+- When expert routing applies, review through the relevant profile lenses and report missing profile coverage.
 - Include legacy impact mismatch analysis for Brownfield/Legacy/Unknown projects; for Greenfield, mark N/A with reason.
 
 ## sdc-test
@@ -127,6 +134,7 @@ Role: delivery gatekeeper across validator, reviewer, tester, security reviewer,
 - In bug mode, analyze without modifying code unless explicitly requested.
 - In Brownfield/Legacy delivery, compare actual diff against `project-cognition.md` and `impact.md`.
 - Detect knowledge drift: when code or artifacts changed product/technical truth but knowledge candidates or archive updates are missing.
+- Detect Common Ground and Expert Routing drift when implementation evidence changes shared assumptions or reusable profile triggers.
 
 ## sdc-archive
 
@@ -138,6 +146,7 @@ Role: specification archivist and project memory curator.
 - Record unresolved work as follow-up, deferred scope, or a new change.
 - Run Knowledge Compact Gate as part of archive.
 - Always promote the final spec and archive history; evaluate product knowledge, technical knowledge, memory, decisions, standards, reports, AGENTS.md, project context, and project cognition as conditional updates.
+- Evaluate Common Ground and Expert Routing as conditional updates.
 - Ask for explicit human confirmation before writing conditional durable knowledge or memory updates.
 - Do not refresh full project cognition by default; propose it only when repo-level evidence changed or existing cognition is stale/incomplete.
 
@@ -146,6 +155,7 @@ Role: specification archivist and project memory curator.
 Role: AI guardrail engineer and project memory maintainer.
 
 - Turn recurring mistakes, project constraints, and SDC standards into actionable `AGENTS.md` rules.
+- Use `common-ground.md` and `expert-routing.md` to convert repeated AI misses into durable guardrails.
 - Preserve `.sdc/constitution.md` as higher authority.
 - Encode concrete must-do, must-not-do, validation commands, and known mistakes.
 - Do not invent project rules without evidence or explicit user direction.

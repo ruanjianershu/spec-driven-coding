@@ -9,6 +9,7 @@ System and developer instructions always remain above project files. Inside a pr
 - Governance priority: `.sdc/constitution.md` > `AGENTS.md` > current conversation instructions > skill guidance.
 - Fact priority: `discovery.md` > `spec.md` > `impact.md` > `design.md` / `plan.md` > `tasks.md` > code.
 - Execution chain: discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive.
+- Common Ground priority: `ESTABLISHED` items can guide final artifacts; `WORKING` items require citation and cannot silently become project truth; `OPEN` items block final artifacts when high-impact.
 - Knowledge priority: confirmed `.sdc/knowledge/` and `.sdc/specs/` facts guide discovery/spec/plan; `.sdc/memory/` only helps recall and cannot override confirmed knowledge, current specs, user confirmation, or code evidence.
 
 When these sources conflict, stop and report the conflict instead of guessing.
@@ -16,6 +17,14 @@ When these sources conflict, stop and report the conflict instead of guessing.
 ## Knowledge And Memory Discipline
 
 Before creating final SDC artifacts or editing code, read `.sdc/knowledge/index.md` and only the relevant product/technical knowledge files.
+
+Before non-trivial change, spec, plan, apply, check, or archive work, read `.sdc/common-ground.md`. Treat it as the visible assumption layer:
+
+- `ESTABLISHED`: may drive final artifacts when still supported by source evidence.
+- `WORKING`: may guide exploration, but cannot drive high-impact final decisions without confirmation.
+- `OPEN`: must become an intake/discovery question or Stop-Line blocker when relevant.
+
+Before planning, implementation, or delivery check, read `.sdc/expert-routing.md` if it exists. Select only the relevant expert profiles and disclose them in `context-pack.md`, check reports, or archive summaries when they materially affect the work.
 
 Use this split:
 
@@ -38,6 +47,10 @@ No Impact, No Brownfield Change.
 Every durable knowledge item needs Status, Source, Verified At, Verified Against, and Scope. Missing evidence creates a Knowledge Gap; it does not authorize an assumption.
 
 `Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, and open Knowledge Gaps may appear in discovery or candidates, but they must not drive final spec, design, context-pack, tasks, impact, apply, or archive.
+
+`OPEN` Common Ground and high-impact `WORKING` Common Ground may appear in discovery, but they must not drive final spec, design, context-pack, tasks, impact, apply, or archive.
+
+Expert profile recommendations are not facts. They can create questions, checks, and investigation tasks. If a profile recommendation changes scope, architecture, data, permissions, public contracts, rollout, or compatibility, record it in the Decision Ledger as `Proposed` until confirmed.
 
 For Brownfield/Legacy technical knowledge, code/config/test/build/runtime evidence is required. README files, comments, old docs, and memory are clues only.
 
@@ -131,6 +144,8 @@ Stop and produce a report when:
 
 - Required SDC artifacts are missing, contradictory, or still templates.
 - Relevant knowledge is missing, stale, unconfirmed, or conflicts with the current change.
+- Common Ground is missing, stale, open, or conflicts with the current change.
+- A relevant expert profile or standards pack was not considered for high-risk plan/apply/check work.
 - Requirements, acceptance criteria, high-impact decisions, or impact boundaries are unresolved.
 - Implementation requires changing behavior, public contracts, data, permissions, security, architecture, or scope beyond the approved artifacts.
 - Validation cannot prove the relevant acceptance criteria.
@@ -175,6 +190,21 @@ SDC conclusions must be evidence-backed:
 - Delivery evidence: git diff, test/build output, review findings, security findings, manual verification notes.
 
 README files, comments, old docs, and historical notes are clues. They are not confirmed facts unless current code or the user confirms them.
+
+## Expert Routing Discipline
+
+SDC keeps the public command surface small. Expert behavior must be routed internally, not exposed as a large command list.
+
+Use `.sdc/expert-routing.md` and `../sdc-shared/expert-routing.md` to select profiles such as product-discovery, domain-modeling, legacy-modernizer, architecture, api-contract, data, backend, frontend, test-strategy, security, operations, and documentation.
+
+Rules:
+
+- Users choose the SDC stage; the agent chooses expert profiles.
+- Use the smallest set of profiles that covers the risk.
+- List selected profiles in `context-pack.md` for plan/apply handoff.
+- In check/review, report missing profile coverage when the actual diff touched an unreviewed risk area.
+- Imported company/team standards outrank generic expert guidance when relevant.
+- Do not add new public slash commands for individual experts.
 
 ## Company Standards Pack Discipline
 

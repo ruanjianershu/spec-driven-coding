@@ -13,6 +13,8 @@ init -> change -> plan -> apply -> check -> archive
 - 标准 `.sdc/` 工作区：记录需求、规范、任务、决策、知识库和交付证据。
 - Mandatory Change Intake Gate：创建 change 前必须先问清项目背景、范围、技术偏好和验收约束。
 - Discovery Gate：需求没确认时只保留轻量草稿，不生成完整 spec/design/tasks。
+- Common Ground：把 AI 的共同认知拆成 `ESTABLISHED / WORKING / OPEN`，OPEN 不能驱动最终方案。
+- Expert Routing：吸收专家库思路，但不增加公开命令，由 AI 在 plan/check/archive 内部选择产品、架构、数据、测试、安全等专家视角。
 - 知识库与 memory：区分产品知识、技术知识、候选知识和过程记忆。
 - Brownfield impact gate：存量项目在需求确认后做当前变更影响面分析。
 - 追溯链：`SCN-* -> REQ-* -> AC-* -> T### -> validation evidence`。
@@ -111,23 +113,23 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 
 ```text
 1. init
-   创建 .sdc/ 工作区、constitution、standards、knowledge、memory、templates。
+   创建 .sdc/ 工作区、constitution、common-ground、expert-routing、standards、knowledge、memory、templates。
    如已有团队规范，可同时导入：`sdc init --standards /path/to/spec-rules`。
 
 2. change
-   先完成 intake 问题并等待确认；未确认时只保留 discovery/proposal/notes 草稿。
+   先读 common-ground 和 knowledge，再完成 intake 问题并等待确认；未确认时只保留 discovery/proposal/notes 草稿。
 
 3. plan
-   基于 confirmed spec、必要的 impact.md 和相关知识库生成 design/tasks/context-pack。
+   基于 confirmed spec、必要的 impact.md、相关知识库和 expert-routing 生成 design/tasks/context-pack。
 
 4. apply
    按 T### 薄切片执行，记录 notes、验证证据和 knowledge-candidates。
 
 5. check
-   综合 validate/review/test/quality，判断是否可以交付或归档。
+   综合 validate/review/test/quality，并检查 Common Ground、专家视角覆盖和知识漂移。
 
 6. archive
-   归档到 .sdc/specs 和 .sdc/changes/archive，并建议需要沉淀的长期知识。
+   归档到 .sdc/specs 和 .sdc/changes/archive，并建议需要沉淀的长期知识、共同认知和专家路由。
 ```
 
 ## `.sdc/` 工作区
@@ -139,6 +141,8 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 ├── constitution.md
 ├── project.md
 ├── project-cognition.md
+├── common-ground.md
+├── expert-routing.md
 ├── knowledge/
 │   ├── index.md
 │   ├── current.md
@@ -163,6 +167,8 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 
 ### Knowledge vs Memory
 
+- `common-ground.md` 是共同认知层：`ESTABLISHED` 可作为依据，`WORKING` 只能辅助探索，`OPEN` 必须先问。
+- `expert-routing.md` 是内部专家路由：用户不需要选择专家命令，SDC 会按任务选择产品、领域、架构、API、数据、测试、安全、运维等视角。
 - `knowledge/` 是 confirmed 项目事实，分为产品知识和技术知识。
 - `memory/` 是候选知识、经验和过程记忆，不能直接覆盖 confirmed knowledge。
 - 常用入口是 `.sdc/knowledge/product/`、`.sdc/knowledge/technical/` 和每次 plan 生成的 `context-pack.md`。
@@ -182,11 +188,13 @@ AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关
 ## 关键规则
 
 - Open Questions 未闭合时，只能生成 Draft，不允许生成 Confirmed spec/design/tasks。
+- OPEN Common Ground 不能进入 final spec/design/tasks/context-pack/apply/archive。
+- 专家路由只能提出问题、检查和 investigation task，不能替用户确认产品规则、架构、数据模型、权限或发布策略。
 - 禁止“如果不对告诉我，我先改”。必须先问 yes/no 或选项确认。
 - 高影响推断必须进入 Decision Ledger，状态为 `Proposed` 或 `Assumed`，不能直接写成事实。
 - `Assumed / Proposed / TBD / Conflict / Stale` 不能进入 final spec/design/tasks/context-pack/apply/archive。
 - 存量项目的技术事实必须有代码、配置、测试、构建或运行证据。
-- `archive` 可以写必需归档资产；更新 knowledge、memory、standards、decisions、AGENTS.md 等长期资产前必须等待用户确认。
+- `archive` 可以写必需归档资产；更新 common-ground、expert-routing、knowledge、memory、standards、decisions、AGENTS.md 等长期资产前必须等待用户确认。
 
 ## 公开命令
 

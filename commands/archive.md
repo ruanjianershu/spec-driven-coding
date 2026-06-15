@@ -6,7 +6,7 @@ description: Archive a completed SDC change, preserve stable specs and evidence,
 
 Use "$ARGUMENTS" as the change id. Archive only after required checks pass or equivalent evidence exists.
 
-During archive, run the Knowledge Compact Gate. Required spec/archive writes may proceed; optional updates to decisions, standards, reports, AGENTS.md, project.md, or project-cognition.md require explicit user confirmation before writing.
+During archive, run the Knowledge Compact Gate. Required spec/archive writes may proceed; optional updates to common-ground.md, expert-routing.md, decisions, standards, reports, AGENTS.md, project.md, or project-cognition.md require explicit user confirmation before writing.
 This also applies to optional product knowledge, technical knowledge, and memory updates.
 
 Run the SDC archive workflow:
@@ -14,6 +14,6 @@ Run the SDC archive workflow:
 - Require a final confirmed spec, completed tasks, traceability, and check evidence.
 - Promote the final spec to `.sdc/specs/<change-id>.md`.
 - Create or update `archive.md` with conclusion, evidence, residual risks, coverage summary, and Knowledge Compact Gate.
-- Evaluate `knowledge-candidates.md` and recommend which candidates should be promoted to `.sdc/knowledge/product/`, `.sdc/knowledge/technical/`, `.sdc/memory/`, `.sdc/decisions/`, `.sdc/standards/`, or `AGENTS.md`.
+- Evaluate `knowledge-candidates.md`, Common Ground drift, and expert routing drift; recommend which candidates should be promoted to `.sdc/common-ground.md`, `.sdc/expert-routing.md`, `.sdc/knowledge/product/`, `.sdc/knowledge/technical/`, `.sdc/memory/`, `.sdc/decisions/`, `.sdc/standards/`, or `AGENTS.md`.
 - Move the completed change into `.sdc/changes/archive/<change-id>/`.
 - Never delete change history or silently overwrite an existing stable spec.

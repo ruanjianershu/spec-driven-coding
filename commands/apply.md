@@ -8,8 +8,10 @@ Use "$ARGUMENTS" to identify the target change or task. Implement the planned wo
 
 Run the SDC apply workflow:
 
-- Read `.sdc/constitution.md`, `.sdc/knowledge/index.md`, relevant product/technical knowledge, the active change `spec.md`, `design.md`, `tasks.md`, `context-pack.md`, and `notes.md` before editing.
+- Read `.sdc/constitution.md`, `.sdc/common-ground.md`, `.sdc/expert-routing.md`, `.sdc/knowledge/index.md`, relevant product/technical knowledge, the active change `spec.md`, `design.md`, `tasks.md`, `context-pack.md`, and `notes.md` before editing.
 - Stop if final artifacts contain open Knowledge Gaps or `Assumed` / `Proposed` / `TBD` / `Conflict` / `Stale` execution inputs.
+- Stop if final artifacts depend on OPEN or high-impact WORKING Common Ground.
+- Follow the Expert Profiles Used in `context-pack.md`; if implementation discovers a new high-risk profile, stop and update plan/context-pack first.
 - Execute tasks in dependency order.
 - Write or update tests before production code when meaningful.
 - Do not expand scope or refactor opportunistically.

@@ -124,7 +124,7 @@ No migration risk in this fixture.
 ## 0. 文档元信息
 
 - Status: Confirmed
-- Schema: SDC 1.1.10
+- Schema: SDC 1.2.1
 - Source: eval fixture
 
 ## 1. Knowledge Sources Used
@@ -138,6 +138,12 @@ No migration risk in this fixture.
 
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |---|---|---|---|---|---|
+
+## 1.2 Common Ground Used
+
+| ID | Tier | Statement | Source | Why It Matters |
+|---|---|---|---|---|
+| CG-01 | ESTABLISHED | Meeting room booking MVP is confirmed | eval fixture | Allows final REQ/AC creation |
 
 ## 2. Decision Ledger / 决策台账
 
@@ -262,6 +268,19 @@ Implement meeting room booking conflict prevention for the MVP.
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |---|---|---|---|---|---|
 
+## Common Ground Used
+
+| ID | Tier | Statement | Source | Why It Matters |
+|---|---|---|---|---|
+| CG-01 | ESTABLISHED | Meeting room booking MVP is confirmed | eval fixture | Allows execution |
+
+## Expert Profiles Used
+
+| Profile | Why Used | Sources Read | Decisions / Checks Affected |
+|---|---|---|---|
+| product-discovery | MVP boundary and acceptance | discovery.md, spec.md | Keeps notifications out of scope |
+| test-strategy | AC-01 must be behavior-validated | spec.md, tasks.md | Requires validation evidence |
+
 ## Confirmed Product Knowledge
 Duplicate room/time bookings must be rejected.
 
@@ -314,6 +333,8 @@ See knowledge-candidates.md.
 def init_greenfield(root: Path) -> str:
     code, output = run_sdc(root, "init")
     checks = [
+        marker(root, ".sdc/common-ground.md"),
+        marker(root, ".sdc/expert-routing.md"),
         marker(root, ".sdc/knowledge/index.md"),
         marker(root, ".sdc/memory/candidates.md"),
         marker(root, ".sdc/current/context-pack.md"),
@@ -378,13 +399,14 @@ def init_upgrades_stale_managed_templates(root: Path) -> str:
         "constitution anti-guess: yes" if "No Evidence, No Fact" in upgraded_files[0].read_text() else "constitution anti-guess: no",
         "design gaps: yes" if "## Knowledge Gaps" in upgraded_files[1].read_text() else "design gaps: no",
         "context forbidden: yes" if "## Forbidden Assumptions" in upgraded_files[2].read_text() else "context forbidden: no",
+        "context profiles: yes" if "## Expert Profiles Used" in upgraded_files[2].read_text() else "context profiles: no",
         "candidate evidence: yes" if "Evidence Needed" in upgraded_files[3].read_text() else "candidate evidence: no",
         f"backup count: {len(backups)}",
     ]
     expected = (
         code == 0
         and "已安全升级" in output
-        and all(check.endswith("yes") for check in checks[:4])
+        and all(check.endswith("yes") for check in checks[:5])
         and len(backups) >= 4
     )
     return "\n".join([output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
@@ -448,6 +470,8 @@ def archive_knowledge_compact_gate(root: Path) -> str:
         and archive_code == 0
         and ".sdc/knowledge/product/" in archive_text
         and ".sdc/knowledge/technical/" in archive_text
+        and ".sdc/common-ground.md" in archive_text
+        and ".sdc/expert-routing.md" in archive_text
         and ".sdc/memory/ or .sdc/knowledge/" in archive_text
     )
     return "\n".join([
@@ -482,8 +506,8 @@ def open_knowledge_gap_blocks_execution(root: Path) -> str:
     context = change / "context-pack.md"
     context.write_text(
         context.read_text().replace(
-            "|---|---|---|---|---|---|\n\n## Confirmed Product Knowledge",
-            "|---|---|---|---|---|---|\n| KG-01 | Permission model | Needed for booking access | REQ-01 | Ask user | Open |\n\n## Confirmed Product Knowledge",
+            "|---|---|---|---|---|---|\n\n## Common Ground Used",
+            "|---|---|---|---|---|---|\n| KG-01 | Permission model | Needed for booking access | REQ-01 | Ask user | Open |\n\n## Common Ground Used",
         )
     )
     code, output = run_sdc(root, "validate", change.name)

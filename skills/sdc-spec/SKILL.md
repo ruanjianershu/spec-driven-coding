@@ -30,12 +30,13 @@ Load only what is needed:
 
 - Role contract: `../sdc-shared/role-contracts.md`, section `sdc-spec`.
 - Decision, traceability, and stop-line rules: `../sdc-shared/workflow-standards.md`.
+- Common Ground rules: `../sdc-shared/common-ground.md`.
 - If discovery is incomplete: `../sdc-shared/discovery-gate.md`.
 - Spec schema: `../sdc-shared/artifact-schemas.md`.
 
 ## 执行步骤
 
-1. 读取 `.sdc/constitution.md`、`.sdc/project.md`、`.sdc/knowledge/index.md`、相关产品/技术知识、当前 change 的 `proposal.md`、`discovery.md` 和已有 `spec.md`。
+1. 读取 `.sdc/constitution.md`、`.sdc/project.md`、`.sdc/common-ground.md`、`.sdc/knowledge/index.md`、相关产品/技术知识、当前 change 的 `proposal.md`、`discovery.md` 和已有 `spec.md`。
 2. 如果 `discovery.md` 仍有阻塞问题，不能输出 `Confirmed` spec。
 3. 如果需求明显不确定且没有 discovery，建议回到 `/sdc:change` 的 Discovery Gate。
 4. 建立或更新 Decision Ledger。
@@ -50,6 +51,7 @@ Load only what is needed:
 
 - 文档状态：Draft / Confirmed。
 - Knowledge Sources Used。
+- Common Ground Used。
 - Knowledge Gaps（没有则明确为空）。
 - Decision Ledger。
 - Discovery Summary。
@@ -96,6 +98,7 @@ Draft / Confirmed
 - spec 阶段不得混入未确认实现方案。
 - spec 必须区分产品知识、技术知识和 memory candidate；memory 不能当作 confirmed fact。
 - No Evidence, No Fact；没有 Source / Verified Against 的内容不能写成 final REQ/AC/INV。
+- OPEN 或高影响 WORKING Common Ground 不能写成 final REQ/AC/INV。
 - Discovery 未退出不能输出 Confirmed spec。
 - Open Questions 未闭合时不得顺手生成完整 design/tasks。
 - 禁止“如果不对告诉我，我先改”；解释推断后必须等待用户确认。

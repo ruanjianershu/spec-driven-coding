@@ -25,6 +25,7 @@ Load only what is needed:
 - Role contract: `../sdc-shared/role-contracts.md`, section `sdc-quality`.
 - Quality gate: `../sdc-shared/delivery-gates.md`.
 - Evidence and stop-line rules: `../sdc-shared/workflow-standards.md`.
+- Common Ground and expert routing: `../sdc-shared/common-ground.md`, `../sdc-shared/expert-routing.md`.
 
 ## 前置检查
 
@@ -36,6 +37,7 @@ Load only what is needed:
 - review evidence。
 - test evidence。
 - context-pack and knowledge-candidates evidence.
+- Common Ground and Expert Profiles Used evidence.
 
 缺少关键证据时，不能给出可交付结论。
 
@@ -49,6 +51,7 @@ Load only what is needed:
 - Operability：配置、日志、部署/发布、回滚或降级。
 - Validation evidence：测试、手动验证、截图或命令输出。
 - Knowledge readiness：本次变更是否需要更新产品知识、技术知识、memory、standards 或 AGENTS.md。
+- Common Ground / expert routing readiness：本次变更是否确认、否定、提升或暴露了共享假设和专家路由规则。
 
 ## 输出格式
 
@@ -81,4 +84,5 @@ Load only what is needed:
 - 任何严重问题都不能交付。
 - 必须说明验证证据。
 - 无法验证的关键路径必须标为风险。
+- OPEN 或高影响 WORKING Common Ground 参与交付结论时必须 no-ship。
 - 必须给出明确 ship / no-ship 结论。

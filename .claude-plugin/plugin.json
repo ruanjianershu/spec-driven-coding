@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "sdc",
-  "version": "1.2.0",
-  "description": "A lightweight spec-driven coding workflow for Claude Code. Use role prompt contracts, discover uncertain requirements with minimal draft artifacts, maintain product/technical knowledge, analyze legacy impact after requirements are confirmed, preserve SCN/REQ/AC traceability, confirm high-impact decisions, apply tasks from context packs, check quality, archive specs, and compact durable project knowledge.",
+  "version": "1.2.1",
+  "description": "A lightweight spec-driven coding workflow for Claude Code. Use role prompt contracts, Common Ground, internal expert routing, minimal discovery artifacts, product/technical knowledge, legacy impact gates, SCN/REQ/AC traceability, context packs, delivery checks, archived specs, and durable knowledge compaction.",
   "author": {
     "name": "ruanjianershu",
     "url": "https://github.com/ruanjianershu"
@@ -24,6 +24,8 @@
     "spec-driven-coding",
     "traceability",
     "knowledge-base",
+    "common-ground",
+    "expert-routing",
     "context-pack",
     "consent-gates",
     "discovery",

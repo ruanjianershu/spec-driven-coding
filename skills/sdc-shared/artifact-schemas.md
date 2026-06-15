@@ -10,6 +10,8 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 ├── constitution.md
 ├── project.md
 ├── project-cognition.md
+├── common-ground.md
+├── expert-routing.md
 ├── knowledge/
 │   ├── README.md
 │   ├── index.md
@@ -81,6 +83,8 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 │   ├── bug-analysis.md
 │   ├── change-impact.md
 │   ├── context-pack.md
+│   ├── common-ground.md
+│   ├── expert-routing.md
 │   ├── knowledge-candidates.md
 │   ├── knowledge-index.md
 │   └── repo-analysis.md
@@ -94,6 +98,8 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 | `.sdc/constitution.md` | Highest project-level engineering governance and decision priority. |
 | `.sdc/project.md` | Long-lived project context, users, stack, constraints, and validation commands. |
 | `.sdc/project-cognition.md` | Brownfield project map based on code evidence. |
+| `.sdc/common-ground.md` | Shared project assumptions split into ESTABLISHED, WORKING, and OPEN tiers. |
+| `.sdc/expert-routing.md` | Internal expert profile routing so SDC can use specialist lenses without adding public commands. |
 | `.sdc/knowledge/` | Confirmed project knowledge split into product and technical knowledge. |
 | `.sdc/knowledge/index.md` | Short routing index read before non-trivial change, plan, apply, and check work. |
 | `.sdc/knowledge/product/` | Product goals, roles, domain concepts, flows, business rules, and product decisions. |
@@ -173,6 +179,8 @@ Do not create `spec.md`, `design.md`, `tasks.md`, `impact.md`, `context-pack.md`
 SDC separates durable knowledge from project memory:
 
 - Knowledge is confirmed, shared, auditable project truth.
+- Common Ground is the shared assumption layer that says which facts are ESTABLISHED, which interpretations are WORKING, and which questions remain OPEN.
+- Expert Routing is the internal profile map for selecting specialist checks and references without exposing extra user commands.
 - Product knowledge answers why the project exists, who uses it, which workflows matter, and what business rules must hold.
 - Technical knowledge answers how the system is built, where capabilities live, how contracts work, and how to verify or operate the system.
 - Memory records candidates, procedures, lessons, and episodic summaries that may help future agents recall context.
@@ -190,6 +198,10 @@ Knowledge item states:
 | Deprecated | Preserved for history, no longer active | No |
 
 Before final spec, plan, apply, or check, agents must read `.sdc/knowledge/index.md` and only the relevant product/technical files. If relevant knowledge is missing or stale, record a Knowledge Gap and ask whether to refresh it.
+
+Before non-trivial change, spec, plan, apply, check, or archive work, agents must read `.sdc/common-ground.md`. OPEN items block final artifacts when they affect scope, acceptance, data, permissions, architecture, security, rollout, or compatibility. WORKING items must be cited and cannot silently become ESTABLISHED.
+
+During plan/check/archive, agents should read `.sdc/expert-routing.md` and select the smallest relevant expert profiles. Expert profile guidance can create questions, checks, and investigation tasks, but it cannot create unconfirmed product facts or technical decisions.
 
 Every durable knowledge row should record:
 
@@ -289,6 +301,8 @@ A durable spec should include:
 - Goal.
 - Knowledge sources used.
 - Knowledge gaps, empty only when none remain.
+- Common Ground used.
+- Expert profiles used.
 - Confirmed product knowledge.
 - Confirmed technical knowledge.
 - Execution boundaries.
@@ -333,6 +347,8 @@ Conditional durable updates:
 - `.sdc/knowledge/product/` when the change creates or changes long-lived product goals, roles, flows, business rules, non-goals, or product decisions.
 - `.sdc/knowledge/technical/` when the change creates or changes long-lived stack, architecture, module, data/interface, operations, or testing knowledge.
 - `.sdc/memory/` when the change leaves reusable procedures, lessons, gotchas, or candidate knowledge that is not yet confirmed enough for durable knowledge.
+- `.sdc/common-ground.md` when the change confirms, rejects, promotes, demotes, or adds shared assumptions.
+- `.sdc/expert-routing.md` when the change reveals a reusable profile trigger, stack-specific expert lens, or missing review profile.
 - `.sdc/decisions/` when a product, technical, architecture, data, permission, rollout, or security decision is long-lived.
 - `.sdc/standards/` when the change creates or corrects a reusable engineering standard.
 - `AGENTS.md` through `sdc-harness` when the change exposes a recurring AI execution rule or project guardrail.

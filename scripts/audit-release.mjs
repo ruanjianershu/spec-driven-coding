@@ -153,6 +153,16 @@ for (const marker of [
 }
 
 const cli = readText('sdc-cli.py');
+const sharedReferences = [
+  'skills/sdc-shared/common-ground.md',
+  'skills/sdc-shared/expert-routing.md',
+  'skills/sdc-shared/workflow-manifest.yaml',
+];
+for (const reference of sharedReferences) {
+  if (!fs.existsSync(path.join(root, reference))) {
+    fail(`Missing shared SDC reference: ${reference}`);
+  }
+}
 const currentSchema = `Schema: SDC ${version}`;
 const schemaMatches = [...cli.matchAll(/Schema: SDC ([0-9.]+)/g)].map((match) => match[0]);
 if (!schemaMatches.includes(currentSchema) || schemaMatches.some((schema) => schema !== currentSchema)) {
@@ -179,8 +189,8 @@ if (!cli.includes('归档目录已存在，不能重复归档')) {
 if (!cli.includes('../../../specs/{change_id}.md')) {
   fail('sdc-cli.py archive.md must link from archived change directory back to .sdc/specs using ../../../specs.');
 }
-if (!cli.includes('"knowledge/index.md"') || !cli.includes('"memory/candidates.md"')) {
-  fail('sdc-cli.py init must create knowledge/index.md and memory/candidates.md.');
+if (!cli.includes('"common-ground.md"') || !cli.includes('"expert-routing.md"') || !cli.includes('"knowledge/index.md"') || !cli.includes('"memory/candidates.md"')) {
+  fail('sdc-cli.py init must create common-ground.md, expert-routing.md, knowledge/index.md, and memory/candidates.md.');
 }
 for (const marker of [
   'cmd_import_standards',
@@ -192,14 +202,20 @@ for (const marker of [
     fail(`sdc-cli.py must support company standards pack import: missing ${marker}`);
   }
 }
-if (!cli.includes('"templates/context-pack.md"') || !cli.includes('"templates/knowledge-candidates.md"')) {
-  fail('sdc-cli.py must ship context-pack and knowledge-candidates templates.');
+if (!cli.includes('"templates/context-pack.md"') || !cli.includes('"templates/common-ground.md"') || !cli.includes('"templates/expert-routing.md"') || !cli.includes('"templates/knowledge-candidates.md"')) {
+  fail('sdc-cli.py must ship context-pack, common-ground, expert-routing, and knowledge-candidates templates.');
 }
 if (!cli.includes('validate_context_pack')) {
   fail('sdc-cli.py validate must check context-pack.md.');
 }
+if (!cli.includes('## Common Ground Used') || !cli.includes('## Expert Profiles Used')) {
+  fail('sdc-cli.py context-pack templates must include Common Ground Used and Expert Profiles Used.');
+}
 if (!cli.includes('.sdc/knowledge/product/') || !cli.includes('.sdc/knowledge/technical/')) {
   fail('sdc-cli.py archive Knowledge Compact Gate must evaluate product and technical knowledge updates.');
+}
+if (!cli.includes('.sdc/common-ground.md') || !cli.includes('.sdc/expert-routing.md')) {
+  fail('sdc-cli.py archive Knowledge Compact Gate must evaluate Common Ground and Expert Routing updates.');
 }
 for (const marker of [
   'No Evidence, No Fact',
@@ -226,6 +242,9 @@ if (readme.includes('`/sdc:spec`、`/sdc:implement`')) {
 if (!readme.includes('Knowledge Compact Gate')) {
   fail('README.md must document archive Knowledge Compact Gate.');
 }
+if (!readme.includes('common-ground.md') || !readme.includes('expert-routing.md') || !readme.includes('Expert Routing')) {
+  fail('README.md must document Common Ground and internal Expert Routing.');
+}
 if (!readme.includes('.sdc/knowledge/product/') || !readme.includes('.sdc/knowledge/technical/') || !readme.includes('context-pack.md')) {
   fail('README.md must document product/technical knowledge and context-pack usage.');
 }
@@ -241,6 +260,11 @@ if (!evalRunner.includes('All {len(SCENARIOS)} evals passed')) {
 for (const scenario of ['init_greenfield', 'init_upgrades_stale_managed_templates', 'discovery_open_blocks_context_pack', 'brownfield_requires_impact', 'archive_knowledge_compact_gate']) {
   if (!evalProvider.includes(scenario)) {
     fail(`SDC flow eval provider is missing scenario: ${scenario}`);
+  }
+}
+for (const marker of ['.sdc/common-ground.md', '.sdc/expert-routing.md', '## Expert Profiles Used']) {
+  if (!evalProvider.includes(marker)) {
+    fail(`SDC flow eval provider must cover Common Ground / Expert Routing marker: ${marker}`);
   }
 }
 for (const scenario of [

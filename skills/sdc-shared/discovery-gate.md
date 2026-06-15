@@ -9,10 +9,12 @@ Before creating or updating any `.sdc/changes/active/*` files, ALWAYS run Change
 The first response to a new `/sdc:change ...` request must:
 
 1. Restate only what the user has said.
-2. If `.sdc/knowledge/index.md` exists, use it to prefill known context and reduce repetitive questioning, but mark unconfirmed or memory-derived content as `Candidate`.
-3. Ask 4 intake questions, one for each required category below.
-4. Wait for explicit user confirmation before writing files.
-5. Avoid assuming tech stack, timeline, scope, database, framework, deployment, integrations, roles, permissions, or success criteria.
+2. If `.sdc/common-ground.md` exists, read it first. Use `ESTABLISHED` items to avoid repeated questions, treat `WORKING` items as candidates, and convert relevant `OPEN` items into intake questions.
+3. If `.sdc/expert-routing.md` exists, use the `product-discovery` profile and any relevant domain/security/data profile to shape questions, not to create facts.
+4. If `.sdc/knowledge/index.md` exists, use it to prefill known context and reduce repetitive questioning, but mark unconfirmed or memory-derived content as `Candidate`.
+5. Ask 4 intake questions, one for each required category below.
+6. Wait for explicit user confirmation before writing files.
+7. Avoid assuming tech stack, timeline, scope, database, framework, deployment, integrations, roles, permissions, or success criteria.
 
 Required intake categories:
 
@@ -44,6 +46,8 @@ After intake confirmation, continue Discovery Gate when any of these remain unre
 - Acceptance direction.
 - High-impact decision status.
 - Whether the request should be one change or several changes.
+- Any relevant Common Ground item is still `OPEN`.
+- Any high-impact Common Ground item is only `WORKING`.
 
 Do not produce a `Confirmed` spec, final plan, or implementation tasks while Discovery Gate is open.
 

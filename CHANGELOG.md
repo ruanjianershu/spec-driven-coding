@@ -4,6 +4,14 @@ All notable changes to SDC are documented here.
 
 ## Unreleased
 
+## 1.2.1 - 2026-06-15
+
+- Added SDC Common Ground: projects now initialize `.sdc/common-ground.md` to keep `ESTABLISHED / WORKING / OPEN` assumptions visible and block OPEN/high-impact WORKING assumptions from final execution.
+- Added internal Expert Routing: projects now initialize `.sdc/expert-routing.md` so SDC can use specialist product, domain, legacy, architecture, API, data, frontend, backend, test, security, operations, and documentation lenses without adding public commands.
+- Added shared English references for `common-ground`, `expert-routing`, and a machine-readable workflow manifest.
+- Updated init, change, spec, plan, apply, validate, review, test, quality, check, archive, harness, README, schemas, and gates to read Common Ground and Expert Routing at the right stages.
+- Updated context-pack and validation rules to include `Common Ground Used` and `Expert Profiles Used`.
+- Updated archive Knowledge Compact Gate to recommend confirmed Common Ground and Expert Routing updates as conditional durable project assets.
 - Fixed Codex/Hermes local installs so public workflow skills are generated from command definitions while Claude Code continues to expose those workflows only as slash commands.
 - Added company/team standards pack support: `sdc init --standards <path>` and `sdc standards import <path>` import private rules into `.sdc/standards/company/` with a routing index and no bundled private content.
 
