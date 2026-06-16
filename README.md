@@ -16,6 +16,7 @@ init -> change -> plan -> apply -> check -> archive
 - Common Ground：把 AI 的共同认知拆成 `ESTABLISHED / WORKING / OPEN`，OPEN 不能驱动最终方案。
 - Expert Routing：吸收专家库思路，但不增加公开命令，由 AI 在 plan/check/archive 内部选择产品、架构、数据、测试、安全等专家视角。
 - 知识库与 memory：区分产品知识、技术知识、候选知识和过程记忆。
+- Artifact Output Contract：按触发条件强制标准产物，比如流程图、API/数据契约、测试矩阵和上线清单。
 - Brownfield impact gate：存量项目在需求确认后做当前变更影响面分析。
 - 追溯链：`SCN-* -> REQ-* -> AC-* -> T### -> validation evidence`。
 - 反乱猜门禁：`No Evidence, No Fact; No Confirmation, No Execution; No Impact, No Brownfield Change`。
@@ -117,16 +118,16 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
    如已有团队规范，可同时导入：`sdc init --standards /path/to/spec-rules`。
 
 2. change
-   先读 common-ground 和 knowledge，再完成 intake 问题并等待确认；未确认时只保留 discovery/proposal/notes 草稿。
+   先读 common-ground 和 knowledge，再完成 intake 问题并等待确认；同时识别输入证据和可能需要的标准产物。未确认时只保留 discovery/proposal/notes 草稿。
 
 3. plan
-   基于 confirmed spec、必要的 impact.md、相关知识库和 expert-routing 生成 design/tasks/context-pack。
+   基于 confirmed spec、必要的 impact.md、相关知识库、expert-routing 和 Artifact Output Contract 生成 design/tasks/context-pack。
 
 4. apply
    按 T### 薄切片执行，记录 notes、验证证据和 knowledge-candidates。
 
 5. check
-   综合 validate/review/test/quality，并检查 Common Ground、专家视角覆盖和知识漂移。
+   综合 validate/review/test/quality，并检查 Common Ground、专家视角覆盖、标准产物覆盖和知识漂移。
 
 6. archive
    归档到 .sdc/specs 和 .sdc/changes/archive，并建议需要沉淀的长期知识、共同认知和专家路由。
@@ -175,6 +176,15 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 - 每条长期知识应记录 `Status / Source / Verified At / Verified Against / Scope`。
 - 缺证据时写 Knowledge Gap，不允许把推断写成事实。
 
+### Artifact Output Contract
+
+SDC 不新增一堆命令，但会要求每个阶段有清晰输入输出。
+
+- `change` 记录输入证据：PRD、会议纪要、issue、日志、截图、代码证据或用户口述。
+- `plan` 按触发条件生成标准产物：流程/状态图、时序/集成图、API 契约、数据/迁移契约、UX 状态、测试矩阵、上线检查清单、AI 参与说明。
+- `check` 反向检查：如果实际 diff 触发了 API、数据、部署、流程、UX、测试等风险，但设计或上下文包没有对应产物，会阻断交付。
+- 小需求可以写 `N/A + 证据原因`，但 final plan/check 必须有 AC 测试矩阵。
+
 ### Company Standards Pack
 
 SDC 不内置任何公司私有规范。已有团队规范建议放进业务项目的 `.sdc/standards/company/`，由索引按需读取：
@@ -190,6 +200,8 @@ AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关
 - Open Questions 未闭合时，只能生成 Draft，不允许生成 Confirmed spec/design/tasks。
 - OPEN Common Ground 不能进入 final spec/design/tasks/context-pack/apply/archive。
 - 专家路由只能提出问题、检查和 investigation task，不能替用户确认产品规则、架构、数据模型、权限或发布策略。
+- 触发式交付物缺失不能进入交付：流程/状态、集成、API、数据、UX、测试、部署、AI 参与说明必须有对应产物或 `N/A + 证据原因`。
+- final plan/check 必须包含 Test Matrix，并能追溯到 AC。
 - 禁止“如果不对告诉我，我先改”。必须先问 yes/no 或选项确认。
 - 高影响推断必须进入 Decision Ledger，状态为 `Proposed` 或 `Assumed`，不能直接写成事实。
 - `Assumed / Proposed / TBD / Conflict / Stale` 不能进入 final spec/design/tasks/context-pack/apply/archive。

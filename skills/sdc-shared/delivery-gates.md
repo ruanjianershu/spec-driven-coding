@@ -13,6 +13,8 @@ Check:
 - `.sdc/expert-routing.md` exists and relevant expert profiles are selected for plan/check when the change touches product, domain, legacy, architecture, API, data, frontend, backend, tests, security, operations, or documentation risk.
 - `.sdc/knowledge/index.md` exists and relevant product/technical knowledge sources are listed in final spec/design/context-pack.
 - `.sdc/memory/` candidates are not treated as confirmed facts.
+- Final spec/design/context-pack include Artifact Output Contract.
+- Triggered output artifacts exist or are explicitly `N/A` with evidence: process/state diagram, sequence/integration diagram, API/contract specification, data/migration contract, UX flow/states, test matrix, deploy/release checklist, AI involvement note.
 - Final spec/design/context-pack/tasks/impact do not contain `Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, or open Knowledge Gaps.
 - Knowledge rows include evidence identity: Status, Source, Verified At, Verified Against, and Scope where applicable.
 - Candidate rows include Source, Evidence Needed, Target, and Promotion Gate.
@@ -25,6 +27,7 @@ Check:
 - Brownfield changes have a current `impact.md` with no blocking open questions.
 - Discovery Closed changes have a `context-pack.md` for execution handoff and `knowledge-candidates.md` for apply/check discoveries.
 - `context-pack.md` lists Common Ground used and Expert Profiles Used when they materially affect execution.
+- `context-pack.md` summarizes required output artifacts for apply/check handoff.
 - Artifacts are not empty templates.
 
 Conclusion must be either ready for next stage or blocked with concrete repair guidance.
@@ -44,6 +47,7 @@ Cover:
 - Maintainability and clarity.
 - Brownfield impact mismatch against `impact.md`.
 - Expert profile mismatch: actual diff touches a risk area that was not routed through the corresponding profile or standards.
+- Artifact output mismatch: actual diff touches workflow, integration, API, data, UX, test, deploy, or AI-assisted delivery risk not covered by the artifact contract.
 
 Every finding needs a file/line reference, consequence, and actionable fix. If no issues are found, state remaining test or context gaps.
 
@@ -74,6 +78,7 @@ Final quality checks should cover:
 - Performance baseline, or `N/A` with a concrete reason.
 - Maintainability.
 - Release or deployment readiness.
+- Artifact Output Contract coverage and N/A reasons.
 - Validation evidence.
 
 Any serious blocker means no ship.
@@ -115,6 +120,7 @@ Include:
 - Suggested `.sdc/specs`, `.sdc/standards`, and `AGENTS.md` updates.
 - Suggested `.sdc/common-ground.md` and `.sdc/expert-routing.md` updates when repo evidence or repeated checks justify them.
 - Suggested `.sdc/knowledge/product`, `.sdc/knowledge/technical`, and `.sdc/memory` updates when repo or change evidence justifies them.
+- Suggested Artifact Output Contract defaults when repeated repo patterns require diagrams, API/data contracts, deploy checklists, or test matrices.
 - Evidence index.
 
 ## Archive Gate

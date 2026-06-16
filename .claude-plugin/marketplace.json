@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "sdc",
-      "description": "A lightweight spec-driven coding workflow for Claude Code: role prompt contracts, Common Ground, internal expert routing, requirement discovery with minimal draft artifacts, product/technical knowledge, context packs, legacy impact analysis, SCN/REQ/AC traceability, consent gates, delivery checks, archived specs, and knowledge compaction.",
+      "description": "A lightweight spec-driven coding workflow for Claude Code: role prompt contracts, Common Ground, internal expert routing, artifact output contracts, requirement discovery with minimal draft artifacts, product/technical knowledge, context packs, legacy impact analysis, SCN/REQ/AC traceability, consent gates, delivery checks, archived specs, and knowledge compaction.",
       "version": "1.2.1",
       "source": "./",
       "author": {
@@ -25,6 +25,7 @@
         "knowledge-base",
         "common-ground",
         "expert-routing",
+        "artifact-output-contracts",
         "context-pack",
         "consent-gates",
         "discovery",

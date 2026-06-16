@@ -4,6 +4,7 @@ All notable changes to SDC are documented here.
 
 ## Unreleased
 
+- Added Artifact Output Contracts so change/plan/check/validate can require triggered enterprise delivery outputs such as diagrams, API/data contracts, test matrices, release checklists, and AI involvement notes without adding public commands.
 - Fixed Common Ground validation so `OPEN` and final-execution `WORKING` Common Ground rows now block validate/apply/archive readiness instead of passing as documentation-only warnings.
 ## 1.2.1 - 2026-06-15
 

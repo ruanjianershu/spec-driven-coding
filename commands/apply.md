@@ -12,6 +12,7 @@ Run the SDC apply workflow:
 - Stop if final artifacts contain open Knowledge Gaps or `Assumed` / `Proposed` / `TBD` / `Conflict` / `Stale` execution inputs.
 - Stop if final artifacts depend on OPEN or high-impact WORKING Common Ground.
 - Follow the Expert Profiles Used in `context-pack.md`; if implementation discovers a new high-risk profile, stop and update plan/context-pack first.
+- Follow the Artifact Output Contract in `context-pack.md`; if implementation discovers new API, data, workflow, UX, deployment, test, or AI involvement output requirements, stop and update plan/context-pack first.
 - Execute tasks in dependency order.
 - Write or update tests before production code when meaningful.
 - Do not expand scope or refactor opportunistically.

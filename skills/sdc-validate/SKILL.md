@@ -27,6 +27,7 @@ Load only what is needed:
 - Shared validation and decision rules: `../sdc-shared/workflow-standards.md`.
 - Common Ground and expert routing: `../sdc-shared/common-ground.md`, `../sdc-shared/expert-routing.md`.
 - Artifact schemas: `../sdc-shared/artifact-schemas.md`.
+- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`.
 - Validate gate: `../sdc-shared/delivery-gates.md`.
 - Brownfield impact gate: `../sdc-shared/legacy-impact-gate.md`.
 
@@ -67,7 +68,9 @@ Load only what is needed:
 - spec 是否包含 Glossary、INV、SCN、REQ、AC、验证策略、追溯矩阵。
 - spec/design/context-pack 是否记录 Knowledge Sources Used。
 - spec/design/context-pack 是否记录 Common Ground Used。
+- spec/design/context-pack 是否记录 Artifact Output Contract。
 - context-pack/check 是否记录 Expert Profiles Used 且与实际风险匹配。
+- 触发流程/状态、集成、API、数据、UX、测试、部署、AI 参与等场景时，是否有对应流程图、时序/集成图、API 契约、数据/迁移契约、UX 状态、测试矩阵、上线检查清单或 AI 参与说明；不适用时是否写明 `N/A + 证据原因`。
 - memory candidates 是否被错误当作 confirmed facts。
 - final spec/design/context-pack/tasks/impact 是否含有 `Assumed`、`Proposed`、`TBD`、`Conflict`、`Stale` 或未闭合 Knowledge Gap。
 - 知识项是否记录 Status、Source、Verified At、Verified Against、Scope。
@@ -83,6 +86,7 @@ Load only what is needed:
 - Brownfield/Legacy 当前 change 是否有有效 `impact.md`。
 - `impact.md` 是否仍有阻塞性待确认项。
 - apply/check 是否记录了必要的 `knowledge-candidates.md`，并留待 archive 确认。
+- Artifact Output Contract 是否与实际 diff、impact.md、tasks 和验证证据一致。
 
 ## 输出格式
 
@@ -121,3 +125,4 @@ current / change-id
 - 未确认高影响决策或 Silent Default 不能放行。
 - OPEN 或高影响 WORKING Common Ground 被当成事实时不能放行。
 - 高风险改动缺少对应 expert profile / standards 覆盖时不能放行。
+- 触发式交付物缺失、或者用无证据 `N/A` 跳过时不能放行。

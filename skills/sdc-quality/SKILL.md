@@ -26,6 +26,7 @@ Load only what is needed:
 - Quality gate: `../sdc-shared/delivery-gates.md`.
 - Evidence and stop-line rules: `../sdc-shared/workflow-standards.md`.
 - Common Ground and expert routing: `../sdc-shared/common-ground.md`, `../sdc-shared/expert-routing.md`.
+- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`.
 
 ## 前置检查
 
@@ -38,6 +39,7 @@ Load only what is needed:
 - test evidence。
 - context-pack and knowledge-candidates evidence.
 - Common Ground and Expert Profiles Used evidence.
+- Artifact Output Contract evidence: required diagrams, contracts, matrices, checklists, or explicit N/A reasons.
 
 缺少关键证据时，不能给出可交付结论。
 
@@ -49,6 +51,7 @@ Load only what is needed:
 - Security：敏感信息、输入输出、权限、依赖风险。
 - Performance：启动、核心路径、资源使用的明显风险。
 - Operability：配置、日志、部署/发布、回滚或降级。
+- Output artifacts：流程图、时序/集成图、API/数据契约、UX 状态、测试矩阵、上线检查清单和 AI 参与说明是否按触发条件齐全。
 - Validation evidence：测试、手动验证、截图或命令输出。
 - Knowledge readiness：本次变更是否需要更新产品知识、技术知识、memory、standards 或 AGENTS.md。
 - Common Ground / expert routing readiness：本次变更是否确认、否定、提升或暴露了共享假设和专家路由规则。
@@ -86,3 +89,4 @@ Load only what is needed:
 - 无法验证的关键路径必须标为风险。
 - OPEN 或高影响 WORKING Common Ground 参与交付结论时必须 no-ship。
 - 必须给出明确 ship / no-ship 结论。
+- 触发式交付物缺失或与实际 diff 不一致时必须 no-ship。

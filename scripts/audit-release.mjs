@@ -156,6 +156,7 @@ const cli = readText('sdc-cli.py');
 const sharedReferences = [
   'skills/sdc-shared/common-ground.md',
   'skills/sdc-shared/expert-routing.md',
+  'skills/sdc-shared/artifact-output-contracts.md',
   'skills/sdc-shared/workflow-manifest.yaml',
 ];
 for (const reference of sharedReferences) {
@@ -208,14 +209,28 @@ if (!cli.includes('"templates/context-pack.md"') || !cli.includes('"templates/co
 if (!cli.includes('validate_context_pack')) {
   fail('sdc-cli.py validate must check context-pack.md.');
 }
-if (!cli.includes('## Common Ground Used') || !cli.includes('## Expert Profiles Used')) {
-  fail('sdc-cli.py context-pack templates must include Common Ground Used and Expert Profiles Used.');
+if (!cli.includes('## Common Ground Used') || !cli.includes('## Expert Profiles Used') || !cli.includes('## Artifact Output Contract')) {
+  fail('sdc-cli.py context-pack templates must include Common Ground Used, Expert Profiles Used, and Artifact Output Contract.');
 }
 if (!cli.includes('["Knowledge Sources Used", "Common Ground Used", "Decision Ledger"')) {
   fail('sdc-cli.py spec validation must require Common Ground Used.');
 }
 if (!cli.includes('"## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used"')) {
   fail('sdc-cli.py design/context validation must require Common Ground Used.');
+}
+for (const marker of [
+  'ARTIFACT_OUTPUT_CONTRACTS',
+  'validate_artifact_output_contract',
+  'Process / State Diagram',
+  'API / Contract Specification',
+  'Data Model / Migration Contract',
+  'Test Matrix',
+  'Deploy / Release Checklist',
+  'AI Involvement Note',
+]) {
+  if (!cli.includes(marker)) {
+    fail(`sdc-cli.py must enforce artifact output contracts; missing marker: ${marker}`);
+  }
 }
 if (!cli.includes('.sdc/knowledge/product/') || !cli.includes('.sdc/knowledge/technical/')) {
   fail('sdc-cli.py archive Knowledge Compact Gate must evaluate product and technical knowledge updates.');
@@ -254,6 +269,9 @@ if (!readme.includes('Knowledge Compact Gate')) {
 if (!readme.includes('common-ground.md') || !readme.includes('expert-routing.md') || !readme.includes('Expert Routing')) {
   fail('README.md must document Common Ground and internal Expert Routing.');
 }
+if (!readme.includes('Artifact Output Contract') || !readme.includes('Test Matrix') || !readme.includes('上线检查清单')) {
+  fail('README.md must document Artifact Output Contract and triggered delivery outputs.');
+}
 if (!readme.includes('.sdc/knowledge/product/') || !readme.includes('.sdc/knowledge/technical/') || !readme.includes('context-pack.md')) {
   fail('README.md must document product/technical knowledge and context-pack usage.');
 }
@@ -276,12 +294,18 @@ for (const marker of ['.sdc/common-ground.md', '.sdc/expert-routing.md', '## Exp
     fail(`SDC flow eval provider must cover Common Ground / Expert Routing marker: ${marker}`);
   }
 }
+for (const marker of ['## Artifact Output Contract', 'Test Matrix', 'API / Contract Specification']) {
+  if (!evalProvider.includes(marker)) {
+    fail(`SDC flow eval provider must cover Artifact Output Contract marker: ${marker}`);
+  }
+}
 for (const scenario of [
   'unconfirmed_assumption_blocks_execution',
   'open_knowledge_gap_blocks_execution',
   'open_common_ground_blocks_execution',
   'working_common_ground_blocks_final_execution',
   'incomplete_candidate_blocks_archive_readiness',
+  'missing_artifact_output_contract_blocks_execution',
   'standards_pack_import',
 ]) {
   if (!evalProvider.includes(scenario)) {

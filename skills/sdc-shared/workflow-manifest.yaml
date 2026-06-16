@@ -22,6 +22,7 @@ shared_references:
   - legacy-impact-gate.md
   - common-ground.md
   - expert-routing.md
+  - artifact-output-contracts.md
   - artifact-schemas.md
   - delivery-gates.md
 flow:
@@ -56,10 +57,12 @@ flow:
       - discovery.md
       - optional draft proposal.md
       - brief notes.md
+      - draft artifact output contract
     gates:
       - "Ask the required intake questions before writing change files."
       - "Keep artifacts minimal while Discovery Gate is open."
       - "High-impact decisions remain Proposed or Assumed until confirmed."
+      - "Identify likely required outputs without generating final design artifacts."
   spec:
     purpose: "Convert confirmed discovery into SCN/REQ/AC with traceability."
     inputs:
@@ -69,6 +72,7 @@ flow:
       - decision ledger
     outputs:
       - spec.md
+      - accepted artifact output contract
     gates:
       - "No OPEN Common Ground item may drive final REQ/AC/INV."
       - "No Proposed or Assumed decision may enter final requirements."
@@ -84,10 +88,12 @@ flow:
       - design.md
       - tasks.md
       - context-pack.md
+      - diagrams, API/data contracts, test matrix, and release checklist when triggered
     gates:
       - "Select relevant expert profiles internally."
       - "Tasks must be traceable, test-first, and size S or M."
       - "Unconfirmed assumptions become investigation tasks or Stop-Line Reports."
+      - "Triggered output artifacts must be present or explicitly N/A with evidence."
   apply:
     purpose: "Implement planned tasks and record evidence."
     inputs:
@@ -117,8 +123,10 @@ flow:
       - findings
       - required fixes
       - knowledge compact recommendations
+      - artifact output contract coverage
     gates:
       - "Traceability, decision, common-ground, and expert-profile gaps block delivery."
+      - "Missing triggered output artifacts block delivery."
   archive:
     purpose: "Preserve completed change and propose durable knowledge updates."
     inputs:

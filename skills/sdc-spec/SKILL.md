@@ -33,6 +33,7 @@ Load only what is needed:
 - Common Ground rules: `../sdc-shared/common-ground.md`.
 - If discovery is incomplete: `../sdc-shared/discovery-gate.md`.
 - Spec schema: `../sdc-shared/artifact-schemas.md`.
+- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`.
 
 ## 执行步骤
 
@@ -43,7 +44,8 @@ Load only what is needed:
 5. 只把 `Confirmed` 或明确不影响当前 MVP 的 `Deferred` 决策写入正式 REQ/AC/INV。
 6. 记录 Knowledge Sources Used；如果知识缺失、过期或冲突，输出 Knowledge Gap / Stop-Line。
 7. 输出 SCN/REQ/AC、业务不变量、验证策略、风险、追溯矩阵和下一步。
-8. 如果仍缺关键确认，优先输出 Stop-Line 信息和下一批 3-5 个确认问题；只有用户明确要求保留草稿时，才输出 Draft spec。
+8. 输出或更新 Artifact Output Contract：记录本需求是否触发流程图、时序/集成图、API 契约、数据/迁移契约、UX 状态、测试矩阵、上线检查清单和 AI 参与说明。未确认的输出要求保持 Proposed，不得进入 final spec。
+9. 如果仍缺关键确认，优先输出 Stop-Line 信息和下一批 3-5 个确认问题；只有用户明确要求保留草稿时，才输出 Draft spec。
 
 ## Spec 要求
 
@@ -52,6 +54,7 @@ Load only what is needed:
 - 文档状态：Draft / Confirmed。
 - Knowledge Sources Used。
 - Common Ground Used。
+- Artifact Output Contract。
 - Knowledge Gaps（没有则明确为空）。
 - Decision Ledger。
 - Discovery Summary。

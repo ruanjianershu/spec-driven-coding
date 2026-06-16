@@ -145,6 +145,19 @@ No migration risk in this fixture.
 |---|---|---|---|---|
 | CG-01 | ESTABLISHED | Meeting room booking MVP is confirmed | eval fixture | Allows final REQ/AC creation |
 
+## 1.3 Artifact Output Contract
+
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|---|---|---|---|---|
+| Process / State Diagram | N/A | No workflow/state change | design.md#process-state-diagrams | N/A because fixture has one simple booking behavior and no workflow state machine |
+| Sequence / Integration Diagram | N/A | No integration | design.md#sequence-integration-diagrams | N/A because fixture has no external integration |
+| API / Contract Specification | N/A | No public API contract | design.md#api-contract-specification | N/A because fixture validates internal behavior only |
+| Data Model / Migration Contract | N/A | No schema migration | design.md#data-model-migration-contract | N/A because fixture has no persistence schema |
+| UX Flow / Interaction States | N/A | No UI | design.md#ux-flow-interaction-states | N/A because fixture has no UI |
+| Test Matrix | Required | AC validation | design.md#test-matrix | AC-01 behavior validation is required |
+| Deploy / Release Checklist | N/A | No runtime release impact | design.md#deploy-release-checklist | N/A because fixture has no deployment/config changes |
+| AI Involvement Note | N/A | Eval fixture | design.md#ai-involvement-note | N/A because fixture is deterministic CLI validation |
+
 ## 2. Decision Ledger / 决策台账
 
 | ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
@@ -210,6 +223,19 @@ No blocking risks remain for the MVP.
 |---|---|---|---|---|
 | CG-01 | ESTABLISHED | Meeting room booking MVP is confirmed | eval fixture | Allows design planning |
 
+## Artifact Output Contract
+
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|---|---|---|---|---|
+| Process / State Diagram | N/A | No workflow/state change | design.md#process-state-diagrams | N/A because fixture has one simple booking behavior and no workflow state machine |
+| Sequence / Integration Diagram | N/A | No integration | design.md#sequence-integration-diagrams | N/A because fixture has no external integration |
+| API / Contract Specification | N/A | No public API contract | design.md#api-contract-specification | N/A because fixture validates internal behavior only |
+| Data Model / Migration Contract | N/A | No schema migration | design.md#data-model-migration-contract | N/A because fixture has no persistence schema |
+| UX Flow / Interaction States | N/A | No UI | design.md#ux-flow-interaction-states | N/A because fixture has no UI |
+| Test Matrix | Required | AC validation | design.md#test-matrix | AC-01 behavior validation is required |
+| Deploy / Release Checklist | N/A | No runtime release impact | design.md#deploy-release-checklist | N/A because fixture has no deployment/config changes |
+| AI Involvement Note | N/A | Eval fixture | design.md#ai-involvement-note | N/A because fixture is deterministic CLI validation |
+
 ## Solution Summary / 方案摘要
 Add conflict checking before persisting a booking.
 
@@ -224,6 +250,33 @@ Use a small behavior-first implementation.
 
 ## Data, API, State, or Interaction Changes / 数据、接口、状态或交互变化
 Booking conflict validation is required.
+
+## Process / State Diagrams
+N/A because fixture has one simple booking behavior and no workflow state machine.
+
+## Sequence / Integration Diagrams
+N/A because fixture has no external integration.
+
+## API / Contract Specification
+N/A because fixture validates internal behavior only.
+
+## Data Model / Migration Contract
+N/A because fixture has no persistence schema.
+
+## UX Flow / Interaction States
+N/A because fixture has no UI.
+
+## Test Matrix
+
+| AC | Scenario | Level | Verification | Expected Result | Status |
+|---|---|---|---|---|---|
+| AC-01 | overlapping booking is rejected | behavior | sdc validate current-change | validation stays traceable | Required |
+
+## Deploy / Release Checklist
+N/A because fixture has no deployment/config changes.
+
+## AI Involvement Note
+N/A because fixture is deterministic CLI validation.
 
 ## Brownfield Impact Summary / 遗留影响摘要
 N/A for greenfield fixtures; brownfield fixtures intentionally require impact.md.
@@ -286,6 +339,19 @@ Implement meeting room booking conflict prevention for the MVP.
 |---|---|---|---|
 | product-discovery | MVP boundary and acceptance | discovery.md, spec.md | Keeps notifications out of scope |
 | test-strategy | AC-01 must be behavior-validated | spec.md, tasks.md | Requires validation evidence |
+
+## Artifact Output Contract
+
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|---|---|---|---|---|
+| Process / State Diagram | N/A | No workflow/state change | design.md#process-state-diagrams | N/A because fixture has one simple booking behavior and no workflow state machine |
+| Sequence / Integration Diagram | N/A | No integration | design.md#sequence-integration-diagrams | N/A because fixture has no external integration |
+| API / Contract Specification | N/A | No public API contract | design.md#api-contract-specification | N/A because fixture validates internal behavior only |
+| Data Model / Migration Contract | N/A | No schema migration | design.md#data-model-migration-contract | N/A because fixture has no persistence schema |
+| UX Flow / Interaction States | N/A | No UI | design.md#ux-flow-interaction-states | N/A because fixture has no UI |
+| Test Matrix | Required | AC validation | design.md#test-matrix | AC-01 behavior validation is required |
+| Deploy / Release Checklist | N/A | No runtime release impact | design.md#deploy-release-checklist | N/A because fixture has no deployment/config changes |
+| AI Involvement Note | N/A | Eval fixture | design.md#ai-involvement-note | N/A because fixture is deterministic CLI validation |
 
 ## Confirmed Product Knowledge
 Duplicate room/time bookings must be rejected.
@@ -403,17 +469,21 @@ def init_upgrades_stale_managed_templates(root: Path) -> str:
     backups = list(sdc.rglob("*.bak-*"))
     checks = [
         "constitution anti-guess: yes" if "No Evidence, No Fact" in upgraded_files[0].read_text() else "constitution anti-guess: no",
+        "constitution output contract: yes" if "Artifact Output Contract Discipline" in upgraded_files[0].read_text() else "constitution output contract: no",
         "design gaps: yes" if "## Knowledge Gaps" in upgraded_files[1].read_text() else "design gaps: no",
         "design common ground: yes" if "## Common Ground Used" in upgraded_files[1].read_text() else "design common ground: no",
+        "design output contract: yes" if "## Artifact Output Contract" in upgraded_files[1].read_text() else "design output contract: no",
+        "design test matrix: yes" if "## Test Matrix" in upgraded_files[1].read_text() else "design test matrix: no",
         "context forbidden: yes" if "## Forbidden Assumptions" in upgraded_files[2].read_text() else "context forbidden: no",
         "context profiles: yes" if "## Expert Profiles Used" in upgraded_files[2].read_text() else "context profiles: no",
+        "context output contract: yes" if "## Artifact Output Contract" in upgraded_files[2].read_text() else "context output contract: no",
         "candidate evidence: yes" if "Evidence Needed" in upgraded_files[3].read_text() else "candidate evidence: no",
         f"backup count: {len(backups)}",
     ]
     expected = (
         code == 0
         and "已安全升级" in output
-        and all(check.endswith("yes") for check in checks[:6])
+        and all(check.endswith("yes") for check in checks[:10])
         and len(backups) >= 4
     )
     return "\n".join([output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
@@ -590,6 +660,38 @@ def incomplete_candidate_blocks_archive_readiness(root: Path) -> str:
     ])
 
 
+def missing_artifact_output_contract_blocks_execution(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "meeting-room", "--confirmed-intake")
+    change = active_change(root, "meeting-room")
+    write_confirmed_change(change)
+
+    spec = change / "spec.md"
+    spec.write_text(
+        spec.read_text().replace(
+            "The system must reject overlapping bookings for the same room.",
+            "The system must reject overlapping bookings for the same room through a POST /rooms/bookings API endpoint.",
+        )
+    )
+
+    design = change / "design.md"
+    design.write_text(
+        "\n".join(
+            line
+            for line in design.read_text().splitlines()
+            if "API / Contract Specification" not in line
+        )
+    )
+
+    code, output = run_sdc(root, "validate", change.name)
+    expected = code != 0 and "API / Contract Specification" in output and "触发式交付物" in output
+    return "\n".join([
+        output,
+        "EXPECTED_BLOCK: missing artifact output contract" if expected else "UNEXPECTED_PASS: missing artifact output contract",
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
 def standards_pack_import(root: Path) -> str:
     source = root / "spec-rules"
     source.mkdir()
@@ -644,6 +746,7 @@ SCENARIOS = {
     "open_common_ground_blocks_execution": open_common_ground_blocks_execution,
     "working_common_ground_blocks_final_execution": working_common_ground_blocks_final_execution,
     "incomplete_candidate_blocks_archive_readiness": incomplete_candidate_blocks_archive_readiness,
+    "missing_artifact_output_contract_blocks_execution": missing_artifact_output_contract_blocks_execution,
 }
 
 

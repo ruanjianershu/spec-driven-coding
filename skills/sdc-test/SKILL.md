@@ -26,16 +26,18 @@ Load only what is needed:
 - Test gate: `../sdc-shared/delivery-gates.md`.
 - Traceability and evidence rules: `../sdc-shared/workflow-standards.md`.
 - Expert routing: `../sdc-shared/expert-routing.md`, profile `test-strategy`.
+- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`, especially Test Matrix requirements.
 
 ## 执行步骤
 
 1. 读取当前 spec/tasks/context-pack/notes、Common Ground、Expert Profiles Used 和 `.sdc/knowledge/technical/testing.md`，识别 REQ/AC。
 2. 确认已有测试覆盖哪些 AC。
-3. 根据项目实际工具运行相关测试。
-4. 如果不能运行测试，说明阻塞原因和替代验证路径。
-5. 分析失败、缺失覆盖、边界、错误、安全、兼容性和回归风险。
-6. 给出需要新增或修正的测试建议。
-7. 如果发现新的稳定测试命令或回归策略，记录到 `knowledge-candidates.md`。
+3. 检查 Artifact Output Contract 中的 Test Matrix 是否存在，且每条测试/验证能映射到 AC。
+4. 根据项目实际工具运行相关测试。
+5. 如果不能运行测试，说明阻塞原因和替代验证路径。
+6. 分析失败、缺失覆盖、边界、错误、安全、兼容性和回归风险。
+7. 给出需要新增或修正的测试建议。
+8. 如果发现新的稳定测试命令或回归策略，记录到 `knowledge-candidates.md`。
 
 ## 测试层级
 
@@ -79,5 +81,6 @@ Load only what is needed:
 - 未运行测试必须说明原因和风险。
 - AC 未覆盖必须明确标出。
 - context-pack 中的 `test-strategy` 或其他专家风险必须有测试/替代验证响应。
+- final plan/check 中缺少 Test Matrix 或 AC 映射时不能视为充分验证。
 - 覆盖率不能替代行为验证。
 - 必须覆盖关键异常和边界情况，或说明无法覆盖的风险。

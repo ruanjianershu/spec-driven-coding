@@ -86,6 +86,57 @@ STANDARD_PACK_IGNORED_NAMES = {
     "coverage",
 }
 
+ARTIFACT_OUTPUT_CONTRACTS = [
+    {
+        "name": "Process / State Diagram",
+        "aliases": ("Process / State Diagram", "Process/State Diagram", "Process Diagram", "State Diagram", "流程图", "状态图"),
+        "patterns": (r"\bworkflow\b", r"\bflow\b", r"\bstate\b", r"approval", r"status transition", r"user journey", r"流程", r"状态", r"审批", r"用户路径"),
+        "required_always": False,
+    },
+    {
+        "name": "Sequence / Integration Diagram",
+        "aliases": ("Sequence / Integration Diagram", "Sequence Diagram", "Integration Diagram", "时序图", "集成图"),
+        "patterns": (r"multi-service", r"\bintegration\b", r"\basync\b", r"\bqueue\b", r"\bMQ\b", r"\bwebhook\b", r"\bevent\b", r"\bjob\b", r"外部集成", r"异步", r"队列", r"事件", r"任务"),
+        "required_always": False,
+    },
+    {
+        "name": "API / Contract Specification",
+        "aliases": ("API / Contract Specification", "API Contract", "Contract Specification", "接口契约", "API 契约"),
+        "patterns": (r"\bAPI\b", r"\bendpoint\b", r"\brequest\b", r"\bresponse\b", r"\bcontract\b", r"\bevent\b", r"接口", r"契约", r"请求", r"响应"),
+        "required_always": False,
+    },
+    {
+        "name": "Data Model / Migration Contract",
+        "aliases": ("Data Model / Migration Contract", "Data Model", "Migration Contract", "数据模型", "迁移契约"),
+        "patterns": (r"data model", r"\bschema\b", r"\btable\b", r"\bDDL\b", r"\bmigration\b", r"\btransaction\b", r"\blocking\b", r"数据", r"数据库", r"表", r"迁移", r"事务", r"锁"),
+        "required_always": False,
+    },
+    {
+        "name": "UX Flow / Interaction States",
+        "aliases": ("UX Flow / Interaction States", "UX Flow", "Interaction States", "用户体验", "交互状态"),
+        "patterns": (r"\bUI\b", r"\bUX\b", r"\bform\b", r"\bscreen\b", r"accessibility", r"user-facing", r"页面", r"表单", r"交互", r"可访问性"),
+        "required_always": False,
+    },
+    {
+        "name": "Test Matrix",
+        "aliases": ("Test Matrix", "测试矩阵"),
+        "patterns": (r"\bAC-\d+", r"acceptance", r"\btest\b", r"boundary", r"regression", r"验收", r"测试", r"边界", r"回归"),
+        "required_always": True,
+    },
+    {
+        "name": "Deploy / Release Checklist",
+        "aliases": ("Deploy / Release Checklist", "Release Checklist", "Deploy Checklist", "上线检查清单", "发布检查清单"),
+        "patterns": (r"\bdeploy\b", r"\brelease\b", r"\bconfig\b", r"feature flag", r"\brollback\b", r"\bNacos\b", r"\bcron\b", r"\bMQ\b", r"部署", r"发布", r"配置", r"回滚", r"开关"),
+        "required_always": False,
+    },
+    {
+        "name": "AI Involvement Note",
+        "aliases": ("AI Involvement Note", "AI 参与说明"),
+        "patterns": (r"\bAI\b", r"agent", r"assistant", r"LLM", r"Claude", r"Codex", r"智能体", r"大模型"),
+        "required_always": False,
+    },
+]
+
 INIT_FILES = {
     "README.md": """# SDC Workspace
 
@@ -129,6 +180,7 @@ INIT_FILES = {
 - `common-ground.md` - 共同认知：哪些事实已确认、哪些只是工作假设、哪些必须先问
 - `expert-routing.md` - 专家路由：不增加用户指令，由 AI 根据场景选择内部专家参考
 - `knowledge/` - 项目知识：产品事实、业务规则、技术事实和运行方式
+- `Artifact Output Contract` - 阶段输入输出契约：按触发条件要求流程图、接口/数据契约、测试矩阵和上线清单
 - `standards/` - 开发规范：代码、测试、架构、安全、Git 和 AI 协作规则
 - `standards/company/` - 可选公司/团队规范包，通过索引按需读取
 - `memory/` - 项目记忆：候选知识、经验、流程和可回顾的工作片段
@@ -144,6 +196,7 @@ INIT_FILES = {
 知识门禁：change/plan/apply 前读取 knowledge index；memory 只能辅助召回，不能覆盖 confirmed knowledge
 共同认知门禁：OPEN 不能驱动 final spec/plan/apply；WORKING 不能静默升级为 ESTABLISHED
 专家路由门禁：用户只选 SDC 阶段，AI 内部选择专家视角并在 context-pack/check/archive 中披露
+输出契约门禁：触发流程/API/数据/UX/测试/部署/AI 参与风险时，必须有对应产物或 N/A 证据
 ```
 """,
     "constitution.md": """# SDC Project Constitution
@@ -188,11 +241,26 @@ For Brownfield/Legacy technical knowledge, code/config/test/build/runtime eviden
 
 Before non-trivial change, spec, plan, apply, check, or archive work, read `common-ground.md` and the relevant routing entries in `expert-routing.md`.
 
-## 5. Core Chain
+## 5. Artifact Output Contract Discipline
+
+Every confirmed change must record an Artifact Output Contract before final plan/apply/check.
+
+Triggered outputs include process/state diagrams, sequence/integration diagrams, API/contract specifications, data/migration contracts, UX flow/states, Test Matrix, deploy/release checklist, and AI involvement note.
+
+Rules:
+
+- Discovery may keep the output contract Draft/Proposed.
+- Final spec/design/context-pack must include the confirmed output contract.
+- Required outputs must point to a concrete section or file.
+- N/A outputs must include an evidence-based reason.
+- Test Matrix is required for final plan/check and must map validation back to ACs.
+- Output contracts cannot create unconfirmed product rules, schemas, permissions, rollout policy, or integrations.
+
+## 6. Core Chain
 
 `discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive`
 
-## 6. Stop-The-Line Rules
+## 7. Stop-The-Line Rules
 
 Stop and produce a Stop-Line Report when:
 
@@ -204,16 +272,18 @@ Stop and produce a Stop-Line Report when:
 - final artifacts contain unclosed Knowledge Gaps or unconfirmed assumptions
 - final artifacts depend on OPEN or high-impact WORKING Common Ground
 - the implementation touches a risk area without the matching expert profile or standards review
+- a triggered output artifact is missing, contradictory, or marked N/A without evidence
 
-## 7. Traceability Rules
+## 8. Traceability Rules
 
 - specs must define `SCN-*`, `REQ-*`, and `AC-*` identifiers
 - tasks must reference `REQ-*` and `AC-*`
 - tests or validation notes must reference `AC-*`
 - implementation notes must record validation evidence
 - specs, designs, plans, and context packs must list the knowledge sources and expert profiles they used
+- specs, designs, and context packs must include Artifact Output Contract coverage
 
-## 8. Human Confirmation Rules
+## 9. Human Confirmation Rules
 
 AI may propose options, but humans own high-impact decisions.
 
@@ -225,13 +295,13 @@ Before a high-impact decision enters `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `
 - supported by an authoritative project document
 - explicitly delegated by the user with permission to choose
 
-## 9. No Silent Defaults
+## 10. No Silent Defaults
 
 Do not turn common practice into project truth.
 
 All AI-created defaults must be recorded in a Decision Ledger as `Proposed` or `Assumed` until confirmed. `Proposed`, `Assumed`, `TBD`, and `Conflict` items must not be treated as implementation-ready.
 
-## 10. Discovery Gate
+## 11. Discovery Gate
 
 When requirements are uncertain, start with discovery instead of a confirmed spec.
 
@@ -425,6 +495,19 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 | ID | Tier | Statement | Source | Why It Matters |
 |----|------|-----------|--------|----------------|
 
+## 1.3 Artifact Output Contract
+
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|--------|--------|---------|----------|------------------------|
+| Process / State Diagram | N/A | | | |
+| Sequence / Integration Diagram | N/A | | | |
+| API / Contract Specification | N/A | | | |
+| Data Model / Migration Contract | N/A | | | |
+| UX Flow / Interaction States | N/A | | | |
+| Test Matrix | Required | Acceptance validation | design.md#test-matrix | |
+| Deploy / Release Checklist | N/A | | | |
+| AI Involvement Note | N/A | | | |
+
 ## 2. Decision Ledger / 决策台账
 
 | ID | 决策 | 状态 | 依据来源 | 是否允许进入 REQ/AC | 下一步 |
@@ -472,6 +555,24 @@ Then ...
 
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |--------|-------------------|----------------|--------|-----------|--------|
+
+## Input Evidence
+
+| Source | Type | Status | Summary | Evidence / Link |
+|--------|------|--------|---------|-----------------|
+
+## Draft Artifact Output Contract
+
+| Output | Proposed Status | Trigger | Needed Before | Notes |
+|--------|-----------------|---------|---------------|-------|
+| Process / State Diagram | Proposed / N/A | | plan | |
+| Sequence / Integration Diagram | Proposed / N/A | | plan | |
+| API / Contract Specification | Proposed / N/A | | plan | |
+| Data Model / Migration Contract | Proposed / N/A | | plan | |
+| UX Flow / Interaction States | Proposed / N/A | | plan | |
+| Test Matrix | Proposed | acceptance validation | check | |
+| Deploy / Release Checklist | Proposed / N/A | | check | |
+| AI Involvement Note | Proposed / N/A | AI-assisted delivery | archive/PR | |
 
 ## Current Understanding
 
@@ -562,6 +663,19 @@ Then ...
 
 | Profile | Why Used | Sources Read | Decisions / Checks Affected |
 |---------|----------|--------------|-----------------------------|
+
+## Artifact Output Contract
+
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|--------|--------|---------|----------|------------------------|
+| Process / State Diagram | N/A | | | |
+| Sequence / Integration Diagram | N/A | | | |
+| API / Contract Specification | N/A | | | |
+| Data Model / Migration Contract | N/A | | | |
+| UX Flow / Interaction States | N/A | | | |
+| Test Matrix | Required | Acceptance validation | design.md#test-matrix | |
+| Deploy / Release Checklist | N/A | | | |
+| AI Involvement Note | N/A | | | |
 
 ## Confirmed Product Knowledge
 
@@ -1005,6 +1119,7 @@ Agents must read this index first, then load only the relevant rule files for th
 - 新需求进入 `.sdc/changes/active/`
 - 遗留项目先读 `.sdc/project-cognition.md`
 - 实现前先看 `discovery.md`、`proposal.md`、`spec.md`、`impact.md`、`design.md`、`tasks.md`、`context-pack.md`
+- plan/check 前确认 Artifact Output Contract：触发流程、API、数据、UX、测试、部署或 AI 参与风险时，必须有对应产物或 N/A 证据
 - 保持 `SCN-* -> REQ-* -> AC-* -> T### -> 验证证据` 追溯链
 - apply/check 过程中把新发现写入 `knowledge-candidates.md`，不要直接污染长期知识库
 - 完成前执行 `/sdc:check`
@@ -1022,6 +1137,7 @@ Agents must read this index first, then load only the relevant rule files for th
 - 不要忽略 `.sdc/standards/` 中的项目规范
 - 不要一次性读取整个 `.sdc/standards/company/`；先读索引，按任务按需加载
 - 不要把 `.sdc/memory/` 中的 Candidate/Assumed 当作 confirmed 项目事实
+- 不要跳过被触发的标准产物，尤其是 final plan/check 的 Test Matrix
 """,
     "decisions/README.md": """# Decisions
 
@@ -1056,6 +1172,24 @@ YYYY-MM-DD-short-title.md
 
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |--------|-------------------|----------------|--------|-----------|--------|
+
+## Input Evidence
+
+| Source | Type | Status | Summary | Evidence / Link |
+|--------|------|--------|---------|-----------------|
+
+## Draft Artifact Output Contract
+
+| Output | Proposed Status | Trigger | Needed Before | Notes |
+|--------|-----------------|---------|---------------|-------|
+| Process / State Diagram | Proposed / N/A | | plan | |
+| Sequence / Integration Diagram | Proposed / N/A | | plan | |
+| API / Contract Specification | Proposed / N/A | | plan | |
+| Data Model / Migration Contract | Proposed / N/A | | plan | |
+| UX Flow / Interaction States | Proposed / N/A | | plan | |
+| Test Matrix | Proposed | acceptance validation | check | |
+| Deploy / Release Checklist | Proposed / N/A | | check | |
+| AI Involvement Note | Proposed / N/A | AI-assisted delivery | archive/PR | |
 
 ## 背景
 
@@ -1093,6 +1227,24 @@ YYYY-MM-DD-short-title.md
 
 | Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
 |--------|-------------------|----------------|--------|-----------|--------|
+
+## Input Evidence
+
+| Source | Type | Status | Summary | Evidence / Link |
+|--------|------|--------|---------|-----------------|
+
+## Draft Artifact Output Contract
+
+| Output | Proposed Status | Trigger | Needed Before | Notes |
+|--------|-----------------|---------|---------------|-------|
+| Process / State Diagram | Proposed / N/A | | plan | |
+| Sequence / Integration Diagram | Proposed / N/A | | plan | |
+| API / Contract Specification | Proposed / N/A | | plan | |
+| Data Model / Migration Contract | Proposed / N/A | | plan | |
+| UX Flow / Interaction States | Proposed / N/A | | plan | |
+| Test Matrix | Proposed | acceptance validation | check | |
+| Deploy / Release Checklist | Proposed / N/A | | check | |
+| AI Involvement Note | Proposed / N/A | AI-assisted delivery | archive/PR | |
 
 ## Current Understanding
 
@@ -1154,6 +1306,19 @@ YYYY-MM-DD-short-title.md
 | ID | Tier | Statement | Source | Why It Matters |
 |----|------|-----------|--------|----------------|
 
+## Artifact Output Contract
+
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|--------|--------|---------|----------|------------------------|
+| Process / State Diagram | N/A | | | |
+| Sequence / Integration Diagram | N/A | | | |
+| API / Contract Specification | N/A | | | |
+| Data Model / Migration Contract | N/A | | | |
+| UX Flow / Interaction States | N/A | | | |
+| Test Matrix | Required | Acceptance validation | design.md#test-matrix | |
+| Deploy / Release Checklist | N/A | | | |
+| AI Involvement Note | N/A | | | |
+
 ## Solution Summary / 方案摘要
 
 ## Impact Scope / 影响范围
@@ -1163,6 +1328,39 @@ YYYY-MM-DD-short-title.md
 ## Key Tradeoffs / 关键取舍
 
 ## Data, API, State, or Interaction Changes / 数据、接口、状态或交互变化
+
+## Process / State Diagrams
+
+N/A:
+
+## Sequence / Integration Diagrams
+
+N/A:
+
+## API / Contract Specification
+
+N/A:
+
+## Data Model / Migration Contract
+
+N/A:
+
+## UX Flow / Interaction States
+
+N/A:
+
+## Test Matrix
+
+| AC | Scenario | Level | Verification | Expected Result | Status |
+|----|----------|-------|--------------|-----------------|--------|
+
+## Deploy / Release Checklist
+
+N/A:
+
+## AI Involvement Note
+
+N/A:
 
 ## Brownfield Impact Summary / 遗留影响摘要
 
@@ -1194,6 +1392,19 @@ YYYY-MM-DD-short-title.md
 
 | ID | Tier | Statement | Source | Why It Matters |
 |----|------|-----------|--------|----------------|
+
+## 1.3 Artifact Output Contract
+
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|--------|--------|---------|----------|------------------------|
+| Process / State Diagram | N/A | | | |
+| Sequence / Integration Diagram | N/A | | | |
+| API / Contract Specification | N/A | | | |
+| Data Model / Migration Contract | N/A | | | |
+| UX Flow / Interaction States | N/A | | | |
+| Test Matrix | Required | Acceptance validation | design.md#test-matrix | |
+| Deploy / Release Checklist | N/A | | | |
+| AI Involvement Note | N/A | | | |
 
 ## 2. Decision Ledger / 决策台账
 
@@ -1361,6 +1572,19 @@ Then ...
 
 | Profile | Why Used | Sources Read | Decisions / Checks Affected |
 |---------|----------|--------------|-----------------------------|
+
+## Artifact Output Contract
+
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|--------|--------|---------|----------|------------------------|
+| Process / State Diagram | N/A | | | |
+| Sequence / Integration Diagram | N/A | | | |
+| API / Contract Specification | N/A | | | |
+| Data Model / Migration Contract | N/A | | | |
+| UX Flow / Interaction States | N/A | | | |
+| Test Matrix | Required | Acceptance validation | design.md#test-matrix | |
+| Deploy / Release Checklist | N/A | | | |
+| AI Involvement Note | N/A | | | |
 
 ## Confirmed Product Knowledge
 
@@ -1660,6 +1884,96 @@ def validate_common_ground_execution_inputs(errors, filepath, text):
         errors.append(f"{filepath} 包含不可执行 Common Ground: {item_id}={tier}；{reason}")
 
 
+def artifact_output_triggered(item, source_text):
+    return any(re.search(pattern, source_text, re.IGNORECASE) for pattern in item["patterns"])
+
+
+def find_artifact_output_row(text, item):
+    aliases = tuple(alias.lower() for alias in item["aliases"])
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") or stripped.startswith("|---"):
+            continue
+        lower = stripped.lower()
+        if not any(alias in lower for alias in aliases):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) >= 5:
+            return cells
+    return None
+
+
+def artifact_na_reason_is_supported(reason):
+    if not reason or reason in {"-", "N/A", "TODO", "TBD"}:
+        return False
+
+    supported_markers = [
+        "not applicable",
+        "no ",
+        "none",
+        "out of scope",
+        "documentation-only",
+        "docs-only",
+        "not touched",
+        "not changed",
+        "unchanged",
+        "n/a because",
+        "不适用",
+        "不涉及",
+        "无",
+        "没有",
+        "非本次范围",
+        "仅文档",
+        "未改",
+        "无变更",
+    ]
+    return any(marker in reason.lower() for marker in supported_markers)
+
+
+def validate_artifact_output_contract(errors, warnings, filepath, source_text="", require_test_matrix=False):
+    """Validate stage-level input/output contract coverage."""
+    if not filepath.exists():
+        return
+
+    text = read_text(filepath)
+    if "Artifact Output Contract" not in text:
+        errors.append(f"{filepath} 缺少 Artifact Output Contract 章节")
+        return
+
+    combined_source = source_text or text
+    missing_triggered = []
+
+    for item in ARTIFACT_OUTPUT_CONTRACTS:
+        triggered = item["required_always"] or artifact_output_triggered(item, combined_source)
+        row = find_artifact_output_row(text, item)
+
+        if triggered and not row:
+            missing_triggered.append(item["name"])
+            continue
+
+        if not row:
+            continue
+
+        status = row[1].strip().lower() if len(row) > 1 else ""
+        location = row[3].strip() if len(row) > 3 else ""
+        reason = row[4].strip() if len(row) > 4 else ""
+
+        if "n/a" in status or status in {"na", "not applicable", "不适用"}:
+            if item["required_always"] or require_test_matrix and item["name"] == "Test Matrix":
+                errors.append(f"{filepath} 不能将 {item['name']} 标记为 N/A；final plan/check 必须有 AC 测试矩阵")
+            elif not artifact_na_reason_is_supported(reason):
+                errors.append(f"{filepath} 的 {item['name']} 标记为 N/A，但缺少证据原因")
+            continue
+
+        if triggered and (not location or location in {"-", "TODO", "TBD"}):
+            errors.append(f"{filepath} 的 {item['name']} 缺少具体 Location")
+        if triggered and (not reason or reason in {"-", "TODO", "TBD"}):
+            errors.append(f"{filepath} 的 {item['name']} 缺少 Evidence / N/A Reason")
+
+    if missing_triggered:
+        errors.append(f"{filepath} 缺少触发式交付物: {', '.join(missing_triggered)}")
+
+
 def validate_spec_trace(errors, filepath):
     text = read_text(filepath)
     for marker in ("INV-", "SCN-", "REQ-", "AC-"):
@@ -1761,6 +2075,7 @@ def is_stale_managed_template(relative_path, text):
             "standards/company/" not in normalized
             or "common-ground.md" not in normalized
             or "expert-routing.md" not in normalized
+            or "输出契约门禁" not in normalized
             or "SDC v1.1" in normalized
         )
 
@@ -1769,6 +2084,7 @@ def is_stale_managed_template(relative_path, text):
             "Knowledge and Memory Discipline" not in normalized
             or "No Evidence, No Fact" not in normalized
             or "Common Ground And Expert Routing Discipline" not in normalized
+            or "Artifact Output Contract Discipline" not in normalized
         )
 
     if relative_path in {"common-ground.md", "templates/common-ground.md"}:
@@ -1785,7 +2101,11 @@ def is_stale_managed_template(relative_path, text):
         )
 
     if relative_path == "standards/README.md":
-        return "# Development Standards" in normalized and "Company Standards Packs" not in normalized
+        return (
+            "# Development Standards" in normalized
+            and "Company Standards Packs" not in normalized
+            and "公司规范包" not in normalized
+        )
 
     if relative_path == "standards/ai.md":
         return "# AI Collaboration Standard" in normalized and ".sdc/standards/company/README.md" not in normalized
@@ -1811,18 +2131,23 @@ def is_stale_managed_template(relative_path, text):
             or "## Common Ground Used" not in normalized
             or "## Forbidden Assumptions" not in normalized
             or "## Expert Profiles Used" not in normalized
+            or "## Artifact Output Contract" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
         )
 
     if relative_path in {"current/discovery.md", "templates/discovery.md"}:
         return "# Discovery" in normalized and (
             "## Knowledge Gaps" not in normalized
+            or "## Input Evidence" not in normalized
+            or "## Draft Artifact Output Contract" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
         )
 
     if relative_path == "templates/change.md":
         return "# Change Proposal" in normalized and (
             "## Knowledge Gaps" not in normalized
+            or "## Input Evidence" not in normalized
+            or "## Draft Artifact Output Contract" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
         )
 
@@ -1830,6 +2155,8 @@ def is_stale_managed_template(relative_path, text):
         return "# Design" in normalized and (
             "## Knowledge Gaps" not in normalized
             or "## Common Ground Used" not in normalized
+            or "## Artifact Output Contract" not in normalized
+            or "## Test Matrix" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
         )
 
@@ -1842,6 +2169,7 @@ def is_stale_managed_template(relative_path, text):
         return looks_generated and (
             "INV-" not in normalized
             or "## 1.2 Common Ground Used" not in normalized
+            or "## 1.3 Artifact Output Contract" not in normalized
         )
 
     if relative_path.endswith("tasks.md"):
@@ -2280,9 +2608,10 @@ def validate_context_pack(errors, warnings, filepath):
         errors,
         warnings,
         filepath,
-        ["## Goal", "## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Expert Profiles Used", "## Execution Boundaries", "## Forbidden Assumptions", "## Validation Commands", "## Knowledge Candidate Routing"],
+        ["## Goal", "## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Expert Profiles Used", "## Artifact Output Contract", "## Execution Boundaries", "## Forbidden Assumptions", "## Validation Commands", "## Knowledge Candidate Routing"],
     )
     validate_no_unconfirmed_execution_inputs(errors, filepath)
+    validate_artifact_output_contract(errors, warnings, filepath, require_test_matrix=True)
 
 
 def validate_spec_file(errors, warnings, filepath):
@@ -2290,7 +2619,7 @@ def validate_spec_file(errors, warnings, filepath):
         errors,
         warnings,
         filepath,
-        ["Knowledge Sources Used", "Common Ground Used", "Decision Ledger", "Business Invariants / 业务不变量", "Acceptance Criteria / 验收标准", "追溯关系矩阵"],
+        ["Knowledge Sources Used", "Common Ground Used", "Decision Ledger", "Artifact Output Contract", "Business Invariants / 业务不变量", "Acceptance Criteria / 验收标准", "追溯关系矩阵"],
     )
     if not filepath.exists():
         return
@@ -2298,17 +2627,19 @@ def validate_spec_file(errors, warnings, filepath):
     if re.search(r"Status:\s*Draft", text, re.IGNORECASE):
         errors.append(f"{filepath} 仍是 Draft，进入 plan/apply 前必须明确 Confirmed")
     validate_no_unconfirmed_execution_inputs(errors, filepath)
+    validate_artifact_output_contract(errors, warnings, filepath)
     validate_spec_trace(errors, filepath)
 
 
-def validate_design_file(errors, warnings, filepath):
+def validate_design_file(errors, warnings, filepath, source_text=""):
     validate_file(
         errors,
         warnings,
         filepath,
-        ["## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Solution Summary", "## Impact Scope", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
+        ["## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Artifact Output Contract", "## Solution Summary", "## Impact Scope", "## Test Matrix", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
     )
     validate_no_unconfirmed_execution_inputs(errors, filepath)
+    validate_artifact_output_contract(errors, warnings, filepath, source_text=source_text, require_test_matrix=True)
 
 
 def validate_impact_file(errors, warnings, filepath):
@@ -2406,6 +2737,7 @@ def cmd_validate(target="current"):
         "Fact Priority",
         "Knowledge and Memory Discipline",
         "Common Ground And Expert Routing Discipline",
+        "Artifact Output Contract Discipline",
         "Traceability Rules",
         "Human Confirmation Rules",
         "No Silent Defaults",
@@ -2441,8 +2773,13 @@ def cmd_validate(target="current"):
                 validate_file(errors, warnings, base / "notes.md", ["# Notes"], require_content=False)
             else:
                 validate_impact_gate(errors, warnings, base)
+                artifact_source_text = "\n".join(
+                    read_text(base / name)
+                    for name in ("discovery.md", "proposal.md", "spec.md", "impact.md", "tasks.md", "notes.md")
+                    if (base / name).exists()
+                )
                 validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
-                validate_design_file(errors, warnings, base / "design.md")
+                validate_design_file(errors, warnings, base / "design.md", source_text=artifact_source_text)
                 validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
                 validate_spec_file(errors, warnings, base / "spec.md")
                 validate_context_pack(errors, warnings, base / "context-pack.md")

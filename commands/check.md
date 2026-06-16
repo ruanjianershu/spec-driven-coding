@@ -12,6 +12,7 @@ Run the SDC check workflow:
 - Validate Common Ground usage and block final execution if OPEN or high-impact WORKING items were treated as facts.
 - Validate Expert Profiles Used against actual diff and risk areas.
 - Validate knowledge source usage, `context-pack.md`, and candidate-vs-confirmed boundaries.
+- Validate the Artifact Output Contract: triggered diagrams, API/data contracts, UX flow, test matrix, deploy/release checklist, and AI involvement note must exist or be explicitly `N/A` with evidence.
 - Validate "No Evidence, No Fact / No Confirmation, No Execution / No Impact, No Brownfield Change".
 - Review actual diffs and surrounding code for correctness, architecture, security, data integrity, compatibility, and maintainability.
 - Run or assess relevant tests against acceptance criteria, boundaries, regressions, and failure modes.

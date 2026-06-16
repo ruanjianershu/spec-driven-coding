@@ -29,6 +29,7 @@ Load only what is needed:
 - Shared evidence and stop-line rules: `../sdc-shared/workflow-standards.md`.
 - Expert routing: `../sdc-shared/expert-routing.md`.
 - Legacy impact review: `../sdc-shared/legacy-impact-gate.md`.
+- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`.
 
 ## 审查范围
 
@@ -41,6 +42,7 @@ Load only what is needed:
 - Knowledge drift：实际 diff 是否改变产品/技术事实但未记录到 `knowledge-candidates.md` 或 archive 建议。
 - Common Ground drift：实际 diff 是否改变共享假设，或是否把 OPEN/WORKING 当作事实。
 - Expert routing coverage：实际 diff 是否触发了 data/security/api/test/legacy 等专家视角但未覆盖。
+- Artifact output coverage：实际 diff 是否触发流程、集成、API、数据、UX、测试、部署或 AI 参与说明，但 design/context-pack/check 中没有对应产物或 N/A 证据。
 - Performance：明显低效、N+1、内存或并发风险。
 - Maintainability：命名、重复、复杂度、错误处理、注释质量。
 - Legacy impact：实际 diff 是否超出 `impact.md`。

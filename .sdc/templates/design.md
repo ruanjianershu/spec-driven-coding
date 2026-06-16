@@ -1,19 +1,80 @@
 # Design
 
-## 背景
+## Knowledge Sources Used
 
-## 方案
+| Source | Status | Evidence | Why It Matters |
+|--------|--------|----------|----------------|
 
-## 影响范围
+## Knowledge Gaps
 
-## 不改范围
+| Gap ID | Missing Knowledge | Why It Matters | Blocks | Next Step | Status |
+|--------|-------------------|----------------|--------|-----------|--------|
 
-## 数据和接口变化
+## Common Ground Used
 
-## REQ/AC 到设计决策的映射
+| ID | Tier | Statement | Source | Why It Matters |
+|----|------|-----------|--------|----------------|
 
-## 风险
+## Artifact Output Contract
 
-## 回滚方案
+| Output | Status | Trigger | Location | Evidence / N/A Reason |
+|--------|--------|---------|----------|------------------------|
+| Process / State Diagram | N/A | | | |
+| Sequence / Integration Diagram | N/A | | | |
+| API / Contract Specification | N/A | | | |
+| Data Model / Migration Contract | N/A | | | |
+| UX Flow / Interaction States | N/A | | | |
+| Test Matrix | Required | Acceptance validation | design.md#test-matrix | |
+| Deploy / Release Checklist | N/A | | | |
+| AI Involvement Note | N/A | | | |
 
-## 替代方案
+## Solution Summary / 方案摘要
+
+## Impact Scope / 影响范围
+
+## Non-Scope / 不改范围
+
+## Key Tradeoffs / 关键取舍
+
+## Data, API, State, or Interaction Changes / 数据、接口、状态或交互变化
+
+## Process / State Diagrams
+
+N/A:
+
+## Sequence / Integration Diagrams
+
+N/A:
+
+## API / Contract Specification
+
+N/A:
+
+## Data Model / Migration Contract
+
+N/A:
+
+## UX Flow / Interaction States
+
+N/A:
+
+## Test Matrix
+
+| AC | Scenario | Level | Verification | Expected Result | Status |
+|----|----------|-------|--------------|-----------------|--------|
+
+## Deploy / Release Checklist
+
+N/A:
+
+## AI Involvement Note
+
+N/A:
+
+## Brownfield Impact Summary / 遗留影响摘要
+
+## REQ/AC to Design Decision Mapping / 追溯映射
+
+## Risks, Rollback, and Migration / 风险、回滚和迁移
+
+## Alternatives / 替代方案

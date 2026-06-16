@@ -26,6 +26,8 @@ Before non-trivial change, spec, plan, apply, check, or archive work, read `.sdc
 
 Before planning, implementation, or delivery check, read `.sdc/expert-routing.md` if it exists. Select only the relevant expert profiles and disclose them in `context-pack.md`, check reports, or archive summaries when they materially affect the work.
 
+Before final planning or delivery check, apply `artifact-output-contracts.md` when available. Triggered output artifacts must be produced or explicitly marked `N/A` with evidence-based reason.
+
 Use this split:
 
 - Product knowledge: goals, users, roles, permissions, domain concepts, flows, business rules, acceptance logic, product decisions, non-goals.
@@ -33,6 +35,8 @@ Use this split:
 - Memory: candidates, procedures, lessons, gotchas, episodic summaries. Memory is not project truth until confirmed and promoted.
 
 Every final `spec.md`, `design.md`, and `context-pack.md` must list the knowledge sources used. If knowledge is missing, stale, or conflicts with the change, write a Knowledge Gap or Stop-Line Report instead of guessing.
+
+Every final `spec.md`, `design.md`, and `context-pack.md` must include an Artifact Output Contract. The contract records which diagrams, API/data contracts, UX states, test matrix, deploy checklist, and AI involvement notes are required, produced, or N/A.
 
 During apply/check, record durable discoveries in `knowledge-candidates.md` rather than silently editing long-lived knowledge. Archive decides what gets promoted.
 
@@ -146,6 +150,7 @@ Stop and produce a report when:
 - Relevant knowledge is missing, stale, unconfirmed, or conflicts with the current change.
 - Common Ground is missing, stale, open, or conflicts with the current change.
 - A relevant expert profile or standards pack was not considered for high-risk plan/apply/check work.
+- A triggered output artifact is missing, contradictory, or marked N/A without evidence.
 - Requirements, acceptance criteria, high-impact decisions, or impact boundaries are unresolved.
 - Implementation requires changing behavior, public contracts, data, permissions, security, architecture, or scope beyond the approved artifacts.
 - Validation cannot prove the relevant acceptance criteria.
@@ -205,6 +210,21 @@ Rules:
 - In check/review, report missing profile coverage when the actual diff touched an unreviewed risk area.
 - Imported company/team standards outrank generic expert guidance when relevant.
 - Do not add new public slash commands for individual experts.
+
+## Artifact Output Contract Discipline
+
+SDC stages must have explicit input/output contracts, but the contract stays lightweight while discovery is open.
+
+Rules:
+
+- During change intake, collect input sources and likely output triggers inside the normal 4 intake categories.
+- While Discovery Gate is open, keep output requirements as Draft/Proposed and do not generate final diagrams, API designs, schemas, or release plans.
+- During plan, produce only the triggered artifacts: process/state diagram, sequence/integration diagram, API/contract specification, data/migration contract, UX flow/states, test matrix, deploy/release checklist, and AI involvement note.
+- `Test Matrix` is required for final plan/check because every change needs AC validation.
+- Required outputs must point to a concrete section or file.
+- N/A outputs must include an evidence-based reason.
+- During check/review, compare the actual diff against the artifact contract and block delivery when new API/data/deploy/security/UX/process impact is not captured.
+- Output contracts cannot create unconfirmed product facts, architecture choices, schemas, permissions, rollout policies, or integrations. Put those in Decision Ledger as `Proposed` until confirmed.
 
 ## Company Standards Pack Discipline
 

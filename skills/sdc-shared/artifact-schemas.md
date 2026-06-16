@@ -156,7 +156,7 @@ Name rules:
 | `proposal.md` | Why the change exists, goals, non-goals, scope, acceptance direction, risks. |
 | `spec.md` | Final or draft requirement spec with SCN/REQ/AC, invariants, validation strategy, and traceability. |
 | `impact.md` | Brownfield per-change impact analysis after requirement confirmation. |
-| `design.md` | Confirmed technical design, tradeoffs, impact boundaries, rollback and migration notes. |
+| `design.md` | Confirmed technical design, tradeoffs, impact boundaries, rollback and migration notes, plus triggered output artifacts. |
 | `tasks.md` | Thin, test-first, traceable execution tasks. |
 | `context-pack.md` | Short handoff package for execution agents: goal, knowledge sources, boundaries, forbidden assumptions, validation commands. |
 | `knowledge-candidates.md` | Candidate knowledge discovered during apply/check; archive decides what becomes durable. |
@@ -202,6 +202,8 @@ Before final spec, plan, apply, or check, agents must read `.sdc/knowledge/index
 Before non-trivial change, spec, plan, apply, check, or archive work, agents must read `.sdc/common-ground.md`. OPEN items block final artifacts when they affect scope, acceptance, data, permissions, architecture, security, rollout, or compatibility. WORKING items must be cited and cannot silently become ESTABLISHED.
 
 During plan/check/archive, agents should read `.sdc/expert-routing.md` and select the smallest relevant expert profiles. Expert profile guidance can create questions, checks, and investigation tasks, but it cannot create unconfirmed product facts or technical decisions.
+
+During plan/check, agents should apply `artifact-output-contracts.md`. Triggered outputs such as diagrams, API/data contracts, UX flow, test matrix, deploy checklist, and AI involvement note must be produced or explicitly marked N/A with evidence.
 
 Every durable knowledge row should record:
 
@@ -277,6 +279,7 @@ A durable spec should include:
 - Acceptance criteria `AC-*`, preferably Given/When/Then.
 - Non-functional requirements and external constraints.
 - Validation strategy.
+- Artifact Output Contract with required outputs or N/A reasons.
 - Risks, assumptions, open questions, conflicts.
 - Traceability matrix.
 - Next SDC step.
@@ -290,6 +293,8 @@ A durable spec should include:
 - Impact scope and non-scope.
 - Key tradeoffs.
 - Data, API, state, or interaction changes as relevant.
+- Artifact Output Contract.
+- Process/state diagrams, sequence/integration diagrams, API/data contracts, UX flow/states, test matrix, deploy/release checklist, and AI involvement note as triggered.
 - Brownfield/Unknown `impact.md` summary; for confirmed Greenfield, write `N/A` with reason.
 - Risk, rollback, and migration notes.
 - REQ/AC to design decision mapping.
@@ -303,6 +308,7 @@ A durable spec should include:
 - Knowledge gaps, empty only when none remain.
 - Common Ground used.
 - Expert profiles used.
+- Artifact Output Contract summary.
 - Confirmed product knowledge.
 - Confirmed technical knowledge.
 - Execution boundaries.

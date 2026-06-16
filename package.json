@@ -1,7 +1,7 @@
 {
   "name": "sdc-spec",
   "version": "1.2.1",
-  "description": "SDC is a lightweight spec-driven coding workflow for Claude Code and Codex: requirement discovery, common ground, expert routing, product/technical knowledge, context packs, legacy impact analysis, traceability, delivery checks, and knowledge compaction.",
+  "description": "SDC is a lightweight spec-driven coding workflow for Claude Code and Codex: requirement discovery, common ground, expert routing, artifact output contracts, product/technical knowledge, context packs, legacy impact analysis, traceability, delivery checks, and knowledge compaction.",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -56,6 +56,7 @@
     "knowledge-base",
     "common-ground",
     "expert-routing",
+    "artifact-output-contracts",
     "context-pack",
     "consent-gates",
     "discovery",
