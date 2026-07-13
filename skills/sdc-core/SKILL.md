@@ -10,7 +10,7 @@ description: "Use when a development request must be routed through the SDC life
 
 Use this command as the unified SDC entry. Interpret "$ARGUMENTS" as the user's current intent and route to the correct SDC stage:
 
-- initialize workspace and company standards inside Claude Code -> `/sdc:init`
+- initialize workspace -> `/sdc:init`
 - align shared assumptions and expert routing -> read `.sdc/common-ground.md` and `.sdc/expert-routing.md` inside the chosen SDC stage
 - import existing company/team standards -> initialize first, then place or import them into `.sdc/standards/company/` with a routing index
 - new requirement/change -> read knowledge index, `/sdc:change`, then confirmed specification and `/sdc:plan`
