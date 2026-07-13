@@ -23,12 +23,26 @@ SDC packages a complete spec-driven development lifecycle into a small set of Cl
 - analyze legacy change impact after requirements are confirmed
 - turn requirements into traceable `SCN -> REQ -> AC -> task -> evidence` plans
 - execute implementation tasks incrementally
+- preflight plans, carry exact global constraints and task interfaces, and exchange large task/review inputs through local files
+- return separate Spec Compliance and Code Quality verdicts from one read-only task review, then run one final whole-change review
 - run combined validation, review, test, quality, bug, impact, and repo checks
 - archive completed changes into stable project specs
 - run Knowledge Compact Gate to recommend durable updates to product knowledge, technical knowledge, memory, decisions, standards, reports, AGENTS.md, project context, or project cognition
 - generate project-level AI guardrails
 
 The plugin is intentionally narrow. It does not add external services, network integrations, MCP servers, default hooks, telemetry, or background processes.
+
+## Codex Portal Package
+
+SDC also ships a Codex-native marketplace manifest at `.agents/plugins/marketplace.json`. The Codex plugin manifest explicitly sets `hooks: {}` so native skill discovery does not fall back to Claude SessionStart hooks.
+
+Build the portal artifact from a clean worktree:
+
+```bash
+npm run package:codex -- --output /tmp/sdc-codex-plugin.zip
+```
+
+The archive is rootless and contains only the Codex manifest, generated public and advanced skills, runtime handoff helpers, the SDC CLI, and required project/license documents. The packager normalizes timestamps, preserves executable modes, writes a SHA-256 file, and rejects dirty release builds by default.
 
 ## Claude Code Commands
 
@@ -67,7 +81,7 @@ It is especially useful for:
 
 ## Safety and Privacy Position
 
-SDC is prompt-only and local-first.
+SDC is local-first. It combines skills and prompts with deterministic local CLI/helper scripts; it does not run a service or upload project data by itself.
 
 - No telemetry
 - No analytics
@@ -95,7 +109,9 @@ It is complementary to existing coding plugins:
 Before submitting:
 
 - Run `node scripts/audit-release.mjs`
-- Run `claude plugin validate .`
+- Run `python3 evals/sdc-flow/run_sdc_flow.py`
+- Build the rootless Codex portal package twice and confirm matching SHA-256 values
+- Run `node bin/install.js`, then `claude plugin validate "$HOME/.claude/plugins/marketplaces/sdc-local"`
 - Run `npm pack --dry-run`
 - Run `node bin/install.js uninstall`
 - Run `node bin/install.js`

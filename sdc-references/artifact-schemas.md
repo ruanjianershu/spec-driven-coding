@@ -71,6 +71,12 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 │   ├── impact/
 │   ├── repo-analysis/
 │   └── README.md
+├── runtime/              # git-ignored execution scratch
+│   └── <change-id>/
+│       ├── progress.md
+│       ├── task-T###-brief.md
+│       ├── task-T###-report.md
+│       └── task-T###-review-package.md
 ├── templates/
 │   ├── spec.md
 │   ├── discovery.md
@@ -114,6 +120,7 @@ This reference defines durable SDC files. Use it when creating, repairing, valid
 | `.sdc/decisions/` | Durable product, technical, and architecture decisions. |
 | `.sdc/reviews/` | Review reports. |
 | `.sdc/reports/` | Bug, impact, repo-analysis, test, and quality reports. |
+| `.sdc/runtime/` | Git-ignored task briefs, reports, diff packages, and progress ledgers used for context-efficient execution and recovery. It is not durable project truth. |
 | `.sdc/templates/` | Templates used to create consistent artifacts. |
 
 ## Active Change Structure
@@ -294,12 +301,14 @@ A durable spec should include:
 - Key tradeoffs.
 - Data, API, state, or interaction changes as relevant.
 - Artifact Output Contract.
+- Exact Global Constraints that bind every task.
+- Plan Preflight status and findings.
 - Process/state diagrams, sequence/integration diagrams, API/data contracts, UX flow/states, test matrix, deploy/release checklist, and AI involvement note as triggered.
 - Brownfield/Unknown `impact.md` summary; for confirmed Greenfield, write `N/A` with reason.
 - Risk, rollback, and migration notes.
 - REQ/AC to design decision mapping.
 
-`tasks.md` must use the shared task format from `workflow-standards.md`.
+`tasks.md` must use the shared task format from `workflow-standards.md`. Every task declares Files, Consumes, Produces, Verify, Expected, Review, Evidence, and Source. Completed tasks require approved review and non-pending evidence.
 
 `context-pack.md` should include:
 
@@ -309,6 +318,8 @@ A durable spec should include:
 - Common Ground used.
 - Expert profiles used.
 - Artifact Output Contract summary.
+- Exact Global Constraints.
+- Execution Orchestration mode, runtime workspace, review policy, and final-review requirement.
 - Confirmed product knowledge.
 - Confirmed technical knowledge.
 - Execution boundaries.
@@ -316,6 +327,10 @@ A durable spec should include:
 - Task and traceability summary.
 - Validation commands.
 - Knowledge candidate routing.
+
+Runtime task briefs, implementer reports, review packages, and progress ledger are created under `.sdc/runtime/<change-id>/`. They are intentionally ignored. Durable review and validation conclusions must be copied into `tasks.md`, `notes.md`, review/test reports, or archive evidence.
+
+Completed delivery uses a machine-readable durable review shape in `notes.md` (or `current/apply.md`): one `### T###` block per completed task with `Spec Compliance: Approved`, `Code Quality: Approved`, and an `Evidence` reference to an existing local Markdown anchor or `git:<commit>`. `Final Whole-Change Review` requires the same two verdicts plus durable evidence.
 
 ## Archive Shape
 

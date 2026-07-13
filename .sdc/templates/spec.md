@@ -1,9 +1,10 @@
+<!-- SDC-MANAGED path=templates/spec.md; sha256=2dba2e53b5538ce6ec75c7bea8f9f779e4f5ba0c76227d2da8839427dff4efd4 -->
 # Spec
 
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.2.1
+- Schema: SDC 1.3.0
 - Source:
 
 ## 1. Knowledge Sources Used

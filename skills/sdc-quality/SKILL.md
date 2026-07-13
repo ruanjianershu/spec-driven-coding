@@ -1,6 +1,6 @@
 ---
 name: sdc-quality
-description: "Perform final delivery quality gate across UX, docs, code quality, security, performance, and maintainability."
+description: "Use when an SDC change needs its final cross-cutting delivery quality gate."
 ---
 
 # Skill: SDC 全面质量检查 sdc-quality
@@ -22,11 +22,12 @@ description: "Perform final delivery quality gate across UX, docs, code quality,
 
 Load only what is needed:
 
-- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-quality`.
-- Quality gate: `../sdc-shared/delivery-gates.md`.
-- Evidence and stop-line rules: `../sdc-shared/workflow-standards.md`.
-- Common Ground and expert routing: `../sdc-shared/common-ground.md`, `../sdc-shared/expert-routing.md`.
-- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`.
+- Role contract: `../../sdc-references/role-contracts.md`, section `sdc-quality`.
+- Quality gate: `../../sdc-references/delivery-gates.md`.
+- Evidence and stop-line rules: `../../sdc-references/workflow-standards.md`.
+- Common Ground and expert routing: `../../sdc-references/common-ground.md`, `../../sdc-references/expert-routing.md`.
+- Artifact output contracts: `../../sdc-references/artifact-output-contracts.md`.
+- Execution orchestration: `../../sdc-references/execution-orchestration.md`.
 
 ## 前置检查
 
@@ -40,6 +41,7 @@ Load only what is needed:
 - context-pack and knowledge-candidates evidence.
 - Common Ground and Expert Profiles Used evidence.
 - Artifact Output Contract evidence: required diagrams, contracts, matrices, checklists, or explicit N/A reasons.
+- Execution Orchestration evidence: passed preflight, approved per-task reviews, resolved `Cannot verify` items, and approved final whole-change review.
 
 缺少关键证据时，不能给出可交付结论。
 
@@ -90,3 +92,4 @@ Load only what is needed:
 - OPEN 或高影响 WORKING Common Ground 参与交付结论时必须 no-ship。
 - 必须给出明确 ship / no-ship 结论。
 - 触发式交付物缺失或与实际 diff 不一致时必须 no-ship。
+- 已完成任务缺少双判定审查、证据或最终整体审查时必须 no-ship。

@@ -1,6 +1,6 @@
 ---
 name: sdc-review
-description: "Review code like a senior engineer across architecture, quality, security, performance, and maintainability."
+description: "Use when implemented code or a complete SDC change needs an independent engineering review."
 ---
 
 # Skill: SDC 代码审查 sdc-review
@@ -24,12 +24,13 @@ Brownfield/Legacy 项目还必须复核实际改动是否符合当前 change 的
 
 Load only what is needed:
 
-- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-review`.
-- Review gate: `../sdc-shared/delivery-gates.md`.
-- Shared evidence and stop-line rules: `../sdc-shared/workflow-standards.md`.
-- Expert routing: `../sdc-shared/expert-routing.md`.
-- Legacy impact review: `../sdc-shared/legacy-impact-gate.md`.
-- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`.
+- Role contract: `../../sdc-references/role-contracts.md`, section `sdc-review`.
+- Review gate: `../../sdc-references/delivery-gates.md`.
+- Shared evidence and stop-line rules: `../../sdc-references/workflow-standards.md`.
+- Expert routing: `../../sdc-references/expert-routing.md`.
+- Legacy impact review: `../../sdc-references/legacy-impact-gate.md`.
+- Artifact output contracts: `../../sdc-references/artifact-output-contracts.md`.
+- Execution orchestration and reviewer independence: `../../sdc-references/execution-orchestration.md`.
 
 ## 审查范围
 
@@ -51,6 +52,9 @@ Load only what is needed:
 
 - Findings 先行，按严重程度排序。
 - 每个 finding 必须有文件/行号、影响、修复建议。
+- 审查必须只读，不得修改 working tree、index、HEAD、branch、plan 或 review package。
+- Task review 必须分别给出 Spec Compliance 和 Code Quality 结论；diff 无法证明的要求列为 `Cannot verify from diff`。
+- 不接受 controller/implementer 对 finding 的忽略、压制或预先降级；plan-mandated defect 交给用户裁决。
 - 不要编造问题；没有问题就明确说没有发现阻塞问题。
 - 将 confirmed defects、risks、optional improvements 分开。
 - 测试缺口和上下文限制要明确写出。
@@ -98,3 +102,4 @@ Load only what is needed:
 - 无问题时不得为了凑数编造 finding。
 - 遗留项目实际 diff 超出 `impact.md` 必须标记为严重风险。
 - 高风险 diff 缺少对应专家视角或标准覆盖时必须标记为风险。
+- Critical/Important finding 或影响验收的 `Cannot verify` 未解决时不能 Approved。

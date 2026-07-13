@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=knowledge/index.md; sha256=4116e1d09f5993ffcb45644db47cf349d932e4b8702cbe09f6f904e7028d67e5 -->
 # Knowledge Index
 
 > 每次非平凡 change/plan/apply 前先读这里，再按任务打开相关知识文件。

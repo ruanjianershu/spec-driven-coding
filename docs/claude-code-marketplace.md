@@ -75,13 +75,13 @@ Use this concise description when submitting:
 
 Use this longer description when a form allows more context:
 
-> SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills. It creates a local `.sdc/` workspace for specs, changes, product knowledge, technical knowledge, memory candidates, standards, decisions, and reports; uses shared English Role Prompt Contracts for expert behavior, evidence rules, and output discipline while keeping each SKILL.md compact; requires Mandatory Change Intake Gate before creating change files; continues Discovery Gate with minimal draft artifacts for unresolved requirements before confirmed specs; forbids write-ahead confirmation patterns such as "if wrong, tell me and I will update now"; creates project cognition for brownfield repositories; runs Change Impact Gate after legacy requirements are confirmed; preserves `SCN -> REQ -> AC -> task -> evidence` traceability; uses consent gates so high-impact AI suggestions do not become silent defaults; generates a short context pack for execution; applies changes incrementally; runs combined validation, review, test, quality, bug, impact, and repo checks; archives completed changes into stable project specs; and runs Knowledge Compact Gate to recommend durable updates to product knowledge, technical knowledge, memory, decisions, standards, reports, AGENTS.md, project context, or project cognition. SDC is local-first and prompt-only: it ships no MCP server, no telemetry, no background daemon, no default hooks, and no external service dependency.
+> SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills. It creates a local `.sdc/` workspace for specs, changes, product knowledge, technical knowledge, memory candidates, standards, decisions, and reports; uses shared English Role Prompt Contracts for expert behavior, evidence rules, and output discipline while keeping each SKILL.md compact; requires Mandatory Change Intake Gate before creating change files; continues Discovery Gate with minimal draft artifacts for unresolved requirements before confirmed specs; forbids write-ahead confirmation patterns such as "if wrong, tell me and I will update now"; creates project cognition for brownfield repositories; runs Change Impact Gate after legacy requirements are confirmed; preserves `SCN -> REQ -> AC -> task -> evidence` traceability; uses consent gates so high-impact AI suggestions do not become silent defaults; generates a short context pack for execution; applies changes incrementally; runs combined validation, review, test, quality, bug, impact, and repo checks; archives completed changes into stable project specs; and runs Knowledge Compact Gate to recommend durable updates to product knowledge, technical knowledge, memory, decisions, standards, reports, AGENTS.md, project context, or project cognition. SDC is local-first and uses deterministic local helper scripts: it ships no MCP server, no telemetry, no background daemon, no active hooks, and no external service dependency.
 
 ## Review Notes
 
 For official review, emphasize:
 
-- prompt-only workflow plugin
+- local-first skills workflow with deterministic local helpers
 - no telemetry or analytics
 - no external service integration
 - no MCP server or background process
@@ -96,7 +96,8 @@ For official review, emphasize:
 ```bash
 node scripts/audit-release.mjs
 node --check bin/install.js
-claude plugin validate .
+node bin/install.js
+claude plugin validate "$HOME/.claude/plugins/marketplaces/sdc-local"
 npm pack --dry-run
 ```
 

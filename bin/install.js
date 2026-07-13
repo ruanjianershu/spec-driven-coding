@@ -19,9 +19,11 @@ const RESET = '\x1b[0m';
 
 const PLUGIN_ENTRIES = [
   'skills',
+  'sdc-references',
   'commands',
   '.claude-plugin',
   '.codex-plugin',
+  '.agents',
   'docs/claude-code-marketplace.md',
   'docs/official-submission.md',
   'docs/release-checklist.md',
@@ -33,6 +35,7 @@ const PLUGIN_ENTRIES = [
   'LICENSE',
   'package.json',
   'sdc-cli.py',
+  'scripts',
   'bin',
 ];
 
@@ -50,14 +53,14 @@ const ADVANCED_SKILL_NAMES = [
 ];
 
 const PUBLIC_WORKFLOW_SKILLS = [
-  { dir: 'sdc-core', name: 'sdc', command: 'sdc' },
-  { dir: 'sdc-init', name: 'sdc-init', command: 'init' },
-  { dir: 'sdc-change', name: 'sdc-change', command: 'change' },
-  { dir: 'sdc-plan', name: 'sdc-plan', command: 'plan' },
-  { dir: 'sdc-apply', name: 'sdc-apply', command: 'apply' },
-  { dir: 'sdc-check', name: 'sdc-check', command: 'check' },
-  { dir: 'sdc-archive', name: 'sdc-archive', command: 'archive' },
-  { dir: 'sdc-harness', name: 'sdc-harness', command: 'harness' }
+  { dir: 'sdc-core', name: 'sdc', command: 'sdc', skillDescription: 'Use when a development request must be routed through the SDC lifecycle.' },
+  { dir: 'sdc-init', name: 'sdc-init', command: 'init', skillDescription: 'Use when a project needs an SDC workspace, project cognition, or standards import.' },
+  { dir: 'sdc-change', name: 'sdc-change', command: 'change', skillDescription: 'Use when starting or clarifying a focused requirement change under SDC governance.' },
+  { dir: 'sdc-plan', name: 'sdc-plan', command: 'plan', skillDescription: 'Use when a confirmed SDC change needs an executable design, task plan, and context handoff.' },
+  { dir: 'sdc-apply', name: 'sdc-apply', command: 'apply', skillDescription: 'Use when an approved SDC plan is ready for implementation and evidence capture.' },
+  { dir: 'sdc-check', name: 'sdc-check', command: 'check', skillDescription: 'Use when an SDC change needs validation, review, testing, quality, impact, or repository checks.' },
+  { dir: 'sdc-archive', name: 'sdc-archive', command: 'archive', skillDescription: 'Use when a completed SDC change is ready for archival and durable knowledge compaction.' },
+  { dir: 'sdc-harness', name: 'sdc-harness', command: 'harness', skillDescription: 'Use when project-level AI guardrails must be generated from SDC standards.' }
 ];
 
 const IGNORED_ENTRIES = new Set([
@@ -114,6 +117,7 @@ function copyIfExists(src, dest) {
 
 function copyPlugin(dest, options = {}) {
   const includeRootSkills = options.includeRootSkills !== false;
+  const includeClaudeSkillLayout = options.includeClaudeSkillLayout !== false;
   const claudeSkillSourceRoot = options.claudeSkillSourceRoot || path.join(dest, 'skills');
   const includePublicWorkflowSkills = options.includePublicWorkflowSkills === true;
 
@@ -128,7 +132,11 @@ function copyPlugin(dest, options = {}) {
     copyIfExists(path.join(projectRoot, entry), path.join(dest, entry));
   }
 
-  ensureClaudeSkillLayout(dest, claudeSkillSourceRoot);
+  if (includeClaudeSkillLayout) {
+    ensureClaudeSkillLayout(dest, claudeSkillSourceRoot);
+  } else {
+    fs.rmSync(path.join(dest, '.claude'), { recursive: true, force: true });
+  }
 
   if (includeRootSkills && includePublicWorkflowSkills) {
     ensurePublicWorkflowSkills(path.join(dest, 'skills'));
@@ -136,6 +144,36 @@ function copyPlugin(dest, options = {}) {
 
   if (!includeRootSkills) {
     fs.rmSync(path.join(dest, 'skills'), { recursive: true, force: true });
+  }
+}
+
+function replacePluginTransactionally(dest, options = {}) {
+  const stage = `${dest}.stage`;
+  const backup = `${dest}.backup`;
+
+  if (!fs.existsSync(dest) && fs.existsSync(backup)) {
+    fs.renameSync(backup, dest);
+  } else if (fs.existsSync(dest) && fs.existsSync(backup)) {
+    fs.rmSync(backup, { recursive: true, force: true });
+  }
+  fs.rmSync(stage, { recursive: true, force: true });
+
+  let previousMoved = false;
+  try {
+    copyPlugin(stage, options);
+    if (fs.existsSync(dest)) {
+      fs.renameSync(dest, backup);
+      previousMoved = true;
+    }
+    fs.renameSync(stage, dest);
+    fs.rmSync(backup, { recursive: true, force: true });
+  } catch (error) {
+    fs.rmSync(stage, { recursive: true, force: true });
+    if (previousMoved && fs.existsSync(backup)) {
+      fs.rmSync(dest, { recursive: true, force: true });
+      fs.renameSync(backup, dest);
+    }
+    throw error;
   }
 }
 
@@ -148,9 +186,9 @@ function ensureClaudeSkillLayout(pluginRoot, sourceRoot = path.join(pluginRoot, 
   fs.rmSync(claudeSkillsRoot, { recursive: true, force: true });
   fs.mkdirSync(claudeSkillsRoot, { recursive: true });
 
-  const shared = path.join(sourceRoot, 'sdc-shared');
-  if (fs.existsSync(shared)) {
-    copyDir(shared, path.join(claudeSkillsRoot, 'sdc-shared'));
+  const references = path.join(pluginRoot, 'sdc-references');
+  if (fs.existsSync(references)) {
+    copyDir(references, path.join(pluginRoot, '.claude', 'sdc-references'));
   }
 
   for (const skillName of ADVANCED_SKILL_NAMES) {
@@ -177,19 +215,20 @@ function parseCommandFile(commandName) {
 }
 
 function writeGeneratedWorkflowSkill(skillsRoot, workflow) {
-  const { description, body } = parseCommandFile(workflow.command);
+  const { body } = parseCommandFile(workflow.command);
+  const skillBody = body.replace(/`sdc-references\//g, '`../../sdc-references/');
   const skillRoot = path.join(skillsRoot, workflow.dir);
   fs.rmSync(skillRoot, { recursive: true, force: true });
   fs.mkdirSync(skillRoot, { recursive: true });
   fs.writeFileSync(path.join(skillRoot, 'SKILL.md'), `---
 name: ${workflow.name}
-description: ${JSON.stringify(description)}
+description: ${JSON.stringify(workflow.skillDescription)}
 ---
 
 > Codex/Hermes workflow skill generated from \`commands/${workflow.command}.md\`.
 > Treat the user's current request as \`$ARGUMENTS\`. In Codex/Hermes, route to the matching SDC skill/workflow instead of expecting \`/sdc:*\` slash-command support.
 
-${body}`);
+${skillBody}`);
 }
 
 function ensurePublicWorkflowSkills(skillsRoot) {
@@ -211,11 +250,15 @@ function writeCompleteAgentSkillLayout(targetRoot) {
   fs.rmSync(path.join(targetRoot, 'sdc-shared'), { recursive: true, force: true });
 
   const skillsRoot = path.join(projectRoot, 'skills');
-  for (const skillName of [...ADVANCED_SKILL_NAMES, 'sdc-shared']) {
+  for (const skillName of ADVANCED_SKILL_NAMES) {
     const srcPath = path.join(skillsRoot, skillName);
     if (fs.existsSync(srcPath)) {
       copyDir(srcPath, path.join(targetRoot, skillName));
     }
+  }
+  const references = path.join(projectRoot, 'sdc-references');
+  if (fs.existsSync(references)) {
+    copyDir(references, path.join(path.dirname(targetRoot), 'sdc-references'));
   }
   ensurePublicWorkflowSkills(targetRoot);
 }
@@ -230,7 +273,10 @@ function writeLocalCodexMarketplace(home) {
   const marketplaceFile = path.join(marketplaceRoot, '.agents', 'plugins', 'marketplace.json');
   const pluginRoot = path.join(marketplaceRoot, 'plugins', 'sdc');
 
-  copyPlugin(pluginRoot, { includePublicWorkflowSkills: true });
+  replacePluginTransactionally(pluginRoot, {
+    includePublicWorkflowSkills: true,
+    includeClaudeSkillLayout: false
+  });
   fs.mkdirSync(path.dirname(marketplaceFile), { recursive: true });
   fs.writeFileSync(marketplaceFile, JSON.stringify({
     name: SDC_MARKETPLACE_NAME,
@@ -248,7 +294,7 @@ function writeLocalCodexMarketplace(home) {
           installation: 'AVAILABLE',
           authentication: 'ON_INSTALL'
         },
-        category: 'Coding'
+        category: 'Developer Tools'
       }
     ]
   }, null, 2) + '\n');
@@ -297,8 +343,16 @@ function writeCodexPluginCache(home) {
   );
   const versionedPluginRoot = path.join(cachePluginRoot, packageVersion());
 
-  fs.rmSync(cachePluginRoot, { recursive: true, force: true });
-  copyPlugin(versionedPluginRoot, { includePublicWorkflowSkills: true });
+  fs.mkdirSync(cachePluginRoot, { recursive: true });
+  replacePluginTransactionally(versionedPluginRoot, {
+    includePublicWorkflowSkills: true,
+    includeClaudeSkillLayout: false
+  });
+  for (const entry of fs.readdirSync(cachePluginRoot, { withFileTypes: true })) {
+    if (entry.name !== packageVersion()) {
+      fs.rmSync(path.join(cachePluginRoot, entry.name), { recursive: true, force: true });
+    }
+  }
 
   return versionedPluginRoot;
 }
@@ -409,6 +463,8 @@ function removeCodexDirectSkills(home) {
       }
     }
   }
+  fs.rmSync(path.join(home, '.agents', 'sdc-references'), { recursive: true, force: true });
+  fs.rmSync(path.join(home, '.codex', 'sdc-references'), { recursive: true, force: true });
 
   return removedPaths;
 }
@@ -472,6 +528,8 @@ function uninstallCodex(home) {
       }
     }
   }
+  fs.rmSync(path.join(home, '.agents', 'sdc-references'), { recursive: true, force: true });
+  fs.rmSync(path.join(home, '.codex', 'sdc-references'), { recursive: true, force: true });
 
   log(GREEN, '✅ Codex SDC 已卸载');
 }
@@ -480,6 +538,7 @@ function uninstallHermes(home) {
   log(BLUE, '\n卸载 Hermes Agent 中的 SDC...');
   fs.rmSync(path.join(home, '.hermes', 'skills', 'sdc'), { recursive: true, force: true });
   fs.rmSync(path.join(home, '.hermes', 'skills', 'sdc-spec'), { recursive: true, force: true });
+  fs.rmSync(path.join(home, '.hermes', 'skills', 'sdc-references'), { recursive: true, force: true });
   log(GREEN, '✅ Hermes Agent SDC 已卸载');
 }
 
@@ -604,6 +663,12 @@ function installToPlatform(platform) {
 
 // Main
 const command = (process.argv[2] || 'install').toLowerCase();
+if (command === 'sync-public-skills') {
+  ensurePublicWorkflowSkills(path.join(projectRoot, 'skills'));
+  log(GREEN, '✅ Codex/Hermes public workflow skills synchronized from commands/.');
+  process.exit(0);
+}
+
 if (['uninstall', 'remove', 'clean'].includes(command)) {
   uninstallAll();
   process.exit(0);

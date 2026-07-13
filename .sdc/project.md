@@ -35,7 +35,7 @@ SDC 是一个面向 Claude Code 和 Codex 的轻量 Spec-Driven-Coding skill/plu
 | Python 语法检查 | `python3 -m py_compile sdc-cli.py` |
 | Node 语法检查 | `node --check bin/install.js` |
 | JSON manifest 检查 | `node -e 'for (const f of ["package.json",".claude-plugin/plugin.json",".claude-plugin/marketplace.json",".codex-plugin/plugin.json"]) JSON.parse(require("fs").readFileSync(f,"utf8"))'` |
-| Claude 插件校验 | `claude plugin validate .` |
+| Claude 插件校验 | `node bin/install.js` 后运行 `claude plugin validate "$HOME/.claude/plugins/marketplaces/sdc-local"` |
 | npm 打包预检 | `npm pack --dry-run` |
 | SDC change 校验 | `python3 sdc-cli.py validate <change-id>` |
 

@@ -11,19 +11,19 @@
 ## Confirmed Decisions
 
 - Keep public commands unchanged.
-- Add `skills/sdc-shared/artifact-output-contracts.md`.
+- Add `sdc-references/artifact-output-contracts.md`.
 - Require final `Test Matrix`.
 - Allow optional outputs as N/A only with evidence reason.
 - Add CLI/eval/audit enforcement.
 
 ## Changed Files
 
-- `skills/sdc-shared/artifact-output-contracts.md`
-- `skills/sdc-shared/workflow-standards.md`
-- `skills/sdc-shared/delivery-gates.md`
-- `skills/sdc-shared/artifact-schemas.md`
-- `skills/sdc-shared/role-contracts.md`
-- `skills/sdc-shared/workflow-manifest.yaml`
+- `sdc-references/artifact-output-contracts.md`
+- `sdc-references/workflow-standards.md`
+- `sdc-references/delivery-gates.md`
+- `sdc-references/artifact-schemas.md`
+- `sdc-references/role-contracts.md`
+- `sdc-references/workflow-manifest.yaml`
 - `commands/change.md`
 - `commands/plan.md`
 - `commands/apply.md`

@@ -1,6 +1,6 @@
 ---
 name: sdc-spec
-description: "Turn vague requirements into structured, verifiable specs with acceptance criteria, test plan, risks, and next steps."
+description: "Use when requirements must be refined into a structured SDC specification after discovery."
 ---
 
 # Skill: SDC 规范生成 sdc-spec
@@ -28,12 +28,12 @@ SCN-* -> REQ-* -> AC-* -> T### -> validation evidence
 
 Load only what is needed:
 
-- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-spec`.
-- Decision, traceability, and stop-line rules: `../sdc-shared/workflow-standards.md`.
-- Common Ground rules: `../sdc-shared/common-ground.md`.
-- If discovery is incomplete: `../sdc-shared/discovery-gate.md`.
-- Spec schema: `../sdc-shared/artifact-schemas.md`.
-- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`.
+- Role contract: `../../sdc-references/role-contracts.md`, section `sdc-spec`.
+- Decision, traceability, and stop-line rules: `../../sdc-references/workflow-standards.md`.
+- Common Ground rules: `../../sdc-references/common-ground.md`.
+- If discovery is incomplete: `../../sdc-references/discovery-gate.md`.
+- Spec schema: `../../sdc-references/artifact-schemas.md`.
+- Artifact output contracts: `../../sdc-references/artifact-output-contracts.md`.
 
 ## 执行步骤
 
@@ -49,7 +49,7 @@ Load only what is needed:
 
 ## Spec 要求
 
-参考 `../sdc-shared/artifact-schemas.md` 的 spec shape。最低必须包含：
+参考 `../../sdc-references/artifact-schemas.md` 的 spec shape。最低必须包含：
 
 - 文档状态：Draft / Confirmed。
 - Knowledge Sources Used。

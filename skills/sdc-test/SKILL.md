@@ -1,6 +1,6 @@
 ---
 name: sdc-test
-description: "Run and assess tests with coverage, failure details, boundary cases, and improvement suggestions."
+description: "Use when an SDC change needs test execution, failure analysis, or acceptance-coverage assessment."
 ---
 
 # Skill: SDC 测试驱动 sdc-test
@@ -22,11 +22,12 @@ description: "Run and assess tests with coverage, failure details, boundary case
 
 Load only what is needed:
 
-- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-test`.
-- Test gate: `../sdc-shared/delivery-gates.md`.
-- Traceability and evidence rules: `../sdc-shared/workflow-standards.md`.
-- Expert routing: `../sdc-shared/expert-routing.md`, profile `test-strategy`.
-- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`, especially Test Matrix requirements.
+- Role contract: `../../sdc-references/role-contracts.md`, section `sdc-test`.
+- Test gate: `../../sdc-references/delivery-gates.md`.
+- Traceability and evidence rules: `../../sdc-references/workflow-standards.md`.
+- Expert routing: `../../sdc-references/expert-routing.md`, profile `test-strategy`.
+- Artifact output contracts: `../../sdc-references/artifact-output-contracts.md`, especially Test Matrix requirements.
+- Execution orchestration: `../../sdc-references/execution-orchestration.md`, especially per-task evidence and final review requirements.
 
 ## 执行步骤
 
@@ -82,5 +83,6 @@ Load only what is needed:
 - AC 未覆盖必须明确标出。
 - context-pack 中的 `test-strategy` 或其他专家风险必须有测试/替代验证响应。
 - final plan/check 中缺少 Test Matrix 或 AC 映射时不能视为充分验证。
+- completed task 的 Evidence 必须对应实际命令和结果；`Pending`、仅口头声称或未解决的 `Cannot verify` 不算测试证据。
 - 覆盖率不能替代行为验证。
 - 必须覆盖关键异常和边界情况，或说明无法覆盖的风险。

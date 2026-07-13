@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=templates/change.md; sha256=f812480861b318442bc9af5a9d5f61c35a99817d092bc1b6ace735a36c10f564 -->
 # Change Proposal
 
 ## Knowledge Sources Used

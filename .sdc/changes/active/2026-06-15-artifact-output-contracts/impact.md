@@ -11,7 +11,7 @@
 
 - User-facing workflow prompts: `commands/change.md`, `commands/plan.md`, `commands/check.md`, `commands/apply.md`, `commands/archive.md`.
 - Advanced skills: `skills/sdc-spec`, `skills/sdc-validate`, `skills/sdc-review`, `skills/sdc-test`, `skills/sdc-quality`.
-- Shared references: `skills/sdc-shared/*`.
+- Shared references: `sdc-references/*`.
 - CLI managed templates and validators: `sdc-cli.py`.
 - Release checks: `scripts/audit-release.mjs`, `evals/sdc-flow/*`.
 - User docs and metadata: `README.md`, `CHANGELOG.md`, plugin manifests, `package.json`.
@@ -20,9 +20,9 @@
 
 | File / Contract | Reason | Evidence | Related REQ/AC |
 |---|---|---|---|
-| `skills/sdc-shared/artifact-output-contracts.md` | Define the new stage output standard | New reference file | REQ-01 / AC-01 |
-| `skills/sdc-shared/workflow-standards.md` | Add stop-line and output contract discipline | Shared governance reference | REQ-01, REQ-02 / AC-01 |
-| `skills/sdc-shared/delivery-gates.md` | Add validate/check/review quality requirements | Delivery gate reference | REQ-02 / AC-02 |
+| `sdc-references/artifact-output-contracts.md` | Define the new stage output standard | New reference file | REQ-01 / AC-01 |
+| `sdc-references/workflow-standards.md` | Add stop-line and output contract discipline | Shared governance reference | REQ-01, REQ-02 / AC-01 |
+| `sdc-references/delivery-gates.md` | Add validate/check/review quality requirements | Delivery gate reference | REQ-02 / AC-02 |
 | `commands/change.md`, `commands/plan.md`, `commands/check.md`, `commands/apply.md`, `commands/archive.md` | Route the output contract through public workflow stages | Public command prompts | REQ-02 / AC-02 |
 | `skills/sdc-*.md` | Keep advanced detailed skills aligned | Advanced skill prompts | REQ-02 / AC-02 |
 | `sdc-cli.py` | Add managed templates and validation enforcement | CLI source | REQ-02, REQ-03 / AC-02, AC-03 |
@@ -70,5 +70,5 @@ Rollback removes the new reference, validation function, template sections, eval
 | Claim | Source |
 |---|---|
 | Public commands stay unchanged | commands/ directory, README.md |
-| Output contract is internal | skills/sdc-shared/artifact-output-contracts.md |
+| Output contract is internal | sdc-references/artifact-output-contracts.md |
 | Validation enforces missing triggered outputs | sdc-cli.py, evals/sdc-flow/sdc_flow_provider.py |

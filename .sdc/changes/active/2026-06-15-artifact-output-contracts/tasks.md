@@ -4,7 +4,7 @@
 
 - [x] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] Add shared Artifact Output Contract reference and README/changelog positioning
   - Depends on: none
-  - Verify: `rg "Artifact Output Contract|Test Matrix|上线检查清单" README.md CHANGELOG.md skills/sdc-shared/artifact-output-contracts.md`
+  - Verify: `rg "Artifact Output Contract|Test Matrix|上线检查清单" README.md CHANGELOG.md sdc-references/artifact-output-contracts.md`
   - Source: spec.md#AC-01
 
 - [x] T002 [REQ-02] [AC-02] [Phase 1] [Size: M] Wire Artifact Output Contract through commands, advanced skills, schemas, gates, and role contracts

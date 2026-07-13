@@ -21,6 +21,8 @@ Check:
 - Specs contain Glossary, invariants, SCN/REQ/AC, acceptance criteria, validation strategy, and traceability.
 - Tasks use `T### [REQ-*] [AC-*] [Phase] [Size]`.
 - Task sizes are only `S` or `M`.
+- Final plan includes exact Global Constraints and `Plan Preflight: Passed`.
+- Every task declares Files, Consumes, Produces, Verify, Expected, Review, Evidence, and Source.
 - Tests precede the implementation work they verify.
 - Decision Ledger exists for high-impact decisions.
 - `Proposed`, `Assumed`, `TBD`, and `Conflict` items do not enter final REQ/AC/design/tasks/apply.
@@ -29,6 +31,7 @@ Check:
 - `context-pack.md` lists Common Ground used and Expert Profiles Used when they materially affect execution.
 - `context-pack.md` summarizes required output artifacts for apply/check handoff.
 - Artifacts are not empty templates.
+- Checked tasks have `Review: Approved` and durable evidence; `Cannot verify` and `Needs fixes` remain blockers.
 
 Conclusion must be either ready for next stage or blocked with concrete repair guidance.
 
@@ -48,8 +51,11 @@ Cover:
 - Brownfield impact mismatch against `impact.md`.
 - Expert profile mismatch: actual diff touches a risk area that was not routed through the corresponding profile or standards.
 - Artifact output mismatch: actual diff touches workflow, integration, API, data, UX, test, deploy, or AI-assisted delivery risk not covered by the artifact contract.
+- Task orchestration mismatch: completed task lacks its dual-verdict review/evidence, runtime ledger disagrees with durable artifacts, or final whole-change review is missing.
 
 Every finding needs a file/line reference, consequence, and actionable fix. If no issues are found, state remaining test or context gaps.
+
+Task-scoped review must return separate Spec Compliance and Code Quality verdicts. Review is read-only. Use `Cannot verify from diff` for requirements that need focused controller evidence; do not silently approve them.
 
 ## Test Gate
 
@@ -133,6 +139,7 @@ Block archive when:
 - Key tasks are unfinished.
 - Traceability chain is broken.
 - Check or equivalent review/test/security/quality evidence is missing.
+- Plan Preflight, per-task approved review evidence, or final whole-change review evidence is missing.
 - `.sdc/specs/<change-id>.md` already exists and overwrite is not explicitly allowed.
 - Residual work is hidden instead of recorded as deferred scope or a new change.
 

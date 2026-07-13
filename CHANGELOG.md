@@ -4,6 +4,32 @@ All notable changes to SDC are documented here.
 
 ## Unreleased
 
+## 1.3.0 - 2026-07-11
+
+- Added an internal Execution Orchestration Contract without adding public commands: exact Global Constraints, Plan Preflight, task interface contracts, file-based handoffs, project-local runtime ledger, per-task Spec Compliance + Code Quality review, and final whole-change review.
+- Added `sdc-task-brief.py` and `sdc-review-package.py` helpers so implementers and reviewers exchange focused files instead of repeatedly pasting full plans, reports, and diffs into controller context.
+- Strengthened CLI validation so missing task interfaces, failed preflight, completed tasks without approved review/evidence, inconsistent progress ledger, and missing final whole-change review block delivery and archive.
+- Added Codex marketplace metadata under `.agents/plugins/marketplace.json`, explicit `hooks: {}`, Developer Tools classification, Interactive capability, and deterministic Codex portal packaging with SHA-256 output.
+- Made the Codex portal artifact rootless and runtime-only, excluding Claude/source-side files while preserving executable modes and byte-identical rebuilds.
+- Added npm packaging guards so generated Python caches cannot leak into published tarballs.
+- Moved shared English contracts out of `skills/` into `sdc-references/`, so every Codex skill directory is a valid invocable skill without exposing an internal `sdc-shared` entry.
+- Added `npm run sync:skills` and committed generated public workflow skills so the repo-local Codex marketplace installs the complete workflow while Claude packages continue to strip root skills and avoid duplicates.
+- Added safe existing-workspace migration that appends `/runtime/` to `.sdc/.gitignore` without replacing project-specific ignore rules.
+- Changed delivery checks so a missing git-ignored recovery ledger warns on fresh checkouts, while a present ledger is parsed by columns and must agree with durable task/review/evidence state.
+- Fixed task-interface parsing so empty fields cannot consume the following Markdown line and silently pass validation.
+- Added exact Global Constraints table validation and cross-artifact consistency checks, plus Plan Preflight source/finding validation.
+- Tightened Plan Preflight closure parsing so uncertain values such as `Resolved?` cannot pass as closed findings.
+- Made Plan Preflight status exact, validated current-plan constraint tables, rejected malformed constraint IDs and duplicate task IDs, and aligned the canonical task example with every required 1.3 field.
+- Closed adjacent validator bypasses by requiring exact context-pack preflight/final-review markers and at least one valid uppercase `T###` task.
+- Replaced keyword-first execution parsing with unique exact fields: every task checkbox must be valid, runtime paths must resolve to the active change, review contracts cannot use negated wording, and duplicate task/preflight/verdict fields block delivery.
+- Enforced document-level uniqueness for Global Constraints, Plan Preflight, Execution Orchestration, per-task review blocks, and Final Whole-Change Review so a second contradictory section cannot be ignored.
+- Stopped Codex local marketplace/cache installs from generating Claude-only `.claude/skills`, keeping hidden-path scans at the intended 14 Codex skills and preventing future duplicate discovery.
+- Added machine-readable per-task and final Spec Compliance / Code Quality verdicts with project-local, non-ignored, resolvable Evidence references.
+- Made WORKTREE review packages fail when untracked files would be omitted from the diff.
+- Made Codex plugin upgrades transactionally replace stale layouts with rollback and next-run recovery, so old `skills/sdc-shared/` directories cannot survive an update and interrupted swaps retain a recoverable copy.
+- Serialized implementation tasks through review and ledger completion to match the Superpowers v6 execution sequence.
+- Added SHA-256 ownership fingerprints for SDC-managed workspace files; modified project rules are preserved, while exact known 1.2.x templates remain safely upgradeable with backups.
+- Added deterministic eval scenarios for task-interface enforcement, review-gated completion, runtime-ledger portability/consistency, execution handoff helpers, existing-workspace runtime migration, and Codex portal packaging.
 - Added Artifact Output Contracts so change/plan/check/validate can require triggered enterprise delivery outputs such as diagrams, API/data contracts, test matrices, release checklists, and AI involvement notes without adding public commands.
 - Fixed Common Ground validation so `OPEN` and final-execution `WORKING` Common Ground rows now block validate/apply/archive readiness instead of passing as documentation-only warnings.
 ## 1.2.1 - 2026-06-15

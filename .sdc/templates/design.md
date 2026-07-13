@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=templates/design.md; sha256=8496f50c05c0f4e376f71f3e4f9c6569d62173f0c0dbc3e572f516cc30d3bcbc -->
 # Design
 
 ## Knowledge Sources Used
@@ -14,6 +15,17 @@
 
 | ID | Tier | Statement | Source | Why It Matters |
 |----|------|-----------|--------|----------------|
+
+## Global Constraints
+
+| ID | Constraint | Source | Applies To |
+|----|------------|--------|------------|
+
+## Plan Preflight
+
+- Status: Pending
+- Reviewed Against: spec.md, impact.md, design.md, tasks.md, standards, Artifact Output Contract
+- Findings: Pending
 
 ## Artifact Output Contract
 

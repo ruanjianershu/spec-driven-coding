@@ -28,6 +28,8 @@ Before planning, implementation, or delivery check, read `.sdc/expert-routing.md
 
 Before final planning or delivery check, apply `artifact-output-contracts.md` when available. Triggered output artifacts must be produced or explicitly marked `N/A` with evidence-based reason.
 
+Before final planning, apply `execution-orchestration.md` when available. Plan Preflight, Global Constraints, task interfaces, per-task review fields, file handoffs, progress ledger, and whole-change review are internal stage requirements; they do not add public commands.
+
 Use this split:
 
 - Product knowledge: goals, users, roles, permissions, domain concepts, flows, business rules, acceptance logic, product decisions, non-goals.
@@ -75,6 +77,7 @@ Rules:
 - Tasks must reference at least one `REQ-*` and one `AC-*`.
 - Tests and validation notes should reference the relevant `AC-*`.
 - Completed tasks require evidence: command output, manual verification notes, screenshots, logs, or explicit reason why validation could not run.
+- Completed tasks require `Review: Approved` plus durable evidence. `Cannot verify`, `Needs fixes`, missing review, or `Evidence: Pending` cannot be treated as complete.
 
 ## Decision States
 
@@ -175,7 +178,13 @@ Use this task shape:
 ```markdown
 - [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] Write a failing behavior test for ...
   - Depends on: none
+  - Files: tests/path/to/test_file.py
+  - Consumes: confirmed REQ-01 behavior and existing test fixtures
+  - Produces: failing AC-01 behavior test used by the implementation task
   - Verify: <command or manual check>
+  - Expected: the test fails for the intended missing behavior before implementation
+  - Review: Pending
+  - Evidence: Pending
   - Source: .sdc/changes/active/<change-id>/spec.md#AC-01
 ```
 
@@ -200,7 +209,7 @@ README files, comments, old docs, and historical notes are clues. They are not c
 
 SDC keeps the public command surface small. Expert behavior must be routed internally, not exposed as a large command list.
 
-Use `.sdc/expert-routing.md` and `../sdc-shared/expert-routing.md` to select profiles such as product-discovery, domain-modeling, legacy-modernizer, architecture, api-contract, data, backend, frontend, test-strategy, security, operations, and documentation.
+Use `.sdc/expert-routing.md` and `expert-routing.md` to select profiles such as product-discovery, domain-modeling, legacy-modernizer, architecture, api-contract, data, backend, frontend, test-strategy, security, operations, and documentation.
 
 Rules:
 
@@ -224,6 +233,16 @@ Rules:
 - Required outputs must point to a concrete section or file.
 - N/A outputs must include an evidence-based reason.
 - During check/review, compare the actual diff against the artifact contract and block delivery when new API/data/deploy/security/UX/process impact is not captured.
+
+## Execution Orchestration Discipline
+
+- Final plan artifacts include exact Global Constraints and `Plan Preflight: Passed`.
+- Each task owns one test cycle and one review gate and declares Files, Consumes, Produces, Verify, Expected, Review, Evidence, and Source.
+- Use `.sdc/runtime/<change-id>/` for ignored briefs, reports, diff packages, and progress ledger; promote durable evidence into tasks/notes/reports.
+- Prefer a fresh implementer and a separate read-only reviewer context when the harness supports subagents. Use the same role boundaries inline when it does not.
+- One task review returns separate Spec Compliance and Code Quality verdicts. Critical/Important findings and acceptance-affecting `Cannot verify` items block completion.
+- Controllers must not tell reviewers what to ignore or how to pre-rate a finding.
+- After all tasks, run one whole-change review across the complete change range.
 - Output contracts cannot create unconfirmed product facts, architecture choices, schemas, permissions, rollout policies, or integrations. Put those in Decision Ledger as `Proposed` until confirmed.
 
 ## Company Standards Pack Discipline

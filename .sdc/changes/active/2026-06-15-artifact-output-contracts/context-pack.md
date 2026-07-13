@@ -11,7 +11,7 @@ Implement Artifact Output Contracts for SDC so existing stages enforce enterpris
 | spec.md | Confirmed | AC-01 through AC-04 | Defines scope and acceptance |
 | design.md | Confirmed | Artifact Output Contract and Test Matrix | Defines implementation structure |
 | impact.md | Confirmed | Direct change table | Defines Brownfield impact radius |
-| skills/sdc-shared/* | Confirmed | Shared references | Keeps prompt rules consistent |
+| sdc-references/* | Confirmed | Shared references | Keeps prompt rules consistent |
 | sdc-cli.py | Confirmed | CLI validation/templates | Enforces the contract |
 
 ## Knowledge Gaps
@@ -32,7 +32,7 @@ Implement Artifact Output Contracts for SDC so existing stages enforce enterpris
 | Profile | Why Used | Sources Read | Decisions / Checks Affected |
 |---|---|---|---|
 | product-discovery | The request is about workflow/product shape and command simplicity | discovery.md, README.md | Kept public commands unchanged |
-| architecture | The change modifies shared prompt/reference architecture | skills/sdc-shared/*, commands/* | Added one reference instead of command sprawl |
+| architecture | The change modifies shared prompt/reference architecture | sdc-references/*, commands/* | Added one reference instead of command sprawl |
 | test-strategy | Enforcement needs deterministic proof | evals/sdc-flow/*, scripts/audit-release.mjs | Added negative eval and audit markers |
 | documentation | README/metadata must describe new behavior succinctly | README.md, plugin manifests | Updated user-facing docs and package metadata |
 

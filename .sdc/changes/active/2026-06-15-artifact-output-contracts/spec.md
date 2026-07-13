@@ -12,8 +12,8 @@
 |---|---|---|---|
 | discovery.md | Confirmed | Decision Ledger closed | Defines accepted scope |
 | README.md | Confirmed | User-facing workflow docs | Must remain concise and accurate |
-| skills/sdc-shared/workflow-standards.md | Confirmed | Existing governance reference | Must include new stop-line rule |
-| skills/sdc-shared/delivery-gates.md | Confirmed | Existing gate reference | Must validate output coverage |
+| sdc-references/workflow-standards.md | Confirmed | Existing governance reference | Must include new stop-line rule |
+| sdc-references/delivery-gates.md | Confirmed | Existing gate reference | Must validate output coverage |
 | sdc-cli.py | Confirmed | CLI templates and validators | Must enforce output contract |
 | evals/sdc-flow/sdc_flow_provider.py | Confirmed | Deterministic eval suite | Must prove enforcement |
 

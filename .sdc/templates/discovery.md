@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=templates/discovery.md; sha256=4ed332a9d4a70b73b8a193c0905937837dc221e5dd4b55a6ea78bc164746ad9f -->
 # Discovery
 
 > 需求不确定时先使用本文件。Discovery 用于发散和收敛，不是 Confirmed spec。

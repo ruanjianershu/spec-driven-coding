@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=common-ground.md; sha256=1c8f5168181ef7acb0674d1c66ff8f4d579005fc771989ff920e0cbe84d3275e -->
 # Common Ground
 
 > 共同认知层。把 AI 准备依赖的事实、工作假设和开放问题显性化，防止隐性默认进入 spec、plan 或代码。

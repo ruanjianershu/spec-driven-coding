@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=expert-routing.md; sha256=bce0d749833f586e4d9c4faf64eab227993f8a92b13e785ce136b8d531458855 -->
 # Expert Routing
 
 > 专家路由层。用户仍然只使用 init/change/plan/apply/check/archive；SDC 内部根据任务选择相关专家视角和参考资料。

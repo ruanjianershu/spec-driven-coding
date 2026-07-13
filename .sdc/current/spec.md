@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=current/spec.md; sha256=2e512b629430ddd0effdc99ce7d1205c7dba9120b79909f3832e6b5c9f9d9908 -->
 # Current Spec
 
 > 当前需求规范。由 `sdc-spec` 生成或维护。
@@ -5,7 +6,7 @@
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.2.1
+- Schema: SDC 1.3.0
 - Source:
 
 ## 1. Knowledge Sources Used

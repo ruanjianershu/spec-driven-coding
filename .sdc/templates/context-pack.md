@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=templates/context-pack.md; sha256=56dc195775f273c30871ebf5d06fdfa968109405d2e29645e9b110d153e9f444 -->
 # Context Pack
 
 > 给执行 Agent 的短交接包。由 plan 阶段从 spec、impact、design、tasks 和知识库压缩生成。
@@ -36,6 +37,19 @@
 | Test Matrix | Required | Acceptance validation | design.md#test-matrix | |
 | Deploy / Release Checklist | N/A | | | |
 | AI Involvement Note | N/A | | | |
+
+## Global Constraints
+
+| ID | Constraint | Source | Applies To |
+|----|------------|--------|------------|
+
+## Execution Orchestration
+
+- Plan Preflight: Pending
+- Mode: Auto - subagent when supported, inline fallback otherwise
+- Runtime Workspace: .sdc/runtime/<change-id>/
+- Task Review: Spec Compliance + Code Quality
+- Final Whole-Change Review: Required
 
 ## Confirmed Product Knowledge
 

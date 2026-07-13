@@ -34,6 +34,37 @@ tests:
       - type: contains
         value: "candidate evidence: yes"
 
+  - description: init preserves user-modified managed files
+    vars:
+      scenario: init_preserves_user_modified_managed_file
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "custom constitution preserved: yes"
+      - type: contains
+        value: "preservation reported: yes"
+
+  - description: init upgrades exact known legacy templates
+    vars:
+      scenario: init_upgrades_exact_legacy_template
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "legacy template upgraded: yes"
+      - type: contains
+        value: "managed fingerprint added: yes"
+
+  - description: managed fingerprint does not count as document content
+    vars:
+      scenario: managed_fingerprint_is_not_real_content
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "fingerprint ignored as content: yes"
+
   - description: init imports company standards pack with routing index
     vars:
       scenario: standards_pack_import
@@ -156,3 +187,330 @@ tests:
         value: "EXPECTED_BLOCK: missing artifact output contract"
       - type: contains
         value: "API / Contract Specification"
+
+  - description: missing task interface blocks final plan
+    vars:
+      scenario: missing_task_interface_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: missing task interface"
+
+  - description: empty Global Constraints block final plan
+    vars:
+      scenario: empty_global_constraints_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: empty global constraints"
+
+  - description: conflicting Global Constraints block final plan
+    vars:
+      scenario: conflicting_global_constraints_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: conflicting global constraints"
+
+  - description: incomplete Plan Preflight blocks final plan
+    vars:
+      scenario: incomplete_plan_preflight_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: incomplete plan preflight"
+
+  - description: open Plan Preflight findings block final plan
+    vars:
+      scenario: open_plan_preflight_findings_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: open plan preflight findings"
+
+  - description: uncertain Plan Preflight closure punctuation blocks final plan
+    vars:
+      scenario: uncertain_plan_preflight_findings_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: uncertain preflight closure"
+
+  - description: uncertain Plan Preflight status punctuation blocks final plan
+    vars:
+      scenario: uncertain_plan_preflight_status_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: uncertain preflight status"
+
+  - description: current plan validates its own Global Constraints table
+    vars:
+      scenario: current_plan_global_constraints_are_validated
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: current plan global constraints"
+
+  - description: malformed Global Constraint IDs block final plan
+    vars:
+      scenario: malformed_global_constraint_id_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: malformed global constraint id"
+
+  - description: duplicate task IDs block final plan
+    vars:
+      scenario: duplicate_task_id_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: duplicate task id"
+
+  - description: uncertain context-pack Plan Preflight status blocks final plan
+    vars:
+      scenario: uncertain_context_pack_preflight_status_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: uncertain context preflight status"
+
+  - description: invalid lowercase task IDs cannot bypass task validation
+    vars:
+      scenario: invalid_task_ids_block_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: invalid task ids"
+
+  - description: one valid task cannot hide an invalid lowercase task
+    vars:
+      scenario: mixed_invalid_task_id_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: mixed invalid task id"
+
+  - description: runtime workspace must be a resolved project-local path
+    vars:
+      scenario: invalid_runtime_workspace_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: invalid runtime workspace"
+
+  - description: negated review wording cannot satisfy the review contract
+    vars:
+      scenario: negated_task_review_contract_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: negated task review contract"
+
+  - description: duplicate Plan Preflight fields are ambiguous and block plan
+    vars:
+      scenario: duplicate_plan_preflight_field_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: duplicate preflight field"
+
+  - description: duplicate task interface fields are ambiguous and block plan
+    vars:
+      scenario: duplicate_task_interface_field_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: duplicate task field"
+
+  - description: contradictory duplicate review verdicts block delivery
+    vars:
+      scenario: contradictory_dual_review_verdict_blocks_check
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: contradictory review verdict"
+
+  - description: duplicate Plan Preflight sections are ambiguous and block plan
+    vars:
+      scenario: duplicate_plan_preflight_section_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: duplicate preflight section"
+
+  - description: duplicate task review blocks are ambiguous and block delivery
+    vars:
+      scenario: duplicate_task_review_block_blocks_check
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: duplicate task review block"
+
+  - description: duplicate final review sections are ambiguous and block delivery
+    vars:
+      scenario: duplicate_final_review_section_blocks_check
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: duplicate final review section"
+
+  - description: empty task interface blocks final plan
+    vars:
+      scenario: empty_task_interface_blocks_plan
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: empty task interface"
+
+  - description: completed task without approved review blocks check
+    vars:
+      scenario: completed_task_without_review_blocks_check
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: completed task missing approved review"
+
+  - description: missing one dual-review verdict blocks check
+    vars:
+      scenario: missing_dual_review_verdict_blocks_check
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: missing dual review verdict"
+
+  - description: missing durable review evidence target blocks check
+    vars:
+      scenario: missing_review_evidence_target_blocks_check
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: missing review evidence target"
+
+  - description: ignored runtime file cannot satisfy durable review evidence
+    vars:
+      scenario: ignored_review_evidence_blocks_check
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: ignored review evidence"
+
+  - description: missing ignored runtime ledger warns without blocking durable delivery evidence
+    vars:
+      scenario: delivery_check_allows_missing_runtime_ledger
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_WARN: missing non-authoritative runtime ledger"
+
+  - description: present runtime ledger must agree with durable task state
+    vars:
+      scenario: inconsistent_runtime_ledger_blocks_check
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: inconsistent runtime ledger"
+
+  - description: execution helpers create focused file handoffs
+    vars:
+      scenario: execution_helpers_create_file_handoffs
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "brief interfaces: yes"
+      - type: contains
+        value: "review diff: yes"
+
+  - description: worktree review package refuses to omit untracked files
+    vars:
+      scenario: review_package_blocks_untracked_worktree
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "EXPECTED_BLOCK: untracked files missing from WORKTREE diff"
+
+  - description: execution contract serializes implementation tasks
+    vars:
+      scenario: execution_contract_serializes_tasks
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "shared contract serial: yes"
+      - type: contains
+        value: "generated skill serial: yes"
+
+  - description: Codex install removes stale pre-1.3 plugin layout
+    vars:
+      scenario: codex_install_removes_stale_layout
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "stale shared removed: yes"
+
+  - description: Codex install recovers an interrupted plugin swap
+    vars:
+      scenario: codex_install_recovers_interrupted_swap
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "interrupted backup cleaned: yes"
+
+  - description: init safely adds the runtime ignore rule to existing workspaces
+    vars:
+      scenario: init_adds_runtime_ignore_without_overwriting
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "custom rule preserved: yes"
+      - type: contains
+        value: "runtime ignored once: yes"
+      - type: contains
+        value: "second init idempotent: yes"
+
+  - description: Codex portal package is rootless minimal and deterministic
+    vars:
+      scenario: codex_package_is_rootless_and_deterministic
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "rootless manifest: yes"
+      - type: contains
+        value: "source-only paths absent: yes"
+      - type: contains
+        value: "deterministic digest: yes"

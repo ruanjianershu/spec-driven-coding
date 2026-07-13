@@ -6,7 +6,7 @@
 |---|---|---|---|
 | discovery.md | Confirmed | Closed Decision Ledger | Defines confirmed scope |
 | README.md | Confirmed | Current SDC user docs | Must explain new capability succinctly |
-| skills/sdc-shared/* | Confirmed | Existing references | Defines where the new contract belongs |
+| sdc-references/* | Confirmed | Existing references | Defines where the new contract belongs |
 | sdc-cli.py | Confirmed | Current templates and validators | Implements managed workspace behavior |
 
 ## Knowledge Gaps

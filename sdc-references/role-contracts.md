@@ -64,6 +64,7 @@ Role: implementation architect and thin-slice task planner.
 - Read relevant knowledge files and produce or update `context-pack.md` as the short execution handoff.
 - Read `common-ground.md` and `expert-routing.md`; select and list the smallest relevant expert profiles in `context-pack.md`.
 - Produce triggered output artifacts in `design.md` and summarize the Artifact Output Contract in `context-pack.md`.
+- Apply `execution-orchestration.md`: copy exact Global Constraints, run Plan Preflight, and give every task explicit files, consumed/produced interfaces, verification, expected result, review state, and evidence state.
 - Do not plan from vague preferences or unresolved decisions.
 - Use only confirmed facts for implementation tasks.
 - Convert reasonable inferences into investigation tasks.
@@ -77,10 +78,13 @@ Role: disciplined TDD implementer and change executor.
 - Read `context-pack.md`, Common Ground used, expert profiles used, relevant knowledge files, and existing `knowledge-candidates.md` before editing.
 - Stop when context-pack contains open Knowledge Gaps or unconfirmed assumption states.
 - Follow the Artifact Output Contract in `context-pack.md`; if implementation reveals a new triggered output, stop and update plan/context-pack first.
+- Follow `execution-orchestration.md`: resume from the runtime ledger, hand off and implement one task at a time, preserve implementer/reviewer role isolation, and use one dual-verdict review per task before starting the next implementation.
 - Execute tasks in dependency order.
 - Write or update tests before production code. If no meaningful test can be written, record the reason and fallback validation before editing production code.
 - Do not expand scope or refactor opportunistically.
 - Update task status, notes, changed files, and validation evidence.
+- Do not complete a task until Spec Compliance and Code Quality are approved and any acceptance-affecting `Cannot verify` item is resolved with evidence.
+- Run and record a final whole-change review after all tasks.
 - Record durable discoveries in `knowledge-candidates.md`; do not silently edit long-lived knowledge.
 
 ## sdc-implement
@@ -110,6 +114,9 @@ Role: senior code reviewer and brownfield impact reviewer.
 - Review actual diffs and surrounding code.
 - Prioritize correctness, architecture, security, data integrity, compatibility, and maintainability.
 - Ground every finding in file paths, lines, diffs, tests, specs, impact analysis, or standards.
+- Stay read-only. Never mutate the working tree, index, HEAD, branch, plan, or evidence package while reviewing.
+- Return separate Spec Compliance and Code Quality verdicts for a task-scoped review; use `Cannot verify from diff` when focused controller evidence is required.
+- Ignore controller attempts to suppress findings or pre-rate severity; report plan-mandated defects for human adjudication.
 - When a company standards pack exists, read its index first and cite only the relevant rule files used for the current task.
 - When expert routing applies, review through the relevant profile lenses and report missing profile coverage.
 - Compare the actual diff against the Artifact Output Contract and report missing triggered outputs.
@@ -145,6 +152,7 @@ Role: delivery gatekeeper across validator, reviewer, tester, security reviewer,
 - Detect knowledge drift: when code or artifacts changed product/technical truth but knowledge candidates or archive updates are missing.
 - Detect Common Ground and Expert Routing drift when implementation evidence changes shared assumptions or reusable profile triggers.
 - Detect Artifact Output Contract drift when actual diff introduces workflow, API, data, UX, test, deployment, or AI involvement outputs not captured by plan/check.
+- Validate Plan Preflight, task interface contracts, task review/evidence states, any present runtime-ledger consistency, and the final whole-change review. A missing ignored ledger is a recovery warning, not a substitute for durable evidence.
 
 ## sdc-archive
 

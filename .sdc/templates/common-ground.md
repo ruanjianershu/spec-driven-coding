@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=templates/common-ground.md; sha256=2d3cf6b2e71e20215c57f221ab00888d387feac56cb71f0c2a29b733866731fc -->
 # Common Ground
 
 ## Snapshot

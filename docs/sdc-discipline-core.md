@@ -1,6 +1,6 @@
 # SDC Discipline Core
 
-SDC v1.2.1 keeps the public command surface small while strengthening the internal engineering discipline.
+SDC v1.3.0 keeps the public command surface small while strengthening requirement governance and post-plan execution discipline.
 
 The goal is not to copy every OpenSpec, Superpowers, or internal workflow command. The goal is to keep their useful core:
 
@@ -30,7 +30,7 @@ Do not add a separate public compact command. Knowledge compaction is part of `/
 
 ## Role Prompt Contracts
 
-SDC v1.1.4 adds English Role Prompt Contracts for every skill. The current layout keeps those contracts in `skills/sdc-shared/role-contracts.md` so each `SKILL.md` stays short while the agent can still load the exact contract it needs.
+SDC v1.1.4 adds English Role Prompt Contracts for every skill. The current layout keeps those contracts in `sdc-references/role-contracts.md` so each `SKILL.md` stays short while the agent can still load the exact contract it needs.
 
 Every skill contract uses this shape:
 
@@ -76,7 +76,7 @@ When these sources conflict, the agent should stop and produce a Stop-Line Repor
 
 ## Common Ground And Expert Routing
 
-SDC v1.2.1 adds two project-level coordination files:
+SDC v1.2.1 added two project-level coordination files:
 
 ```text
 .sdc/common-ground.md
@@ -94,6 +94,18 @@ SDC v1.2.1 adds two project-level coordination files:
 Expert profiles may create questions, checks, and investigation tasks. They may not create unconfirmed product facts, architecture choices, data models, permissions, or rollout policies.
 
 `context-pack.md`, check reports, and archive summaries should disclose `Common Ground Used` and `Expert Profiles Used` when those materially affect execution.
+
+## Execution Orchestration
+
+SDC 1.3 keeps orchestration behind `plan`, `apply`, and `check`:
+
+```text
+Plan Preflight -> task brief -> implement -> task review -> progress ledger -> final whole-change review
+```
+
+Plans carry exact cross-artifact Global Constraints and per-task Files, Consumes, Produces, Verify, Expected, Review, Evidence, and Source fields. Plan Preflight records reviewed sources and closed findings, not only a self-declared status. Large task text, implementer reports, and diffs move through git-ignored files under `.sdc/runtime/<change-id>/` so a coordinating agent does not repeatedly pay for the same context. A WORKTREE review stops when untracked files would be omitted.
+
+Implementation tasks run serially through implement -> review -> durable evidence -> ledger update. Task review is read-only and returns separate Spec Compliance and Code Quality verdicts backed by a project-local, non-ignored evidence reference. Critical/Important findings and acceptance-affecting `Cannot verify from diff` items block completion. The runtime ledger supports recovery after context compaction, while durable evidence remains in tasks, notes, reports, and archive artifacts.
 
 ## Project Knowledge And Memory
 

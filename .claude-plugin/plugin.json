@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "sdc",
-  "version": "1.2.1",
-  "description": "A lightweight spec-driven coding workflow for Claude Code. Use role prompt contracts, Common Ground, internal expert routing, artifact output contracts, minimal discovery artifacts, product/technical knowledge, legacy impact gates, SCN/REQ/AC traceability, context packs, delivery checks, archived specs, and durable knowledge compaction.",
+  "version": "1.3.0",
+  "description": "A lightweight spec-driven coding workflow for Claude Code with requirement and knowledge governance, artifact contracts, plan preflight, file-based task handoffs, review-gated execution, legacy impact gates, traceability, and knowledge compaction.",
   "author": {
     "name": "ruanjianershu",
     "url": "https://github.com/ruanjianershu"
@@ -27,6 +27,9 @@
     "common-ground",
     "expert-routing",
     "artifact-output-contracts",
+    "execution-orchestration",
+    "plan-preflight",
+    "task-review",
     "context-pack",
     "consent-gates",
     "discovery",

@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=constitution.md; sha256=cbc7d6676021dc8a7ede13352009457d91ee07f76cb9187b93368c82446c56ae -->
 # SDC Project Constitution
 
 ## 1. Governance Priority
@@ -55,11 +56,19 @@ Rules:
 - Test Matrix is required for final plan/check and must map validation back to ACs.
 - Output contracts cannot create unconfirmed product rules, schemas, permissions, rollout policy, or integrations.
 
-## 6. Core Chain
+## 6. Execution Orchestration Discipline
+
+Final plan artifacts must include exact Global Constraints and a passed Plan Preflight. Every task must declare files, consumed and produced interfaces, verification, expected result, review state, evidence state, and source traceability.
+
+Use `.sdc/runtime/<change-id>/` for git-ignored task briefs, implementer reports, review packages, and progress ledger. Runtime files are execution scratch; durable outcomes must be recorded in tasks, notes, reports, and archive evidence.
+
+Completed tasks require separate Spec Compliance and Code Quality approval. Review is read-only and cannot be coached to suppress findings. After all tasks, one final whole-change review is required before check/archive.
+
+## 7. Core Chain
 
 `discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive`
 
-## 7. Stop-The-Line Rules
+## 8. Stop-The-Line Rules
 
 Stop and produce a Stop-Line Report when:
 
@@ -72,8 +81,9 @@ Stop and produce a Stop-Line Report when:
 - final artifacts depend on OPEN or high-impact WORKING Common Ground
 - the implementation touches a risk area without the matching expert profile or standards review
 - a triggered output artifact is missing, contradictory, or marked N/A without evidence
+- Plan Preflight is not passed, a completed task lacks approved review/evidence, or final whole-change review is missing
 
-## 8. Traceability Rules
+## 9. Traceability Rules
 
 - specs must define `SCN-*`, `REQ-*`, and `AC-*` identifiers
 - tasks must reference `REQ-*` and `AC-*`
@@ -82,7 +92,7 @@ Stop and produce a Stop-Line Report when:
 - specs, designs, plans, and context packs must list the knowledge sources and expert profiles they used
 - specs, designs, and context packs must include Artifact Output Contract coverage
 
-## 9. Human Confirmation Rules
+## 10. Human Confirmation Rules
 
 AI may propose options, but humans own high-impact decisions.
 
@@ -94,13 +104,13 @@ Before a high-impact decision enters `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `
 - supported by an authoritative project document
 - explicitly delegated by the user with permission to choose
 
-## 10. No Silent Defaults
+## 11. No Silent Defaults
 
 Do not turn common practice into project truth.
 
 All AI-created defaults must be recorded in a Decision Ledger as `Proposed` or `Assumed` until confirmed. `Proposed`, `Assumed`, `TBD`, and `Conflict` items must not be treated as implementation-ready.
 
-## 11. Discovery Gate
+## 12. Discovery Gate
 
 When requirements are uncertain, start with discovery instead of a confirmed spec.
 

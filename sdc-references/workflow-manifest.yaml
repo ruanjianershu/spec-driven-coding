@@ -1,4 +1,4 @@
-version: "1.2"
+version: "1.3"
 name: "SDC workflow manifest"
 public_commands:
   - init
@@ -23,6 +23,7 @@ shared_references:
   - common-ground.md
   - expert-routing.md
   - artifact-output-contracts.md
+  - execution-orchestration.md
   - artifact-schemas.md
   - delivery-gates.md
 flow:
@@ -88,12 +89,15 @@ flow:
       - design.md
       - tasks.md
       - context-pack.md
+      - global constraints and passed plan preflight
       - diagrams, API/data contracts, test matrix, and release checklist when triggered
     gates:
       - "Select relevant expert profiles internally."
       - "Tasks must be traceable, test-first, and size S or M."
       - "Unconfirmed assumptions become investigation tasks or Stop-Line Reports."
       - "Triggered output artifacts must be present or explicitly N/A with evidence."
+      - "Every task declares files, consumed/produced interfaces, expected verification, review status, and evidence."
+      - "Plan Preflight must pass before apply."
   apply:
     purpose: "Implement planned tasks and record evidence."
     inputs:
@@ -107,9 +111,14 @@ flow:
       - notes.md
       - updated tasks.md
       - knowledge-candidates.md
+      - project-local runtime brief/report/review packages and progress ledger
+      - per-task dual-verdict review evidence
+      - final whole-change review evidence
     gates:
       - "Do not implement from OPEN or high-impact WORKING Common Ground."
       - "Do not expand scope without updating plan/context-pack."
+      - "Do not mark a task complete before Spec Compliance and Code Quality are approved."
+      - "Reviewers are read-only and cannot be coached to suppress findings."
   check:
     purpose: "Combine validate, review, test, quality, impact, and knowledge drift checks."
     inputs:
@@ -124,9 +133,11 @@ flow:
       - required fixes
       - knowledge compact recommendations
       - artifact output contract coverage
+      - execution orchestration and whole-change review coverage
     gates:
       - "Traceability, decision, common-ground, and expert-profile gaps block delivery."
       - "Missing triggered output artifacts block delivery."
+      - "Missing approved task reviews, unresolved Cannot verify items, or missing whole-change review block delivery."
   archive:
     purpose: "Preserve completed change and propose durable knowledge updates."
     inputs:

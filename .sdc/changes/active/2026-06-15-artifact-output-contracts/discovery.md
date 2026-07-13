@@ -6,8 +6,8 @@
 |---|---|---|---|
 | User confirmation in current thread | Confirmed | 用户确认“按照推荐方案升级” | Confirms scope and acceptance for this change |
 | README.md | Confirmed | Current public workflow docs | Defines public command surface and user-facing positioning |
-| skills/sdc-shared/workflow-standards.md | Confirmed | Existing SDC governance reference | Defines gate and stop-line behavior to extend |
-| skills/sdc-shared/delivery-gates.md | Confirmed | Existing validate/check/archive reference | Defines where output contracts must be checked |
+| sdc-references/workflow-standards.md | Confirmed | Existing SDC governance reference | Defines gate and stop-line behavior to extend |
+| sdc-references/delivery-gates.md | Confirmed | Existing validate/check/archive reference | Defines where output contracts must be checked |
 | sdc-cli.py | Confirmed | Current managed templates and validators | Primary implementation surface |
 | Internal AI dev workflow page | Confirmed | User-provided internal reference reviewed in chat | Inspires explicit stage input/output standards |
 
@@ -21,7 +21,7 @@
 | Source | Type | Status | Summary | Evidence / Link |
 |---|---|---|---|---|
 | User request | Product direction | Confirmed | SDC lacks mandatory output format while the internal workflow requires deliverables such as flow diagrams and technical design documents. | Current conversation |
-| Existing SDC source | Code evidence | Confirmed | SDC already has flow gates, knowledge gates, expert routing, and validation hooks. | sdc-cli.py, skills/sdc-shared/* |
+| Existing SDC source | Code evidence | Confirmed | SDC already has flow gates, knowledge gates, expert routing, and validation hooks. | sdc-cli.py, sdc-references/* |
 | Internal workflow reference | Comparative design input | Confirmed | Enterprise workflow uses explicit stage inputs/outputs and delivery artifacts. | User-provided internal page |
 
 ## Artifact Output Contract

@@ -1,3 +1,4 @@
+<!-- SDC-MANAGED path=README.md; sha256=a7037dd050ac82df9b083ac86be2f9c1ad559796b868251d16e5975ef5031b6e -->
 # SDC Workspace
 
 这个目录记录项目的规范驱动开发过程。所有需求、计划、实现记录、审查、测试和质量检查都应该沉淀在这里。
@@ -19,6 +20,7 @@
 - `decisions/` - 架构决策记录
 - `reviews/` - 代码审查记录
 - `reports/` - 测试、质量、bug、impact、repo-analysis 和交付报告
+- `runtime/` - 本地忽略的任务 brief、实现报告、diff 包和执行账本，不作为长期事实
 - `templates/` - discovery、需求迭代、项目认知、影响面、停线和分析模板
 
 ## 推荐流程
@@ -28,8 +30,8 @@
 3. 需求确认后读取 `common-ground.md`、`knowledge/index.md` 和相关产品/技术知识，再生成 spec
 4. `sdc-spec` 将已确认 discovery 收敛为 SCN/REQ/AC
 5. 遗留项目在需求确认后先更新当前 change 的 `impact.md`
-6. `/sdc:plan` 通过 `expert-routing.md` 选择内部专家视角，生成 design/tasks/context-pack
-7. `/sdc:apply` 执行实现，记录验证证据和 `knowledge-candidates.md`
+6. `/sdc:plan` 通过 `expert-routing.md` 选择内部专家视角，生成 design/tasks/context-pack，并完成 Plan Preflight
+7. `/sdc:apply` 按任务 brief、双判定审查和 runtime 账本执行，记录验证证据和 `knowledge-candidates.md`
 8. `/sdc:check` 综合校验、审查、测试、质量和知识漂移
 9. `/sdc:archive <name>` 归档到 `changes/archive/`，并运行 Knowledge Compact Gate 判断长期知识沉淀
 
@@ -45,7 +47,7 @@
 - `standards/company/` - 可选公司/团队规范包，通过索引按需读取
 - `memory/` - 项目记忆：候选知识、经验、流程和可回顾的工作片段
 
-## SDC v1.2 纪律内核
+## SDC v1.3 纪律内核
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
@@ -57,4 +59,5 @@
 共同认知门禁：OPEN 不能驱动 final spec/plan/apply；WORKING 不能静默升级为 ESTABLISHED
 专家路由门禁：用户只选 SDC 阶段，AI 内部选择专家视角并在 context-pack/check/archive 中披露
 输出契约门禁：触发流程/API/数据/UX/测试/部署/AI 参与风险时，必须有对应产物或 N/A 证据
+执行编排门禁：Plan Preflight 通过后才能 apply；完成任务必须有 Spec Compliance + Code Quality 审查和证据
 ```

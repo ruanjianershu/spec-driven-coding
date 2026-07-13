@@ -25,6 +25,7 @@ SDC CLI - 规范驱动开发 薄运行层
   sdc status        # 查看项目进度
 """
 
+import hashlib
 import os
 import re
 import shutil
@@ -62,6 +63,7 @@ DIRS = [
     "reports/bug",
     "reports/impact",
     "reports/repo-analysis",
+    "runtime",
     "reviews",
     "specs",
     "standards",
@@ -84,6 +86,66 @@ STANDARD_PACK_IGNORED_NAMES = {
     "build",
     "target",
     "coverage",
+}
+
+MANAGED_TEMPLATE_PATHS = {
+    "README.md",
+    "constitution.md",
+    "common-ground.md",
+    "expert-routing.md",
+    "knowledge/index.md",
+    "current/discovery.md",
+    "current/spec.md",
+    "current/plan.md",
+    "current/apply.md",
+    "current/context-pack.md",
+    "current/knowledge-candidates.md",
+    "memory/candidates.md",
+    "templates/change.md",
+    "templates/discovery.md",
+    "templates/design.md",
+    "templates/spec.md",
+    "templates/context-pack.md",
+    "templates/common-ground.md",
+    "templates/expert-routing.md",
+    "templates/knowledge-candidates.md",
+    "templates/knowledge-index.md",
+    "standards/README.md",
+    "standards/ai.md",
+    "standards/company/README.md",
+    "current/tasks.md",
+    "templates/tasks.md",
+}
+
+# Exact stock outputs from SDC 1.2.0 and the pre-1.3 main branch. Unknown or edited
+# legacy content is preserved instead of being classified by headings alone.
+LEGACY_MANAGED_HASHES = {
+    "README.md": {"03aa742bff189c0b1b20f3113388f5a231b24bc7e878be2552b8b45fee64eaab", "dcb366dc1895954b8b172f992694246dc5f91c2f699788e72668046864834e65"},
+    "common-ground.md": {"1c8f5168181ef7acb0674d1c66ff8f4d579005fc771989ff920e0cbe84d3275e"},
+    "constitution.md": {"3694c516f71ad83f9a3ded519d638dd2faef1a39d380cac8ccfa09a8983fa75e", "7dba47bbf0077cef8c586eb7f4b81a1849b1dad0eb8c9e26dd2d7d9076585d2c"},
+    "current/apply.md": {"f509a581c39c3c3f7fa8a2a5cf3afc8c7162a83cb958ebc0d6856e8823f64b0c"},
+    "current/context-pack.md": {"6bec1b6ae5696f8a76fdfaa4ec23c72d760c2bf572dec16b16ffb3c654121697", "ff3b694664a38a2ac4a2f1f7789a33a3dbef68f74e6e8f93aa2d2de23e5af815"},
+    "current/discovery.md": {"8f01d095b21f4788ef75c0845f21c8ae5f63048d9fafe0b202bed91ef90515d5", "b7aa3b7c0a28bd96520fcc7bcd2dd6d28772e3c03cb7f55e9a2acac6e668b3a8"},
+    "current/knowledge-candidates.md": {"4a837b7cae89b47a29fd6bf161c35d3a516d5004dc68a2d11c50b575387f5e12"},
+    "current/plan.md": {"16bc98e5289470658c56875b492d0c97a6429f222e66225bbe6eef50cbbfa1e3"},
+    "current/spec.md": {"012367016c2c157686f1f7064231a263560b755d65ee854038a5772bbf8c1a34", "ba552a665b70381c951621b14b0df35384088cb22edfa7f8e15db77cf4338eed"},
+    "current/tasks.md": {"62e2f981b239b7333683a4ffc28e7462480559a4d637add88be0dc2f596d2e39"},
+    "expert-routing.md": {"bce0d749833f586e4d9c4faf64eab227993f8a92b13e785ce136b8d531458855"},
+    "knowledge/index.md": {"4116e1d09f5993ffcb45644db47cf349d932e4b8702cbe09f6f904e7028d67e5"},
+    "memory/candidates.md": {"5b8b7eb8e67c407aa8c911a0c8ecaa26f01878ca25a1a89dcad36a9cf179dba0"},
+    "standards/README.md": {"8c062b54b6c906c62f0efeb025e4cb63c94f5652ce7c8f370d7345a1a476647e", "cb585a3100a83242f272307b82f4c71e5bd299c15ee3752af552cfcd8ec18d6a"},
+    "standards/ai.md": {"6cab53f3af9a384a54a25d6a7c69cb55c59a67af95f7806b4ab303dfa2a495fd", "db4509b5f2746e3f5c7abbac410feb0df76aa136d474196fba3b3f3da5de26e9"},
+    "standards/company/README.md": {"2457eae0a7f941af7c8aa5741c60486e21a0fe28d91a6d81c8c5551f5bd7e206"},
+    "templates/change.md": {"780f7767786e0d19c9e763355de2280a7d738280aec639fa208aeab526eef54a", "f812480861b318442bc9af5a9d5f61c35a99817d092bc1b6ace735a36c10f564"},
+    "templates/common-ground.md": {"2d3cf6b2e71e20215c57f221ab00888d387feac56cb71f0c2a29b733866731fc"},
+    "templates/context-pack.md": {"30ea798e7692214bb4d35f52a3c788afcd81df2a5c881ccb8d55ed2411769a3b", "c1cf70fbeaec706639ae6ae86a4307371d7cc7e3c47980f1819f98c4033404ea"},
+    "templates/design.md": {"06982052c3e97de97ec27de7b76658f08b48cdd5c305c67c60a4d5243156b11e", "5892944b620ac9cc9e18f4929072b29ee8fc0e41b2874461c40d8381ad989650"},
+    "templates/discovery.md": {"4ed332a9d4a70b73b8a193c0905937837dc221e5dd4b55a6ea78bc164746ad9f", "84e170b3874177143c9d44044dd37d5ec662b063ece9460f4f98574b28e9af0e"},
+    "templates/expert-routing.md": {"42366dd6eed69251cb6b9a5f9fab5c84e90df41c8a4f280eb82344a6fc92a674"},
+    "templates/knowledge-candidates.md": {"69da3bdc1226282752159c520746660b73d14b49df0da248b57dc5830e5c3918"},
+    "templates/knowledge-index.md": {"bb7a40a4dbacb56906dc901841cfef91bbcbed5c5f1a1532ef998d9d5006dea1"},
+    "templates/spec.md": {"112a97575f7dab7a47d010a7b3ee9957b28ad2e1d763e777b46b0178365bcd18", "a615f43a88a0ee89dad2f87b58c2dd96163a5f4aef3cb90930140cc23879705e"},
+    "templates/tasks.md": {"5da37184ed257e58db19925a041a7a0222bf7b6f5249534612dcad5cafc40454"},
 }
 
 ARTIFACT_OUTPUT_CONTRACTS = [
@@ -159,6 +221,7 @@ INIT_FILES = {
 - `decisions/` - 架构决策记录
 - `reviews/` - 代码审查记录
 - `reports/` - 测试、质量、bug、impact、repo-analysis 和交付报告
+- `runtime/` - 本地忽略的任务 brief、实现报告、diff 包和执行账本，不作为长期事实
 - `templates/` - discovery、需求迭代、项目认知、影响面、停线和分析模板
 
 ## 推荐流程
@@ -168,8 +231,8 @@ INIT_FILES = {
 3. 需求确认后读取 `common-ground.md`、`knowledge/index.md` 和相关产品/技术知识，再生成 spec
 4. `sdc-spec` 将已确认 discovery 收敛为 SCN/REQ/AC
 5. 遗留项目在需求确认后先更新当前 change 的 `impact.md`
-6. `/sdc:plan` 通过 `expert-routing.md` 选择内部专家视角，生成 design/tasks/context-pack
-7. `/sdc:apply` 执行实现，记录验证证据和 `knowledge-candidates.md`
+6. `/sdc:plan` 通过 `expert-routing.md` 选择内部专家视角，生成 design/tasks/context-pack，并完成 Plan Preflight
+7. `/sdc:apply` 按任务 brief、双判定审查和 runtime 账本执行，记录验证证据和 `knowledge-candidates.md`
 8. `/sdc:check` 综合校验、审查、测试、质量和知识漂移
 9. `/sdc:archive <name>` 归档到 `changes/archive/`，并运行 Knowledge Compact Gate 判断长期知识沉淀
 
@@ -185,7 +248,7 @@ INIT_FILES = {
 - `standards/company/` - 可选公司/团队规范包，通过索引按需读取
 - `memory/` - 项目记忆：候选知识、经验、流程和可回顾的工作片段
 
-## SDC v1.2 纪律内核
+## SDC v1.3 纪律内核
 
 ```text
 治理优先级：.sdc/constitution.md > AGENTS.md > 对话即时要求
@@ -197,6 +260,7 @@ INIT_FILES = {
 共同认知门禁：OPEN 不能驱动 final spec/plan/apply；WORKING 不能静默升级为 ESTABLISHED
 专家路由门禁：用户只选 SDC 阶段，AI 内部选择专家视角并在 context-pack/check/archive 中披露
 输出契约门禁：触发流程/API/数据/UX/测试/部署/AI 参与风险时，必须有对应产物或 N/A 证据
+执行编排门禁：Plan Preflight 通过后才能 apply；完成任务必须有 Spec Compliance + Code Quality 审查和证据
 ```
 """,
     "constitution.md": """# SDC Project Constitution
@@ -256,11 +320,19 @@ Rules:
 - Test Matrix is required for final plan/check and must map validation back to ACs.
 - Output contracts cannot create unconfirmed product rules, schemas, permissions, rollout policy, or integrations.
 
-## 6. Core Chain
+## 6. Execution Orchestration Discipline
+
+Final plan artifacts must include exact Global Constraints and a passed Plan Preflight. Every task must declare files, consumed and produced interfaces, verification, expected result, review state, evidence state, and source traceability.
+
+Use `.sdc/runtime/<change-id>/` for git-ignored task briefs, implementer reports, review packages, and progress ledger. Runtime files are execution scratch; durable outcomes must be recorded in tasks, notes, reports, and archive evidence.
+
+Completed tasks require separate Spec Compliance and Code Quality approval. Review is read-only and cannot be coached to suppress findings. After all tasks, one final whole-change review is required before check/archive.
+
+## 7. Core Chain
 
 `discovery -> spec -> impact -> plan -> tasks -> code -> verify -> archive`
 
-## 7. Stop-The-Line Rules
+## 8. Stop-The-Line Rules
 
 Stop and produce a Stop-Line Report when:
 
@@ -273,8 +345,9 @@ Stop and produce a Stop-Line Report when:
 - final artifacts depend on OPEN or high-impact WORKING Common Ground
 - the implementation touches a risk area without the matching expert profile or standards review
 - a triggered output artifact is missing, contradictory, or marked N/A without evidence
+- Plan Preflight is not passed, a completed task lacks approved review/evidence, or final whole-change review is missing
 
-## 8. Traceability Rules
+## 9. Traceability Rules
 
 - specs must define `SCN-*`, `REQ-*`, and `AC-*` identifiers
 - tasks must reference `REQ-*` and `AC-*`
@@ -283,7 +356,7 @@ Stop and produce a Stop-Line Report when:
 - specs, designs, plans, and context packs must list the knowledge sources and expert profiles they used
 - specs, designs, and context packs must include Artifact Output Contract coverage
 
-## 9. Human Confirmation Rules
+## 10. Human Confirmation Rules
 
 AI may propose options, but humans own high-impact decisions.
 
@@ -295,13 +368,13 @@ Before a high-impact decision enters `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `
 - supported by an authoritative project document
 - explicitly delegated by the user with permission to choose
 
-## 10. No Silent Defaults
+## 11. No Silent Defaults
 
 Do not turn common practice into project truth.
 
 All AI-created defaults must be recorded in a Decision Ledger as `Proposed` or `Assumed` until confirmed. `Proposed`, `Assumed`, `TBD`, and `Conflict` items must not be treated as implementation-ready.
 
-## 11. Discovery Gate
+## 12. Discovery Gate
 
 When requirements are uncertain, start with discovery instead of a confirmed spec.
 
@@ -477,7 +550,7 @@ Interpretation summaries are not consent. Do not write files with "if wrong, tel
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.2.1
+- Schema: SDC 1.3.0
 - Source:
 
 ## 1. Knowledge Sources Used
@@ -611,6 +684,17 @@ Then ...
 
 ## 依赖关系
 
+## Global Constraints
+
+| ID | Constraint | Source | Applies To |
+|----|------------|--------|------------|
+
+## Plan Preflight
+
+- Status: Pending
+- Reviewed Against: spec.md, impact.md, design.md, tasks.md, standards, Artifact Output Contract
+- Findings: Pending
+
 ## 测试先行策略
 
 ## 交付清单
@@ -619,22 +703,63 @@ Then ...
 
 > 当前任务清单。任务必须能追溯到 REQ/AC。
 
+## Global Constraints
+
+| ID | Constraint | Source | Applies To |
+|----|------------|--------|------------|
+
+## Plan Preflight
+
+- Status: Pending
+- Reviewed Against: current/spec.md, current/plan.md, current/tasks.md, Artifact Output Contract
+- Findings: Pending
+
 ## Tasks
 
 - [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] Draft task
   - Depends on: none
+  - Files: TODO
+  - Consumes: none
+  - Produces: TODO
   - Verify: TODO
+  - Expected: TODO
+  - Review: Pending
+  - Evidence: Pending
   - Source: current/spec.md#AC-01
 """,
     "current/apply.md": """# Current Apply Log
 
 > 当前执行记录。由 `/sdc:apply` 持续更新。
 
+## Plan Preflight
+
+- Status: Pending
+
+## Execution Ledger Summary
+
+- Runtime: .sdc/runtime/<change-id>/progress.md
+
 ## 已完成任务
 
 ## 修改文件
 
 ## 测试结果
+
+## Task Review Evidence
+
+<!-- Repeat this block for every completed task:
+### T001
+- Spec Compliance: Pending
+- Code Quality: Pending
+- Evidence: apply.md#测试结果
+-->
+
+## Final Whole-Change Review
+
+- Status: Pending
+- Spec Compliance: Pending
+- Code Quality: Pending
+- Evidence: apply.md#测试结果
 
 ## 遇到的问题
 """,
@@ -676,6 +801,19 @@ Then ...
 | Test Matrix | Required | Acceptance validation | design.md#test-matrix | |
 | Deploy / Release Checklist | N/A | | | |
 | AI Involvement Note | N/A | | | |
+
+## Global Constraints
+
+| ID | Constraint | Source | Applies To |
+|----|------------|--------|------------|
+
+## Execution Orchestration
+
+- Plan Preflight: Pending
+- Mode: Auto - subagent when supported, inline fallback otherwise
+- Runtime Workspace: .sdc/runtime/<change-id>/
+- Task Review: Spec Compliance + Code Quality
+- Final Whole-Change Review: Required
 
 ## Confirmed Product Knowledge
 
@@ -1120,6 +1258,9 @@ Agents must read this index first, then load only the relevant rule files for th
 - 遗留项目先读 `.sdc/project-cognition.md`
 - 实现前先看 `discovery.md`、`proposal.md`、`spec.md`、`impact.md`、`design.md`、`tasks.md`、`context-pack.md`
 - plan/check 前确认 Artifact Output Contract：触发流程、API、数据、UX、测试、部署或 AI 参与风险时，必须有对应产物或 N/A 证据
+- apply 前确认 Global Constraints 完整且 Plan Preflight 为 Passed
+- 每个完成任务必须有独立的 Spec Compliance + Code Quality 审查和非 Pending 持久 Evidence；apply 运行中同步 runtime 账本，但 fresh checkout 缺少忽略态账本时不得替代或推翻持久证据
+- 所有任务完成后必须执行 Final Whole-Change Review
 - 保持 `SCN-* -> REQ-* -> AC-* -> T### -> 验证证据` 追溯链
 - apply/check 过程中把新发现写入 `knowledge-candidates.md`，不要直接污染长期知识库
 - 完成前执行 `/sdc:check`
@@ -1138,6 +1279,8 @@ Agents must read this index first, then load only the relevant rule files for th
 - 不要一次性读取整个 `.sdc/standards/company/`；先读索引，按任务按需加载
 - 不要把 `.sdc/memory/` 中的 Candidate/Assumed 当作 confirmed 项目事实
 - 不要跳过被触发的标准产物，尤其是 final plan/check 的 Test Matrix
+- 不要把 `Cannot verify from diff`、`Needs fixes` 或未审查任务标记为完成
+- reviewer 必须只读，不要提示 reviewer 忽略 finding 或预先降低严重程度
 """,
     "decisions/README.md": """# Decisions
 
@@ -1275,18 +1418,41 @@ YYYY-MM-DD-short-title.md
 """,
     "templates/tasks.md": """# Tasks
 
+## Global Constraints
+
+| ID | Constraint | Source | Applies To |
+|----|------------|--------|------------|
+
+## Plan Preflight
+
+- Status: Pending
+- Reviewed Against: spec.md, impact.md, design.md, tasks.md, standards, Artifact Output Contract
+- Findings: Pending
+
 ## 实现任务
 
 - [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] Draft task
   - Depends on: none
+  - Files: TODO
+  - Consumes: none
+  - Produces: TODO
   - Verify: TODO
+  - Expected: TODO
+  - Review: Pending
+  - Evidence: Pending
   - Source: spec.md#AC-01
 
 ## 验证任务
 
 - [ ] T900 [REQ-01] [AC-01] [Phase Verify] [Size: S] Run validation
   - Depends on: T001
+  - Files: TODO
+  - Consumes: T001 outputs
+  - Produces: final AC validation evidence
   - Verify: TODO
+  - Expected: TODO
+  - Review: Pending
+  - Evidence: Pending
   - Source: spec.md#AC-01
 """,
     "templates/design.md": """# Design
@@ -1305,6 +1471,17 @@ YYYY-MM-DD-short-title.md
 
 | ID | Tier | Statement | Source | Why It Matters |
 |----|------|-----------|--------|----------------|
+
+## Global Constraints
+
+| ID | Constraint | Source | Applies To |
+|----|------------|--------|------------|
+
+## Plan Preflight
+
+- Status: Pending
+- Reviewed Against: spec.md, impact.md, design.md, tasks.md, standards, Artifact Output Contract
+- Findings: Pending
 
 ## Artifact Output Contract
 
@@ -1375,7 +1552,7 @@ N/A:
 ## 0. 文档元信息
 
 - Status: Draft
-- Schema: SDC 1.2.1
+- Schema: SDC 1.3.0
 - Source:
 
 ## 1. Knowledge Sources Used
@@ -1586,6 +1763,19 @@ Then ...
 | Deploy / Release Checklist | N/A | | | |
 | AI Involvement Note | N/A | | | |
 
+## Global Constraints
+
+| ID | Constraint | Source | Applies To |
+|----|------------|--------|------------|
+
+## Execution Orchestration
+
+- Plan Preflight: Pending
+- Mode: Auto - subagent when supported, inline fallback otherwise
+- Runtime Workspace: .sdc/runtime/<change-id>/
+- Task Review: Spec Compliance + Code Quality
+- Final Whole-Change Review: Required
+
 ## Confirmed Product Knowledge
 
 ## Confirmed Technical Knowledge
@@ -1721,6 +1911,7 @@ Proposed / Accepted / Deprecated
 # 如需忽略本地临时文件，请写在下面。
 
 *.tmp
+/runtime/
 """,
 }
 
@@ -1780,7 +1971,10 @@ def has_real_content(filepath):
     lines = [
         line.strip()
         for line in text.splitlines()
-        if line.strip() and not line.strip().startswith(">") and not line.strip().startswith("#")
+        if line.strip()
+        and not line.strip().startswith(">")
+        and not line.strip().startswith("#")
+        and not line.strip().startswith("<!--")
     ]
     placeholders = ("（", "）", "TODO", "todo", "Draft task", "...")
     return any(not any(marker in line for marker in placeholders) for line in lines)
@@ -1814,27 +2008,498 @@ def has_required_heading_set(text, required_headings):
     return all(heading in text for heading in required_headings)
 
 
+def markdown_sections(text, heading):
+    return [
+        match.group("body")
+        for match in re.finditer(
+        rf"^##[ \t]+{re.escape(heading)}[ \t]*$(?P<body>[\s\S]*?)(?=^##[ \t]+|\Z)",
+        text,
+        re.IGNORECASE | re.MULTILINE,
+        )
+    ]
+
+
+def markdown_section(text, heading):
+    sections = markdown_sections(text, heading)
+    return sections[0] if sections else ""
+
+
+def markdown_anchor_exists(filepath, anchor):
+    if not anchor:
+        return True
+    if re.fullmatch(r"L\d+", anchor, re.IGNORECASE):
+        line_number = int(anchor[1:])
+        return 1 <= line_number <= len(read_text(filepath).splitlines())
+
+    expected = anchor.strip().lower()
+    for line in read_text(filepath).splitlines():
+        match = re.match(r"^#{1,6}[ \t]+(.+?)[ \t]*#*[ \t]*$", line)
+        if not match:
+            continue
+        slug = re.sub(r"[^\w\-\u4e00-\u9fff]+", "-", match.group(1).strip().lower()).strip("-")
+        if slug == expected:
+            return True
+    return False
+
+
+def evidence_reference_exists(value, evidence_file):
+    raw = (value or "").strip()
+    markdown_link = re.search(r"\[[^\]]+\]\(([^)]+)\)", raw)
+    target = markdown_link.group(1).strip() if markdown_link else raw.strip("`").split()[0] if raw else ""
+    target = target.rstrip(",;")
+    if not target:
+        return False
+
+    commit_match = re.fullmatch(r"git:([0-9a-f]{7,40})", target, re.IGNORECASE)
+    if commit_match:
+        result = subprocess.run(
+            ["git", "cat-file", "-e", f"{commit_match.group(1)}^{{commit}}"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return result.returncode == 0
+
+    path_value, separator, anchor = target.partition("#")
+    if not path_value or Path(path_value).is_absolute():
+        return False
+    project_root = Path.cwd().resolve()
+    candidates = [evidence_file.parent / path_value, Path(path_value)]
+    for candidate in candidates:
+        if not candidate.is_file():
+            continue
+        resolved = candidate.resolve()
+        try:
+            relative = resolved.relative_to(project_root)
+        except ValueError:
+            continue
+        if relative.parts[:2] == (".sdc", "runtime") or (relative.parts and relative.parts[0] == ".git"):
+            continue
+        ignored = subprocess.run(
+            ["git", "check-ignore", "--no-index", "--quiet", "--", str(relative)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if ignored.returncode == 0:
+            continue
+        if not separator or markdown_anchor_exists(resolved, anchor):
+            return True
+    return False
+
+
+def list_field_values(block, field):
+    return [
+        value.strip()
+        for value in re.findall(
+        rf"^[ \t]*-[ \t]*{re.escape(field)}:[ \t]*(.*)$",
+        block,
+        re.IGNORECASE | re.MULTILINE,
+        )
+    ]
+
+
+def review_field(block, field):
+    values = list_field_values(block, field)
+    return values[0] if len(values) == 1 else ""
+
+
+def task_review_blocks(section, task_id):
+    return [
+        match.group("body")
+        for match in re.finditer(
+        rf"^###[ \t]+{re.escape(task_id)}[ \t]*$\n(?P<body>[\s\S]*?)(?=^###[ \t]+|\Z)",
+        section,
+        re.IGNORECASE | re.MULTILINE,
+        )
+    ]
+
+
+def validate_dual_review_evidence(errors, evidence_file, completed):
+    text = read_text(evidence_file)
+    task_sections = markdown_sections(text, "Task Review Evidence")
+    if len(task_sections) > 1:
+        errors.append(f"{evidence_file} Task Review Evidence 章节重复")
+    task_section = task_sections[0] if task_sections else ""
+    for task_id in sorted(completed):
+        blocks = task_review_blocks(task_section, task_id)
+        if len(blocks) > 1:
+            errors.append(f"{evidence_file} 存在重复 {task_id} Task Review Evidence 块")
+        if not blocks:
+            errors.append(f"{evidence_file} 缺少 {task_id} 的 Task Review Evidence 块")
+            continue
+        block = blocks[0]
+        for field in ("Spec Compliance", "Code Quality", "Evidence"):
+            if len(list_field_values(block, field)) > 1:
+                errors.append(f"{evidence_file} {task_id} 存在重复 {field} verdict")
+        if review_field(block, "Spec Compliance").lower() != "approved":
+            errors.append(f"{evidence_file} {task_id} 缺少已批准的 Spec Compliance verdict")
+        if review_field(block, "Code Quality").lower() != "approved":
+            errors.append(f"{evidence_file} {task_id} 缺少已批准的 Code Quality verdict")
+        evidence = review_field(block, "Evidence")
+        if not evidence_reference_exists(evidence, evidence_file):
+            errors.append(f"{evidence_file} {task_id} Evidence 引用不存在或锚点无效: {evidence or '(empty)'}")
+
+    final_sections = markdown_sections(text, "Final Whole-Change Review")
+    if len(final_sections) > 1:
+        errors.append(f"{evidence_file} Final Whole-Change Review 章节重复")
+    final_block = final_sections[0] if final_sections else ""
+    for field in ("Status", "Spec Compliance", "Code Quality", "Evidence"):
+        if len(list_field_values(final_block, field)) > 1:
+            errors.append(f"{evidence_file} Final Whole-Change Review 存在重复 {field} 字段")
+    if review_field(final_block, "Status").lower() != "approved":
+        errors.append(f"{evidence_file} 最终整体审查未 Approved")
+    if review_field(final_block, "Spec Compliance").lower() != "approved":
+        errors.append(f"{evidence_file} Final Whole-Change Review 缺少已批准的 Spec Compliance verdict")
+    if review_field(final_block, "Code Quality").lower() != "approved":
+        errors.append(f"{evidence_file} Final Whole-Change Review 缺少已批准的 Code Quality verdict")
+    final_evidence = review_field(final_block, "Evidence")
+    if not evidence_reference_exists(final_evidence, evidence_file):
+        errors.append(f"{evidence_file} Final Whole-Change Review Evidence 引用不存在或锚点无效: {final_evidence or '(empty)'}")
+
+
+def parse_global_constraints(filepath):
+    section = markdown_section(read_text(filepath), "Global Constraints")
+    rows = {}
+    duplicates = set()
+    malformed = []
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if not cells:
+            continue
+        if cells[0].lower() in {"id", "constraint id"}:
+            continue
+        if all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
+            continue
+        if not re.fullmatch(r"GC-[A-Za-z0-9_-]+", cells[0], re.IGNORECASE):
+            malformed.append(cells[0] or "(empty)")
+            continue
+        if len(cells) < 4:
+            malformed.append(cells[0])
+            continue
+        constraint_id = cells[0].upper()
+        if constraint_id in rows:
+            duplicates.add(constraint_id)
+        rows[constraint_id] = {
+            "constraint": cells[1],
+            "source": cells[2],
+            "applies_to": cells[3],
+        }
+    return rows, duplicates, malformed
+
+
+def validate_global_constraints_table(errors, filepath):
+    sections = markdown_sections(read_text(filepath), "Global Constraints")
+    if len(sections) > 1:
+        errors.append(f"{filepath} Global Constraints 章节重复")
+    rows, duplicates, malformed = parse_global_constraints(filepath)
+    if not rows:
+        errors.append(f"{filepath} Global Constraints 缺少有效 GC-* 行")
+        return rows
+
+    for constraint_id in sorted(duplicates):
+        errors.append(f"{filepath} Global Constraints 存在重复 ID: {constraint_id}")
+    for constraint_id in malformed:
+        if re.fullmatch(r"GC-[A-Za-z0-9_-]+", constraint_id, re.IGNORECASE):
+            errors.append(f"{filepath} Global Constraints 行格式不完整: {constraint_id}")
+        else:
+            errors.append(f"{filepath} Global Constraints ID 无效: {constraint_id}")
+
+    invalid = {"", "todo", "tbd", "pending", "draft", "-"}
+    for constraint_id, row in rows.items():
+        for field, value in row.items():
+            if value.strip().lower() in invalid:
+                errors.append(f"{filepath} {constraint_id} 的 {field} 仍是占位值: {value or '(empty)'}")
+    return rows
+
+
+def validate_global_constraints_consistency(errors, filepaths):
+    parsed = []
+    for filepath in filepaths:
+        rows, duplicates, malformed = parse_global_constraints(filepath)
+        if rows and not duplicates and not malformed:
+            parsed.append((filepath, rows))
+    if len(parsed) != len(filepaths):
+        return
+
+    reference_path, reference_rows = parsed[0]
+    reference_contract = {
+        constraint_id: (row["constraint"], row["source"])
+        for constraint_id, row in reference_rows.items()
+    }
+    for filepath, rows in parsed[1:]:
+        contract = {
+            constraint_id: (row["constraint"], row["source"])
+            for constraint_id, row in rows.items()
+        }
+        if contract != reference_contract:
+            differing = sorted(set(reference_contract) | set(contract))
+            differing = [
+                constraint_id
+                for constraint_id in differing
+                if reference_contract.get(constraint_id) != contract.get(constraint_id)
+            ]
+            errors.append(
+                f"{filepath} Global Constraints 与 {reference_path} 不一致: {', '.join(differing)}"
+            )
+
+
 def validate_task_trace(errors, filepath):
     text = read_text(filepath)
-    if "- [ ]" not in text and "- [x]" not in text:
+    lines = text.splitlines()
+    checkbox_indexes = [
+        index
+        for index, line in enumerate(lines)
+        if re.match(r"^\s*-\s*\[[ xX]\]\s+", line)
+    ]
+    if not checkbox_indexes:
         errors.append(f"{filepath} 缺少任务复选框")
         return
 
     if "TODO" in text or "Draft task" in text:
         errors.append(f"{filepath} 仍包含任务模板占位内容")
 
-    task_lines = [line.strip() for line in text.splitlines() if line.strip().startswith("- [")]
-    task_pattern = re.compile(r"- \[[ xX]\] T\d{3} \[REQ-[^\]]+\] \[AC-[^\]]+\] \[Phase [^\]]+\] \[Size: ([SM])\]")
+    for heading in ("## Global Constraints", "## Plan Preflight"):
+        if heading not in text:
+            errors.append(f"{filepath} 缺少执行编排章节: {heading}")
+
+    validate_global_constraints_table(errors, filepath)
+    validate_plan_preflight(errors, filepath)
+
+    task_indexes = [
+        index
+        for index in checkbox_indexes
+        if re.match(r"^\s*-\s*\[[ xX]\]\s+T\d{3}\b", lines[index])
+    ]
+    for index in checkbox_indexes:
+        if index not in task_indexes:
+            errors.append(f"{filepath} 任务 checkbox 行格式无效: {lines[index].strip()}")
+    if not task_indexes:
+        errors.append(f"{filepath} 缺少有效 T### 任务")
+        return
+    task_lines = [lines[index].strip() for index in task_indexes]
+    seen_task_ids = set()
+    duplicate_task_ids = set()
     for line in task_lines:
-        match = task_pattern.search(line)
+        task_id = re.search(r"\bT\d{3}\b", line).group(0)
+        if task_id in seen_task_ids:
+            duplicate_task_ids.add(task_id)
+        seen_task_ids.add(task_id)
+    for task_id in sorted(duplicate_task_ids):
+        errors.append(f"{filepath} 存在重复任务 ID: {task_id}")
+
+    task_pattern = re.compile(
+        r"- \[[ xX]\] T\d{3} \[REQ-[^\]]+\] \[AC-[^\]]+\] "
+        r"\[Phase [^\]]+\] \[Size: ([SM])\][ \t]+\S.*"
+    )
+    required_fields = ("Depends on", "Files", "Consumes", "Produces", "Verify", "Expected", "Review", "Evidence", "Source")
+    invalid_values = {"", "todo", "tbd", "draft", "pending"}
+
+    for position, line in zip(task_indexes, task_lines):
+        match = task_pattern.fullmatch(line)
         if not match:
             errors.append(f"{filepath} 任务格式无效: {line}")
         if "[Size: L]" in line:
             errors.append(f"{filepath} 任务不能使用 Size L: {line}")
 
-    for marker in ("Depends on:", "Verify:", "Source:"):
-        if marker not in text:
-            errors.append(f"{filepath} 缺少任务字段: {marker}")
+        next_positions = [index for index in checkbox_indexes if index > position]
+        end = min(next_positions) if next_positions else len(lines)
+        block = "\n".join(lines[position:end])
+        task_id_match = re.search(r"\b(T\d{3})\b", line)
+        task_id = task_id_match.group(1) if task_id_match else line
+
+        values = {}
+        for field in required_fields:
+            field_matches = re.findall(
+                rf"^[ \t]*-[ \t]*{re.escape(field)}:[ \t]*(.*)$",
+                block,
+                re.IGNORECASE | re.MULTILINE,
+            )
+            if not field_matches:
+                errors.append(f"{filepath} {task_id} 缺少任务字段: {field}:")
+                continue
+            if len(field_matches) > 1:
+                errors.append(f"{filepath} {task_id} 存在重复任务字段: {field}:")
+                continue
+            value = field_matches[0].strip()
+            values[field] = value
+            if field in {"Depends on", "Consumes"} and value.lower() in invalid_values:
+                errors.append(f"{filepath} {task_id} 的 {field} 仍是占位值: {value or '(empty)'}")
+            elif field not in {"Review", "Evidence", "Depends on", "Consumes"} and value.lower() in invalid_values:
+                errors.append(f"{filepath} {task_id} 的 {field} 仍是占位值: {value or '(empty)'}")
+
+        review = values.get("Review", "").lower()
+        evidence = values.get("Evidence", "").lower()
+        allowed_reviews = {"pending", "approved", "needs fixes", "cannot verify"}
+        if review and review not in allowed_reviews:
+            errors.append(f"{filepath} {task_id} Review 状态无效: {values.get('Review')}")
+
+        completed = re.match(r"- \[[xX]\]", line) is not None
+        if completed and review != "approved":
+            errors.append(f"{filepath} {task_id} 已完成但 Review 不是 Approved")
+        if completed and evidence in invalid_values:
+            errors.append(f"{filepath} {task_id} 已完成但缺少非 Pending 的 Evidence")
+        elif completed and not evidence_reference_exists(values.get("Evidence", ""), filepath):
+            errors.append(f"{filepath} {task_id} Evidence 引用不存在或锚点无效: {values.get('Evidence') or '(empty)'}")
+
+
+def validate_plan_preflight(errors, filepath):
+    text = read_text(filepath)
+    sections = markdown_sections(text, "Plan Preflight")
+    if len(sections) > 1:
+        errors.append(f"{filepath} Plan Preflight 章节重复")
+    body = sections[0] if sections else ""
+    status_values = list_field_values(body, "Status")
+    if len(status_values) > 1:
+        errors.append(f"{filepath} Plan Preflight Status 字段重复")
+    status_value = status_values[0] if len(status_values) == 1 else ""
+    if not re.fullmatch(r"Passed", status_value, re.IGNORECASE):
+        errors.append(f"{filepath} 缺少已通过的 Plan Preflight（Status: Passed）")
+
+    reviewed_values = list_field_values(body, "Reviewed Against")
+    if len(reviewed_values) > 1:
+        errors.append(f"{filepath} Plan Preflight Reviewed Against 字段重复")
+    reviewed_value = reviewed_values[0] if len(reviewed_values) == 1 else ""
+    reviewed_lower = reviewed_value.lower()
+    required_sources = ("spec.md", "tasks.md", "artifact output contract")
+    has_plan_artifact = "design.md" in reviewed_lower or "plan.md" in reviewed_lower
+    if not reviewed_value or not all(source in reviewed_lower for source in required_sources) or not has_plan_artifact:
+        errors.append(f"{filepath} Plan Preflight Reviewed Against 不完整；必须覆盖 spec、design/plan、tasks 和 Artifact Output Contract")
+
+    findings_values = list_field_values(body, "Findings")
+    if len(findings_values) > 1:
+        errors.append(f"{filepath} Plan Preflight Findings 字段重复")
+    findings_value = findings_values[0] if len(findings_values) == 1 else ""
+    findings_closed = re.fullmatch(
+        r"(?:"
+        r"none(?:[;:].*)?"
+        r"|resolved(?:[ \t]*(?::|-)[ \t]*.+)?"
+        r"|closed(?:[ \t]*(?::|-)[ \t]*.+)?"
+        r"|no blocking findings(?:[;:].*)?"
+        r")",
+        findings_value,
+        re.IGNORECASE,
+    )
+    if not findings_closed:
+        errors.append(f"{filepath} Plan Preflight Findings 未闭合")
+
+
+def validate_execution_handoff(errors, filepath):
+    text = read_text(filepath)
+    if "## Global Constraints" not in text:
+        errors.append(f"{filepath} 缺少 Global Constraints")
+    if "## Execution Orchestration" not in text:
+        errors.append(f"{filepath} 缺少 Execution Orchestration")
+        return
+
+    sections = markdown_sections(text, "Execution Orchestration")
+    if len(sections) > 1:
+        errors.append(f"{filepath} Execution Orchestration 章节重复")
+    body = sections[0] if sections else ""
+    fields = {
+        field: list_field_values(body, field)
+        for field in ("Plan Preflight", "Mode", "Runtime Workspace", "Task Review", "Final Whole-Change Review")
+    }
+    for field, values in fields.items():
+        if len(values) != 1:
+            errors.append(f"{filepath} Execution Orchestration 缺少或未确认: {field}")
+
+    preflight = fields["Plan Preflight"][0] if len(fields["Plan Preflight"]) == 1 else ""
+    if preflight.lower() != "passed":
+        errors.append(f"{filepath} Execution Orchestration 缺少或未确认: Plan Preflight: Passed")
+
+    mode = fields["Mode"][0] if len(fields["Mode"]) == 1 else ""
+    if mode.strip().lower() in {"", "pending", "todo", "tbd", "draft"} or re.search(r"<[^>]+>", mode):
+        errors.append(f"{filepath} Execution Orchestration 缺少或未确认: Mode")
+
+    runtime = fields["Runtime Workspace"][0] if len(fields["Runtime Workspace"]) == 1 else ""
+    if filepath.parent.name == "current":
+        valid_runtime = re.fullmatch(r"\.sdc/runtime/[A-Za-z0-9][A-Za-z0-9._-]*/", runtime)
+    else:
+        valid_runtime = runtime == f".sdc/runtime/{filepath.parent.name}/"
+    if not valid_runtime:
+        errors.append(f"{filepath} Execution Orchestration 缺少或未确认: Runtime Workspace")
+
+    task_review = fields["Task Review"][0] if len(fields["Task Review"]) == 1 else ""
+    if task_review.lower() != "spec compliance + code quality":
+        errors.append(f"{filepath} Execution Orchestration 缺少或未确认: Task Review")
+
+    final_review = fields["Final Whole-Change Review"][0] if len(fields["Final Whole-Change Review"]) == 1 else ""
+    if final_review.lower() != "required":
+        errors.append(f"{filepath} Execution Orchestration 缺少或未确认: Final Whole-Change Review")
+
+
+def task_completion_states(filepath):
+    text = read_text(filepath)
+    completed = set(re.findall(r"^\s*- \[[xX]\]\s+(T\d{3})\b", text, re.MULTILINE))
+    pending = set(re.findall(r"^\s*- \[ \]\s+(T\d{3})\b", text, re.MULTILINE))
+    return completed, pending
+
+
+def parse_progress_ledger(text):
+    rows = {}
+    duplicates = set()
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") or stripped.startswith("|---"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) < 4 or not re.fullmatch(r"T\d{3}", cells[0], re.IGNORECASE):
+            continue
+        task_id = cells[0].upper()
+        if task_id in rows:
+            duplicates.add(task_id)
+        rows[task_id] = {
+            "status": cells[1],
+            "evidence": cells[2],
+            "review": cells[3],
+        }
+    return rows, duplicates
+
+
+def validate_delivery_completion(errors, warnings, base, current=False):
+    tasks = base / "tasks.md"
+    completed, pending = task_completion_states(tasks)
+    if pending:
+        errors.append(f"{tasks} 仍有未完成任务: {', '.join(sorted(pending))}")
+    if not completed:
+        errors.append(f"{tasks} 没有已完成任务，不能通过 delivery check")
+
+    evidence_file = base / ("apply.md" if current else "notes.md")
+    text = read_text(evidence_file)
+    for heading in ("Task Review Evidence", "Final Whole-Change Review"):
+        if heading not in text:
+            errors.append(f"{evidence_file} 缺少交付审查章节: {heading}")
+    validate_dual_review_evidence(errors, evidence_file, completed)
+
+    runtime_id = "current" if current else base.name
+    ledger = SDC_DIR / "runtime" / runtime_id / "progress.md"
+    if not ledger.exists():
+        warnings.append(f"运行态恢复账本不存在: {ledger}；已改用 tasks/notes 的持久交付证据，fresh checkout 不因此阻断")
+        return
+
+    ledger_rows, duplicate_rows = parse_progress_ledger(read_text(ledger))
+    for task_id in sorted(duplicate_rows):
+        errors.append(f"{ledger} 对任务 {task_id} 存在重复账本行")
+
+    complete_statuses = {"complete", "completed", "done", "approved", "完成"}
+    incomplete_evidence = {"", "pending", "todo", "tbd", "draft"}
+    for task_id in sorted(completed):
+        row = ledger_rows.get(task_id)
+        if not row:
+            errors.append(f"{ledger} 未记录已完成任务 {task_id}")
+            continue
+        if row["status"].strip().lower() not in complete_statuses:
+            errors.append(f"{ledger} 已完成任务 {task_id} 的 Status 不是 complete: {row['status'] or '(empty)'}")
+        if row["review"].strip().lower() != "approved":
+            errors.append(f"{ledger} 已完成任务 {task_id} 的 Review 不是 Approved: {row['review'] or '(empty)'}")
+        if row["evidence"].strip().lower() in incomplete_evidence:
+            errors.append(f"{ledger} 已完成任务 {task_id} 缺少非 Pending Evidence")
+    for task_id in sorted(pending):
+        row = ledger_rows.get(task_id)
+        if row and row["status"].strip().lower() in complete_statuses:
+            errors.append(f"{ledger} 与 tasks.md 冲突：{task_id} 在账本中完成但任务仍未勾选")
 
 
 def validate_no_unconfirmed_execution_inputs(errors, filepath):
@@ -2038,36 +2703,46 @@ def validate_discovery_artifact_budget(errors, warnings, base):
     return True
 
 
+def normalize_managed_content(text):
+    return text.replace("\r\n", "\n")
+
+
+def managed_digest(text):
+    return hashlib.sha256(normalize_managed_content(text).encode()).hexdigest()
+
+
+def managed_file_content(relative_path, content):
+    body = normalize_managed_content(content)
+    return f"<!-- SDC-MANAGED path={relative_path}; sha256={managed_digest(body)} -->\n{body}"
+
+
+def parse_managed_fingerprint(text):
+    normalized = normalize_managed_content(text)
+    match = re.match(
+        r"^<!-- SDC-MANAGED path=([^;]+); sha256=([0-9a-f]{64}) -->\n",
+        normalized,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+    return {
+        "path": match.group(1),
+        "digest": match.group(2).lower(),
+        "body": normalized[match.end():],
+    }
+
+
+def is_unmodified_managed_file(relative_path, text):
+    parsed = parse_managed_fingerprint(text)
+    if parsed:
+        return parsed["path"] == relative_path and managed_digest(parsed["body"]) == parsed["digest"]
+    return managed_digest(text) in LEGACY_MANAGED_HASHES.get(relative_path, set())
+
+
 def is_stale_managed_template(relative_path, text):
     """Detect SDC-generated old templates that can be upgraded safely."""
     normalized = text.replace("\r\n", "\n")
-    template_paths = {
-        "README.md",
-        "constitution.md",
-        "common-ground.md",
-        "expert-routing.md",
-        "knowledge/index.md",
-        "current/discovery.md",
-        "current/spec.md",
-        "current/context-pack.md",
-        "current/knowledge-candidates.md",
-        "memory/candidates.md",
-        "templates/change.md",
-        "templates/discovery.md",
-        "templates/design.md",
-        "templates/spec.md",
-        "templates/context-pack.md",
-        "templates/common-ground.md",
-        "templates/expert-routing.md",
-        "templates/knowledge-candidates.md",
-        "templates/knowledge-index.md",
-        "standards/README.md",
-        "standards/ai.md",
-        "standards/company/README.md",
-        "current/tasks.md",
-        "templates/tasks.md",
-    }
-    if relative_path not in template_paths:
+    if relative_path not in MANAGED_TEMPLATE_PATHS:
         return False
 
     if relative_path == "README.md":
@@ -2076,7 +2751,9 @@ def is_stale_managed_template(relative_path, text):
             or "common-ground.md" not in normalized
             or "expert-routing.md" not in normalized
             or "输出契约门禁" not in normalized
+            or "执行编排门禁" not in normalized
             or "SDC v1.1" in normalized
+            or "SDC v1.2" in normalized
         )
 
     if relative_path == "constitution.md":
@@ -2085,6 +2762,7 @@ def is_stale_managed_template(relative_path, text):
             or "No Evidence, No Fact" not in normalized
             or "Common Ground And Expert Routing Discipline" not in normalized
             or "Artifact Output Contract Discipline" not in normalized
+            or "Execution Orchestration Discipline" not in normalized
         )
 
     if relative_path in {"common-ground.md", "templates/common-ground.md"}:
@@ -2108,7 +2786,11 @@ def is_stale_managed_template(relative_path, text):
         )
 
     if relative_path == "standards/ai.md":
-        return "# AI Collaboration Standard" in normalized and ".sdc/standards/company/README.md" not in normalized
+        return "# AI Collaboration Standard" in normalized and (
+            ".sdc/standards/company/README.md" not in normalized
+            or "Plan Preflight" not in normalized
+            or "Final Whole-Change Review" not in normalized
+        )
 
     if relative_path == "standards/company/README.md":
         return "# Company Standards Pack" in normalized and "Routing Rule" not in normalized
@@ -2126,13 +2808,32 @@ def is_stale_managed_template(relative_path, text):
         )
 
     if relative_path in {"current/context-pack.md", "templates/context-pack.md"}:
-        return "# Context Pack" in normalized and (
+        context_pack_title = "# Context Pack" in normalized or "# Current Context Pack" in normalized
+        return context_pack_title and (
             "## Knowledge Gaps" not in normalized
             or "## Common Ground Used" not in normalized
             or "## Forbidden Assumptions" not in normalized
             or "## Expert Profiles Used" not in normalized
             or "## Artifact Output Contract" not in normalized
+            or "## Global Constraints" not in normalized
+            or "## Execution Orchestration" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
+        )
+
+    if relative_path == "current/plan.md":
+        return "# Current Plan" in normalized and (
+            "## Global Constraints" not in normalized
+            or "## Plan Preflight" not in normalized
+        )
+
+    if relative_path == "current/apply.md":
+        return "# Current Apply Log" in normalized and (
+            "## Execution Ledger Summary" not in normalized
+            or "## Task Review Evidence" not in normalized
+            or "## Final Whole-Change Review" not in normalized
+            or "Spec Compliance: Pending" not in normalized
+            or "Code Quality: Pending" not in normalized
+            or "Evidence: apply.md#测试结果" not in normalized
         )
 
     if relative_path in {"current/discovery.md", "templates/discovery.md"}:
@@ -2156,6 +2857,8 @@ def is_stale_managed_template(relative_path, text):
             "## Knowledge Gaps" not in normalized
             or "## Common Ground Used" not in normalized
             or "## Artifact Output Contract" not in normalized
+            or "## Global Constraints" not in normalized
+            or "## Plan Preflight" not in normalized
             or "## Test Matrix" not in normalized
             or "| Source | Status | Evidence | Why It Matters |" not in normalized
         )
@@ -2170,17 +2873,26 @@ def is_stale_managed_template(relative_path, text):
             "INV-" not in normalized
             or "## 1.2 Common Ground Used" not in normalized
             or "## 1.3 Artifact Output Contract" not in normalized
+            or "Schema: SDC 1.3.0" not in normalized
         )
 
     if relative_path.endswith("tasks.md"):
         old_task_shape = (
             "### T1" in normalized
-            or "Status:" in normalized
             or "AC:" in normalized
             or "Test:" in normalized
             or "[Size: L]" in normalized
         )
-        missing_standard_shape = "T001 [REQ-01] [AC-01] [Phase" not in normalized
+        missing_standard_shape = (
+            "T001 [REQ-01] [AC-01] [Phase" not in normalized
+            or "## Global Constraints" not in normalized
+            or "## Plan Preflight" not in normalized
+            or "Reviewed Against:" not in normalized
+            or "Consumes:" not in normalized
+            or "Produces:" not in normalized
+            or "Review:" not in normalized
+            or "Evidence:" not in normalized
+        )
         looks_generated = "Draft task" in normalized or old_task_shape
         if relative_path == "current/tasks.md":
             looks_generated = looks_generated and (
@@ -2196,19 +2908,48 @@ def is_stale_managed_template(relative_path, text):
 def write_or_upgrade_managed(relative_path, content):
     """Create missing SDC files or upgrade stale generated templates with backup."""
     filepath = SDC_DIR / relative_path
+    managed = relative_path in MANAGED_TEMPLATE_PATHS
+    desired = managed_file_content(relative_path, content) if managed else content
     if not filepath.exists():
         filepath.parent.mkdir(parents=True, exist_ok=True)
-        filepath.write_text(content)
+        filepath.write_text(desired)
         return "created"
 
     current = read_text(filepath)
+    if normalize_managed_content(current) == normalize_managed_content(desired):
+        return None
+
+    if managed:
+        parsed = parse_managed_fingerprint(current)
+        current_body = parsed["body"] if parsed else normalize_managed_content(current)
+        if current_body == normalize_managed_content(content):
+            filepath.write_text(desired)
+            return "upgraded (added managed fingerprint; content unchanged)"
+
     if is_stale_managed_template(relative_path, current):
+        if managed and not is_unmodified_managed_file(relative_path, current):
+            return "preserved-user-owned"
         backup = filepath.with_name(f"{filepath.name}.bak-{datetime.now().strftime('%Y%m%d%H%M%S')}")
         backup.write_text(current)
-        filepath.write_text(content)
+        filepath.write_text(desired)
         return f"upgraded (backup: {backup.relative_to(SDC_DIR)})"
 
     return None
+
+
+def ensure_runtime_ignore_rule():
+    """Add the execution scratch rule without replacing project-local ignores."""
+    filepath = SDC_DIR / ".gitignore"
+    if not filepath.exists():
+        return None
+
+    current = read_text(filepath)
+    if any(line.strip() == "/runtime/" for line in current.splitlines()):
+        return None
+
+    separator = "" if not current or current.endswith("\n") else "\n"
+    filepath.write_text(f"{current}{separator}/runtime/\n")
+    return "upgraded (appended /runtime/; existing rules preserved)"
 
 
 def standards_pack_slug(name):
@@ -2435,6 +3176,7 @@ def cmd_init(standards_source=None, standards_name="company"):
     """初始化标准 SDC 工作区"""
     created = []
     upgraded = []
+    preserved = []
     project_kind, project_markers, source_count = detect_project_kind()
 
     SDC_DIR.mkdir(exist_ok=True)
@@ -2451,6 +3193,12 @@ def cmd_init(standards_source=None, standards_name="company"):
             created.append(relative_path)
         elif result and result.startswith("upgraded"):
             upgraded.append(f"{relative_path} {result}")
+        elif result == "preserved-user-owned":
+            preserved.append(relative_path)
+
+    runtime_ignore_result = ensure_runtime_ignore_rule()
+    if runtime_ignore_result:
+        upgraded.append(f".gitignore {runtime_ignore_result}")
 
     if created or upgraded:
         print_color(GREEN, "✅ SDC 标准工作区已初始化")
@@ -2466,6 +3214,13 @@ def cmd_init(standards_source=None, standards_name="company"):
                 print(f"  - {item}")
     else:
         print_color(YELLOW, "⚠️  SDC 工作区已存在，未覆盖任何文件")
+
+    if preserved:
+        print()
+        print_color(YELLOW, "⚠️  检测到用户修改，已跳过自动升级")
+        for item in preserved:
+            print(f"  - {item}")
+        print("   请人工合并新模板要求；SDC 不会用生成模板覆盖项目规则。")
 
     print()
     if project_kind == "brownfield":
@@ -2608,10 +3363,12 @@ def validate_context_pack(errors, warnings, filepath):
         errors,
         warnings,
         filepath,
-        ["## Goal", "## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Expert Profiles Used", "## Artifact Output Contract", "## Execution Boundaries", "## Forbidden Assumptions", "## Validation Commands", "## Knowledge Candidate Routing"],
+        ["## Goal", "## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Expert Profiles Used", "## Artifact Output Contract", "## Global Constraints", "## Execution Orchestration", "## Execution Boundaries", "## Forbidden Assumptions", "## Validation Commands", "## Knowledge Candidate Routing"],
     )
     validate_no_unconfirmed_execution_inputs(errors, filepath)
     validate_artifact_output_contract(errors, warnings, filepath, require_test_matrix=True)
+    validate_global_constraints_table(errors, filepath)
+    validate_execution_handoff(errors, filepath)
 
 
 def validate_spec_file(errors, warnings, filepath):
@@ -2636,10 +3393,12 @@ def validate_design_file(errors, warnings, filepath, source_text=""):
         errors,
         warnings,
         filepath,
-        ["## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Artifact Output Contract", "## Solution Summary", "## Impact Scope", "## Test Matrix", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
+        ["## Knowledge Sources Used", "## Knowledge Gaps", "## Common Ground Used", "## Global Constraints", "## Plan Preflight", "## Artifact Output Contract", "## Solution Summary", "## Impact Scope", "## Test Matrix", "## REQ/AC to Design Decision Mapping", "## Risks, Rollback, and Migration"],
     )
     validate_no_unconfirmed_execution_inputs(errors, filepath)
     validate_artifact_output_contract(errors, warnings, filepath, source_text=source_text, require_test_matrix=True)
+    validate_global_constraints_table(errors, filepath)
+    validate_plan_preflight(errors, filepath)
 
 
 def validate_impact_file(errors, warnings, filepath):
@@ -2723,7 +3482,7 @@ def validate_knowledge_candidates_file(errors, warnings, filepath):
             errors.append(f"{filepath} 候选知识缺少必填字段 {', '.join(missing)}: {candidate or stripped}")
 
 
-def cmd_validate(target="current"):
+def cmd_validate(target="current", require_delivery_evidence=False):
     """校验 current 或某个 change"""
     if not SDC_DIR.exists():
         print_color(RED, "❌ 请先运行: sdc init")
@@ -2738,6 +3497,7 @@ def cmd_validate(target="current"):
         "Knowledge and Memory Discipline",
         "Common Ground And Expert Routing Discipline",
         "Artifact Output Contract Discipline",
+        "Execution Orchestration Discipline",
         "Traceability Rules",
         "Human Confirmation Rules",
         "No Silent Defaults",
@@ -2748,14 +3508,22 @@ def cmd_validate(target="current"):
     if target == "current":
         base = SDC_DIR / "current"
         validate_spec_file(errors, warnings, base / "spec.md")
-        validate_file(errors, warnings, base / "plan.md", ["## 设计摘要", "## 测试先行策略", "## 交付清单"])
-        validate_file(errors, warnings, base / "tasks.md", ["## Tasks"])
-        validate_file(errors, warnings, base / "apply.md", ["## 已完成任务", "## 修改文件", "## 测试结果"])
+        validate_file(errors, warnings, base / "plan.md", ["## 设计摘要", "## Global Constraints", "## Plan Preflight", "## 测试先行策略", "## 交付清单"])
+        validate_global_constraints_table(errors, base / "plan.md")
+        validate_plan_preflight(errors, base / "plan.md")
+        validate_file(errors, warnings, base / "tasks.md", ["## Global Constraints", "## Plan Preflight", "## Tasks"])
+        validate_file(errors, warnings, base / "apply.md", ["## Plan Preflight", "## Execution Ledger Summary", "## 已完成任务", "## 修改文件", "## 测试结果", "## Task Review Evidence", "## Final Whole-Change Review"])
         validate_context_pack(errors, warnings, base / "context-pack.md")
         validate_knowledge_candidates_file(errors, warnings, base / "knowledge-candidates.md")
         validate_task_trace(errors, base / "tasks.md")
+        validate_global_constraints_consistency(
+            errors,
+            [base / "plan.md", base / "tasks.md", base / "context-pack.md"],
+        )
         validate_no_unconfirmed_execution_inputs(errors, base / "tasks.md")
         validate_no_unconfirmed_execution_inputs(errors, base / "apply.md")
+        if require_delivery_evidence:
+            validate_delivery_completion(errors, warnings, base, current=True)
     else:
         base = change_path(target)
         if not base.exists():
@@ -2780,13 +3548,19 @@ def cmd_validate(target="current"):
                 )
                 validate_file(errors, warnings, base / "proposal.md", ["## 背景", "## 目标", "## 初始验收标准"])
                 validate_design_file(errors, warnings, base / "design.md", source_text=artifact_source_text)
-                validate_file(errors, warnings, base / "tasks.md", ["## 实现任务", "## 验证任务"])
+                validate_file(errors, warnings, base / "tasks.md", ["## Global Constraints", "## Plan Preflight", "## 实现任务", "## 验证任务"])
                 validate_spec_file(errors, warnings, base / "spec.md")
                 validate_context_pack(errors, warnings, base / "context-pack.md")
                 validate_knowledge_candidates_file(errors, warnings, base / "knowledge-candidates.md")
                 validate_task_trace(errors, base / "tasks.md")
+                validate_global_constraints_consistency(
+                    errors,
+                    [base / "design.md", base / "tasks.md", base / "context-pack.md"],
+                )
                 validate_no_unconfirmed_execution_inputs(errors, base / "tasks.md")
                 validate_no_unconfirmed_execution_inputs(errors, base / "notes.md")
+                if require_delivery_evidence:
+                    validate_delivery_completion(errors, warnings, base)
 
     print()
     print_color(HEADER, f"🔍 SDC 校验结果: {target}")
@@ -2987,7 +3761,7 @@ def cmd_archive(change_id):
         print_color(RED, f"❌ 需求迭代不存在: {source}")
         return False
 
-    if not cmd_validate(change_id):
+    if not cmd_validate(change_id, require_delivery_evidence=True):
         print_color(RED, "❌ 归档前校验未通过，已停止归档")
         return False
 
@@ -3103,7 +3877,7 @@ def cmd_archive(change_id):
 
 def cmd_check(target="current"):
     """综合检查入口：CLI 层先执行结构校验，并提示后续人工/AI 检查。"""
-    ok = cmd_validate(target)
+    ok = cmd_validate(target, require_delivery_evidence=True)
     print_color(HEADER, "🔎 后续检查")
     print("  - delivery: validate + review + test + quality")
     print("  - bug: 只分析根因和证据，不直接改代码")

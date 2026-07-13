@@ -17,27 +17,28 @@ init -> change -> plan -> apply -> check -> archive
 - Expert Routing：吸收专家库思路，但不增加公开命令，由 AI 在 plan/check/archive 内部选择产品、架构、数据、测试、安全等专家视角。
 - 知识库与 memory：区分产品知识、技术知识、候选知识和过程记忆。
 - Artifact Output Contract：按触发条件强制标准产物，比如流程图、API/数据契约、测试矩阵和上线清单。
+- Execution Orchestration：Plan Preflight、任务接口、文件化交接、执行账本、任务级双判定审查和最终整体审查。
 - Brownfield impact gate：存量项目在需求确认后做当前变更影响面分析。
 - 追溯链：`SCN-* -> REQ-* -> AC-* -> T### -> validation evidence`。
 - 反乱猜门禁：`No Evidence, No Fact; No Confirmation, No Execution; No Impact, No Brownfield Change`。
 - `check` 合并 validate、review、test、quality。
 - `archive` 归档完成变更，并通过 Knowledge Compact Gate 判断哪些知识需要沉淀。
 
-## 安装 / 更新
+## 安装
 
-推荐所有机器统一使用：
-
-```bash
-npx sdc-spec@latest
-```
-
-卸载：
+推荐使用 npm 安装：
 
 ```bash
-npx sdc-spec@latest uninstall
+npx --yes sdc-spec@latest
 ```
 
-本地 clone 调试：
+也可以直接安装 GitHub `main`：
+
+```bash
+npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec
+```
+
+首次从源码安装：
 
 ```bash
 git clone https://github.com/ruanjianershu/spec-driven-coding.git
@@ -45,13 +46,67 @@ cd spec-driven-coding
 node bin/install.js
 ```
 
-从 GitHub main 直接安装：
+卸载：
 
 ```bash
-npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec
+npx --yes sdc-spec@latest uninstall
 ```
 
-更新后请重启对应客户端，让 skills / plugins 重新加载。
+## 更新已有 SDC
+
+优先沿用原来的安装来源：
+
+| 原安装方式 | 更新命令 |
+|---|---|
+| npm | `npx --yes sdc-spec@latest` |
+| GitHub `main` | `npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec` |
+
+### 源码安装的版本
+
+如果源码目录跟踪 GitHub 或其他 Git 远程，进入当初 clone 的目录更新。若 `git status --short` 有本地改动，请先自行提交或处理：
+
+```bash
+cd /path/to/spec-driven-coding
+git status --short
+git pull --ff-only
+node bin/install.js
+```
+
+不同 Git 远程的源码 clone 都使用这组命令，区别只是该目录配置的远程仓库地址。
+
+如果安装来源是正在修改的本地开发分支，不要执行 `git pull`；每次源码变化后重新安装即可：
+
+```bash
+cd /path/to/spec-driven-coding
+node bin/install.js
+```
+
+安装器会替换旧插件 cache、清理旧版重复 skills，并重新生成 Claude Code 与 Codex 各自需要的目录结构；正常更新不需要先卸载。
+
+### 更新客户端和已有项目
+
+1. 完全退出并重新打开 Claude Code、Codex CLI、Codex App 或 Hermes，让新的 plugins / skills 重新加载。
+2. 进入每个已有业务项目，执行一次 SDC init，升级该项目的 `.sdc` 托管结构：
+
+Claude Code：
+
+```text
+/sdc:init
+```
+
+Codex：
+
+```text
+选择 sdc:sdc-init，或输入“使用 SDC 升级当前项目”
+```
+
+终端或其他客户端：
+
+```bash
+sdc-init
+```
+
+只更新插件不会自动升级已有项目中的 `.sdc`。再次 init 是幂等操作：只升级未被用户修改的 SDC 托管模板，检测到项目自定义内容时会保留原文件。
 
 ## 客户端使用
 
@@ -121,13 +176,13 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
    先读 common-ground 和 knowledge，再完成 intake 问题并等待确认；同时识别输入证据和可能需要的标准产物。未确认时只保留 discovery/proposal/notes 草稿。
 
 3. plan
-   基于 confirmed spec、必要的 impact.md、相关知识库、expert-routing 和 Artifact Output Contract 生成 design/tasks/context-pack。
+   基于 confirmed spec、必要的 impact.md、相关知识库、expert-routing 和 Artifact Output Contract 生成 design/tasks/context-pack；记录 Global Constraints 并通过 Plan Preflight。
 
 4. apply
-   按 T### 薄切片执行，记录 notes、验证证据和 knowledge-candidates。
+   按 T### 薄切片执行。每个任务使用独立 brief、实现报告和 Spec Compliance + Code Quality 审查，并用 runtime 账本支持中断恢复。
 
 5. check
-   综合 validate/review/test/quality，并检查 Common Ground、专家视角覆盖、标准产物覆盖和知识漂移。
+   综合 validate/review/test/quality，检查任务审查证据和最终整体审查，并验证 Common Ground、专家视角、标准产物和知识漂移。
 
 6. archive
    归档到 .sdc/specs 和 .sdc/changes/archive，并建议需要沉淀的长期知识、共同认知和专家路由。
@@ -163,6 +218,7 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 ├── decisions/
 ├── reports/
 ├── reviews/
+├── runtime/          # git-ignored 执行 brief/report/diff/ledger
 └── templates/
 ```
 
@@ -185,6 +241,17 @@ SDC 不新增一堆命令，但会要求每个阶段有清晰输入输出。
 - `check` 反向检查：如果实际 diff 触发了 API、数据、部署、流程、UX、测试等风险，但设计或上下文包没有对应产物，会阻断交付。
 - 小需求可以写 `N/A + 证据原因`，但 final plan/check 必须有 AC 测试矩阵。
 
+### Execution Orchestration
+
+SDC 1.3 不增加命令，但强化 plan 之后的执行纪律：
+
+- `plan` 写入精确的 Global Constraints，并在执行前完成 Plan Preflight。
+- 每个任务必须声明 `Files / Consumes / Produces / Verify / Expected / Review / Evidence / Source`。
+- `apply` 把任务 brief、实现报告和 review package 放进 `.sdc/runtime/<change-id>/`，避免重复向主上下文粘贴完整计划和 diff。
+- 客户端支持 subagent 时使用独立 implementer/reviewer，但实现任务仍按任务串行；当前任务未完成 review、持久证据和账本更新前不启动下一个实现。
+- 每个任务必须分别通过 `Spec Compliance` 和 `Code Quality`，并引用存在的持久 Evidence；`Cannot verify from diff` 必须由协调 agent 用证据闭合。
+- 所有任务完成后还要做一次 Final Whole-Change Review，才能通过 check/archive。
+
 ### Company Standards Pack
 
 SDC 不内置任何公司私有规范。已有团队规范建议放进业务项目的 `.sdc/standards/company/`，由索引按需读取：
@@ -202,6 +269,12 @@ AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关
 - 专家路由只能提出问题、检查和 investigation task，不能替用户确认产品规则、架构、数据模型、权限或发布策略。
 - 触发式交付物缺失不能进入交付：流程/状态、集成、API、数据、UX、测试、部署、AI 参与说明必须有对应产物或 `N/A + 证据原因`。
 - final plan/check 必须包含 Test Matrix，并能追溯到 AC。
+- Global Constraints 必须有有效 `GC-*` 行，并在 design/plan、tasks、context-pack 中保持同一约束和来源。
+- Plan Preflight 未同时满足 `Passed + Reviewed Against + closed Findings`，不能进入 apply。
+- 已完成任务必须 `Review: Approved`，且 Task Review Evidence 分别记录已批准的 Spec Compliance、Code Quality 和项目内、非 gitignored 的可解析 Evidence；reviewer 必须只读且不能被提示忽略 finding。
+- `.sdc/runtime/` 只保存本地执行交接和恢复账本，长期证据仍写入 tasks、notes、reports 和 archive。
+- `WORKTREE` review 遇到未跟踪文件必须先停下并 stage/commit，不能生成漏文件的 diff 包。
+- `init` 只自动升级指纹未变化或精确匹配已知旧模板的托管文件；检测到用户修改时原样保留。
 - 禁止“如果不对告诉我，我先改”。必须先问 yes/no 或选项确认。
 - 高影响推断必须进入 Decision Ledger，状态为 `Proposed` 或 `Assumed`，不能直接写成事实。
 - `Assumed / Proposed / TBD / Conflict / Stale` 不能进入 final spec/design/tasks/context-pack/apply/archive。
@@ -225,16 +298,20 @@ AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关
 ## 开发与发布检查
 
 ```bash
+npm run sync:skills
 npm run audit
 npm run eval:sdc
+npm run package:codex -- --allow-dirty --output /tmp/sdc-codex-plugin.zip
 node --check bin/install.js
 npm pack --dry-run
 ```
 
+`package:codex` 生成 rootless、最小化、固定时间戳的 Codex Portal zip 和 SHA-256 文件；正式构建默认拒绝脏工作区，`--allow-dirty` 仅用于本地验证。
+
 可选：
 
 ```bash
-claude plugin validate .
+claude plugin validate "$HOME/.claude/plugins/marketplaces/sdc-local"
 ```
 
 ## 项目材料

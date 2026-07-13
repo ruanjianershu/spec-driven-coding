@@ -1,6 +1,6 @@
 ---
 name: sdc-validate
-description: "Validate SDC current or active change files for structure, acceptance criteria, tasks, tests, and non-template content."
+description: "Use when current or active SDC artifacts need structural and traceability validation."
 ---
 
 # Skill: SDC 规范校验 sdc-validate
@@ -23,13 +23,14 @@ description: "Validate SDC current or active change files for structure, accepta
 
 Load only what is needed:
 
-- Role contract: `../sdc-shared/role-contracts.md`, section `sdc-validate`.
-- Shared validation and decision rules: `../sdc-shared/workflow-standards.md`.
-- Common Ground and expert routing: `../sdc-shared/common-ground.md`, `../sdc-shared/expert-routing.md`.
-- Artifact schemas: `../sdc-shared/artifact-schemas.md`.
-- Artifact output contracts: `../sdc-shared/artifact-output-contracts.md`.
-- Validate gate: `../sdc-shared/delivery-gates.md`.
-- Brownfield impact gate: `../sdc-shared/legacy-impact-gate.md`.
+- Role contract: `../../sdc-references/role-contracts.md`, section `sdc-validate`.
+- Shared validation and decision rules: `../../sdc-references/workflow-standards.md`.
+- Common Ground and expert routing: `../../sdc-references/common-ground.md`, `../../sdc-references/expert-routing.md`.
+- Artifact schemas: `../../sdc-references/artifact-schemas.md`.
+- Artifact output contracts: `../../sdc-references/artifact-output-contracts.md`.
+- Execution orchestration contracts: `../../sdc-references/execution-orchestration.md`.
+- Validate gate: `../../sdc-references/delivery-gates.md`.
+- Brownfield impact gate: `../../sdc-references/legacy-impact-gate.md`.
 
 ## 校验范围
 
@@ -87,6 +88,9 @@ Load only what is needed:
 - `impact.md` 是否仍有阻塞性待确认项。
 - apply/check 是否记录了必要的 `knowledge-candidates.md`，并留待 archive 确认。
 - Artifact Output Contract 是否与实际 diff、impact.md、tasks 和验证证据一致。
+- Global Constraints 和 Plan Preflight 是否完整且通过。
+- 每个任务是否包含 Files、Consumes、Produces、Verify、Expected、Review、Evidence 和 Source。
+- 已完成任务是否 Review Approved 且 Evidence 非 Pending；delivery check/archive 是否有 Final Whole-Change Review，且 runtime 账本存在时是否与持久证据一致。git-ignored 账本缺失只警告。
 
 ## 输出格式
 
@@ -126,3 +130,4 @@ current / change-id
 - OPEN 或高影响 WORKING Common Ground 被当成事实时不能放行。
 - 高风险改动缺少对应 expert profile / standards 覆盖时不能放行。
 - 触发式交付物缺失、或者用无证据 `N/A` 跳过时不能放行。
+- Plan Preflight、任务接口、任务审查、执行证据或最终整体审查缺失时不能放行。

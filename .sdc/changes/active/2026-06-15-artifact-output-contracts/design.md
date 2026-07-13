@@ -6,7 +6,7 @@
 |---|---|---|---|
 | spec.md | Confirmed | REQ/AC and output contract | Defines implementation scope |
 | impact.md | Confirmed | Direct change list | Defines Brownfield impact radius |
-| skills/sdc-shared/workflow-standards.md | Confirmed | Current governance reference | Must be extended consistently |
+| sdc-references/workflow-standards.md | Confirmed | Current governance reference | Must be extended consistently |
 | sdc-cli.py | Confirmed | Existing template and validation structure | Determines implementation approach |
 | evals/sdc-flow/sdc_flow_provider.py | Confirmed | Existing deterministic scenarios | Determines regression test shape |
 
