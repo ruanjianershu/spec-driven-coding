@@ -13,7 +13,7 @@
     "sync:skills": "node bin/install.js sync-public-skills"
   },
   "bin": {
-    "sdc": "bin/install.js",
+    "sdc": "bin/sdc.js",
     "sdc-spec": "bin/install.js",
     "sdc-cli": "sdc-cli.py"
   },
