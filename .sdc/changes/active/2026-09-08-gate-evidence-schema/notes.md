@@ -5,7 +5,7 @@
 - Change: `2026-09-08-gate-evidence-schema`
 - Exact Base: `origin/main@e10a5d221f081fb6d099d342597a707b0dad91c9`
 - Planning role: architecture planning only; no runtime/profile/product implementation, PR, merge, deployment, publishing, or release occurred.
-- Apply authorization: not granted.  A human must explicitly authorize Apply and name `SDC_PLAN_REVISION` plus the PR controller before T000 starts.
+- Apply authorization: the latest Autopilot handoff for ANDY-159 explicitly authorized governed Apply for reviewed revision `4ac5d46a203d1652a5e5a4843d9c8b36d65f5293` and instructed the executor not to retain the superseded Apply stop-line. This execution follows that direct authorization; the handoff also authorizes a PR when the candidate is ready, but not merge, deploy, release, or publication.
 
 ## Root-Cause Repair
 
@@ -56,13 +56,25 @@
 | Unconfirmed-input scan | 1 | No forbidden execution-input marker occurs in the revised package. |
 | `git diff --check` | 0 | No whitespace error before staging the plan revision. |
 
+## Task Review Evidence
+
+### T000 — approved
+
+- Candidate: `git:9e6484ba0bda0fd0bfc98d6972aa33abe7136d12` (`H0`), parent exactly `e10a5d221f081fb6d099d342597a707b0dad91c9`.
+- Plan input: `.sdc/runtime/plan-input/ANDY-159-plan-review-reconstructed.bundle`, SHA-256 `b99400ab6ba4c4d7a2a83250bee37bc97e8fc510555c1b0fd1ed60dd94ba5cc8`; `git bundle verify` passed; revision `4ac5d46a203d1652a5e5a4843d9c8b36d65f5293` is a Base descendant and its complete sorted diff is exactly the nine planned Markdown paths.
+- Source/provenance note: the attached Stage-1 bundle available to this run was obsolete (`2ea835fe334525ef1d799e561ea6b51200095ea2`, SHA-256 `47d6db70fe9737be5594625251d4aac386e3f9fda47fca7aec73cd8af3b1fe8f`). Per the latest Apply handoff, the current reviewed revision was reconstructed from the independently retrievable `origin` ref `refs/heads/ANDY-158-runtime-context-plan` and verified before import; the obsolete attachment was not used.
+- Verification: Base `sdc-cli.py validate` passed; Base task-brief and review-package helpers emitted only ignored Markdown handoffs; `git diff --check` and the focused nine-path allowlist passed; no runtime-context script, JSONL manifest, or lifecycle-state path entered the candidate.
+- Review: independent read-only `t000_reviewer_luna` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning findings. The reviewer could not independently attest to human-vs-agent authorship of the platform Apply handoff; the current execution is authorized by the latest direct Autopilot instruction recorded above.
+
+### T001 — approved
+
+- Candidate: `git:4f1e9dbd634aa8e97d604474257fae7342f7e274` (`H1`), exact range `e10a5d221f081fb6d099d342597a707b0dad91c9..4f1e9dbd634aa8e97d604474257fae7342f7e274`.
+- Verification: `python3 tests/test_gate_evidence_schema.py` returned nonzero with 8 tests, 7 passing and the one expected `section-count: 0 != 1` failure on the Base-standard shape; diagnostics do not echo opaque source values. `git diff --check` and the focused allowlist passed; the test uses only Python standard library and local Markdown fixtures.
+- Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
+
 ## Candidate Snapshot Ledger
 
 No Apply checkpoint exists in this planning package.  During Apply, T003 and T900 each record Base, content candidate, PR URL, observed PR head, exact range, changed-path allowlist result, command-result summary, checkpoint permalink, reviewer reference, and the matching `git:` evidence in this section.
-
-## Task Review Evidence
-
-No Apply task is complete in this planning package.  Each completed task adds a durable block with Spec Compliance, Code Quality, exact reviewed range, and evidence reference.
 
 ## Final Whole-Change Review
 
