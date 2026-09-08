@@ -74,15 +74,15 @@
   - Evidence: `git:6d05819c2fab2f000b43fee421f730203dc8363b`
   - Source: `spec.md#AC-GE-01`, `spec.md#AC-GE-02`, `spec.md#AC-GE-03`
 
-- [ ] T004 [REQ-GE-01,REQ-GE-02,REQ-GE-03] [AC-GE-01,AC-GE-02,AC-GE-03] [Phase 4] [Size: M] Obtain a fresh independent review of the recorded T003 content candidate and preserve only its durable result.
+- [x] T004 [REQ-GE-01,REQ-GE-02,REQ-GE-03] [AC-GE-01,AC-GE-02,AC-GE-03] [Phase 4] [Size: M] Obtain a fresh independent review of the recorded T003 content candidate and preserve only its durable result.
   - Depends on: T003 approved review and durable evidence
   - Files: `.sdc/changes/active/2026-09-08-gate-evidence-schema/tasks.md`, `.sdc/changes/active/2026-09-08-gate-evidence-schema/notes.md`
   - Consumes: Candidate Snapshot Ledger; exact Base and `C3`; T003 review package; GC-GE-02 and GC-GE-06 through GC-GE-09
   - Produces: fresh read-only review of exact `Base..C3` with separate Spec Compliance and Code Quality verdicts; durable T004 evidence citing `git:C3`.
   - Verify: Copy the exact full `C3` from the Candidate Snapshot Ledger into the fresh task shell, then run `set -o pipefail && BASE=e10a5d221f081fb6d099d342597a707b0dad91c9 && CHANGE=2026-09-08-gate-evidence-schema && : "${C3:?set C3 from the Candidate Snapshot Ledger}" && git cat-file -e "$C3^{commit}" && git merge-base --is-ancestor "$BASE" "$C3" && python3 tests/test_gate_evidence_schema.py && git cat-file -e "${BASE}:sdc-cli.py" && git show "${BASE}:sdc-cli.py" | python3 - validate "$CHANGE" && git diff --check "$BASE..$C3" && CHANGED_PATHS="$(git diff --name-only "$BASE..$C3")" && ! printf '%s\n' "$CHANGED_PATHS" | rg -n -v "^(sdc-references/workflow-standards\.md|tests/test_gate_evidence_schema\.py|\.sdc/changes/active/$CHANGE/)" && python3 scripts/sdc-review-package.py "$BASE" "$C3" "$CHANGE" T004`.
   - Expected: no Critical or Important finding and no acceptance-affecting `Cannot verify`; any durable evidence update is limited to this package's tasks/notes and cites `C3`.
-  - Review: Pending
-  - Evidence: Pending
+  - Review: Approved
+  - Evidence: `git:6d05819c2fab2f000b43fee421f730203dc8363b`
   - Source: `spec.md#AC-GE-01`, `spec.md#AC-GE-02`, `spec.md#AC-GE-03`
 
 ## 验证任务

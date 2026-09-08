@@ -86,6 +86,12 @@
 - Verification: clean porcelain, Base ancestry, green 8-test direct suite, Base validator pass, `git diff --check`, focused changed-path allowlist, and T003 review package all passed. No runtime/default-command/script/profile/hook/JSONL/lifecycle-state path changed.
 - Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
 
+### T004 — approved
+
+- Reviewed candidate: `C3=git:6d05819c2fab2f000b43fee421f730203dc8363b`; exact range `e10a5d221f081fb6d099d342597a707b0dad91c9..6d05819c2fab2f000b43fee421f730203dc8363b`.
+- Verification: exact C3 existed and descended from Base; isolated C3 test/standard content passed all 8 tests; Base validator, `git diff --check`, focused allowlist, and T004 review package all passed. No runtime/default-command/script/profile/hook/JSONL/lifecycle-state path changed.
+- Review: fresh independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings. The reviewer confirmed the current HEAD was later than C3 only because it contains durable task evidence updates; product files matched C3.
+
 ## Candidate Snapshot Ledger
 
 No Apply checkpoint exists in this planning package.  During Apply, T003 and T900 each record Base, content candidate, PR URL, observed PR head, exact range, changed-path allowlist result, command-result summary, checkpoint permalink, reviewer reference, and the matching `git:` evidence in this section.
