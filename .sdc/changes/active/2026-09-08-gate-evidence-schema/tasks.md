@@ -52,15 +52,15 @@
   - Evidence: `git:4f1e9dbd634aa8e97d604474257fae7342f7e274`
   - Source: `spec.md#REQ-GE-02`, `spec.md#AC-GE-02`
 
-- [ ] T002 [REQ-GE-01,REQ-GE-02] [AC-GE-01,AC-GE-02] [Phase 2] [Size: M] Add the audit-safe Layout A section, turn the direct test green, and obtain its exact-candidate review.
+- [x] T002 [REQ-GE-01,REQ-GE-02] [AC-GE-01,AC-GE-02] [Phase 2] [Size: M] Add the audit-safe Layout A section, turn the direct test green, and obtain its exact-candidate review.
   - Depends on: T001 approved review and durable evidence
   - Files: `sdc-references/workflow-standards.md`, `tests/test_gate_evidence_schema.py`, `.sdc/changes/active/2026-09-08-gate-evidence-schema/tasks.md`, `.sdc/changes/active/2026-09-08-gate-evidence-schema/notes.md`
   - Consumes: T001 test; `design.md#gate-evidence-contract`; GC-GE-03 through GC-GE-08
   - Produces: clean candidate `H2` with exactly one `## Gate Evidence` section after `## Evidence Discipline`; green direct test; ignored T002 review package; separate read-only review; durable T002 evidence.
   - Verify: Commit the standard edit as `H2`; in that task's fresh shell run `set -o pipefail && BASE=e10a5d221f081fb6d099d342597a707b0dad91c9 && CHANGE=2026-09-08-gate-evidence-schema && H2="$(git rev-parse HEAD)" && python3 tests/test_gate_evidence_schema.py && python3 scripts/sdc-review-package.py "$BASE" "$H2" "$CHANGE" T002 && git diff --check "$BASE..$H2" && CHANGED_PATHS="$(git diff --name-only "$BASE..$H2")" && ! printf '%s\n' "$CHANGED_PATHS" | rg -n -v "^(sdc-references/workflow-standards\.md|tests/test_gate_evidence_schema\.py|\.sdc/changes/active/$CHANGE/)"`.
   - Expected: compliant record passes; every named malformed record is rejected; audit boundary stays intact; no runtime or default-command path changes.
-  - Review: Pending
-  - Evidence: Pending
+  - Review: Approved (independent read-only review: `t001_reviewer_retry`)
+  - Evidence: `git:d73900c5a3b63497211c5079c2827d82f78909a4`
   - Source: `spec.md#REQ-GE-01`, `spec.md#AC-GE-01`, `spec.md#REQ-GE-02`, `spec.md#AC-GE-02`
 
 - [ ] T003 [REQ-GE-01,REQ-GE-02,REQ-GE-03] [AC-GE-01,AC-GE-02,AC-GE-03] [Phase 3] [Size: M] Capture the full clean candidate, verify all acceptance checks, and bind it to the authorized PR head.

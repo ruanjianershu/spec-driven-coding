@@ -72,6 +72,13 @@
 - Verification: `python3 tests/test_gate_evidence_schema.py` returned nonzero with 8 tests, 7 passing and the one expected `section-count: 0 != 1` failure on the Base-standard shape; diagnostics do not echo opaque source values. `git diff --check` and the focused allowlist passed; the test uses only Python standard library and local Markdown fixtures.
 - Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
 
+### T002 — approved
+
+- Candidate: `git:d73900c5a3b63497211c5079c2827d82f78909a4` (`H2`), exact reviewed range `e10a5d221f081fb6d099d342597a707b0dad91c9..d73900c5a3b63497211c5079c2827d82f78909a4`.
+- Implementation: added the Layout A `## Gate Evidence` standard immediately after `## Evidence Discipline`, preserving the `## Task Format` → `## Evidence Discipline` audit boundary. The section has exactly the five required fields and the specified Closed/lowercase-UUID/source-opacity rules.
+- Verification: `python3 tests/test_gate_evidence_schema.py` passed all 8 tests; T002 review package was generated and bound to Base/Head; `git diff --check` and the focused allowlist passed. No runtime, default-command, script, profile, hook, or CLI path changed.
+- Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
+
 ## Candidate Snapshot Ledger
 
 No Apply checkpoint exists in this planning package.  During Apply, T003 and T900 each record Base, content candidate, PR URL, observed PR head, exact range, changed-path allowlist result, command-result summary, checkpoint permalink, reviewer reference, and the matching `git:` evidence in this section.
