@@ -79,6 +79,13 @@
 - Verification: `python3 tests/test_gate_evidence_schema.py` passed all 8 tests; T002 review package was generated and bound to Base/Head; `git diff --check` and the focused allowlist passed. No runtime, default-command, script, profile, hook, or CLI path changed.
 - Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
 
+### T003 — approved
+
+- Candidate snapshot: `C3=git:6d05819c2fab2f000b43fee421f730203dc8363b`; Base `e10a5d221f081fb6d099d342597a707b0dad91c9`; exact range `Base..C3`.
+- PR controller snapshot: `https://github.com/ruanjianershu/spec-driven-coding/pull/7`, observed open PR head exactly matched C3. Title `ANDY-152: Gate Evidence schema contract`; body included `ANDY-152` and no `closes`/`fixes`/`resolves` auto-close directive. The PR body explicitly disclaimed merge, deploy, release, and publication authorization.
+- Verification: clean porcelain, Base ancestry, green 8-test direct suite, Base validator pass, `git diff --check`, focused changed-path allowlist, and T003 review package all passed. No runtime/default-command/script/profile/hook/JSONL/lifecycle-state path changed.
+- Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
+
 ## Candidate Snapshot Ledger
 
 No Apply checkpoint exists in this planning package.  During Apply, T003 and T900 each record Base, content candidate, PR URL, observed PR head, exact range, changed-path allowlist result, command-result summary, checkpoint permalink, reviewer reference, and the matching `git:` evidence in this section.

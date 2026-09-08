@@ -63,15 +63,15 @@
   - Evidence: `git:d73900c5a3b63497211c5079c2827d82f78909a4`
   - Source: `spec.md#REQ-GE-01`, `spec.md#AC-GE-01`, `spec.md#REQ-GE-02`, `spec.md#AC-GE-02`
 
-- [ ] T003 [REQ-GE-01,REQ-GE-02,REQ-GE-03] [AC-GE-01,AC-GE-02,AC-GE-03] [Phase 3] [Size: M] Capture the full clean candidate, verify all acceptance checks, and bind it to the authorized PR head.
+- [x] T003 [REQ-GE-01,REQ-GE-02,REQ-GE-03] [AC-GE-01,AC-GE-02,AC-GE-03] [Phase 3] [Size: M] Capture the full clean candidate, verify all acceptance checks, and bind it to the authorized PR head.
   - Depends on: T002 approved review and durable evidence; authorized PR controller and PR URL
   - Files: `.sdc/changes/active/2026-09-08-gate-evidence-schema/tasks.md`, `.sdc/changes/active/2026-09-08-gate-evidence-schema/notes.md`
   - Consumes: `C3=HEAD` at task start; Base; T002 green test; authorized PR URL; GC-GE-01 through GC-GE-09
   - Produces: an append-only PR checkpoint that names Base, full `C3`, observed matching PR head, `Base..C3` range, allowlist result, and command results; ignored T003 review package; separate read-only review; durable Candidate Snapshot Ledger in notes.
   - Verify: In that task's fresh shell, require `SDC_PR_URL` and run `set -o pipefail && BASE=e10a5d221f081fb6d099d342597a707b0dad91c9 && CHANGE=2026-09-08-gate-evidence-schema && : "${SDC_PR_URL:?set SDC_PR_URL to the authorized PR URL}" && C3="$(git rev-parse HEAD)" && PR_HEAD="$(gh pr view "$SDC_PR_URL" --json headRefOid --jq .headRefOid)" && test -z "$(git status --porcelain --untracked-files=all)" && test "$C3" = "$PR_HEAD" && git merge-base --is-ancestor "$BASE" "$C3" && python3 tests/test_gate_evidence_schema.py && git cat-file -e "${BASE}:sdc-cli.py" && git show "${BASE}:sdc-cli.py" | python3 - validate "$CHANGE" && git diff --check "$BASE..$C3" && CHANGED_PATHS="$(git diff --name-only "$BASE..$C3")" && ! printf '%s\n' "$CHANGED_PATHS" | rg -n -v "^(sdc-references/workflow-standards\.md|tests/test_gate_evidence_schema\.py|\.sdc/changes/active/$CHANGE/)" && python3 scripts/sdc-review-package.py "$BASE" "$C3" "$CHANGE" T003`.
   - Expected: absent PR, failed query, changed PR head, test failure, package-validation failure, or allowlist failure stops the task before reviewer dispatch; otherwise every checkpoint and review names the same full `C3`.
-  - Review: Pending
-  - Evidence: Pending
+  - Review: Approved
+  - Evidence: `git:6d05819c2fab2f000b43fee421f730203dc8363b`
   - Source: `spec.md#AC-GE-01`, `spec.md#AC-GE-02`, `spec.md#AC-GE-03`
 
 - [ ] T004 [REQ-GE-01,REQ-GE-02,REQ-GE-03] [AC-GE-01,AC-GE-02,AC-GE-03] [Phase 4] [Size: M] Obtain a fresh independent review of the recorded T003 content candidate and preserve only its durable result.
