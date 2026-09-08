@@ -87,15 +87,15 @@
 
 ## 验证任务
 
-- [ ] T900 [REQ-GE-01,REQ-GE-02,REQ-GE-03] [AC-GE-01,AC-GE-02,AC-GE-03] [Phase Verify] [Size: M] Capture one final candidate, execute the full matrix, and obtain a whole-change review.
+- [x] T900 [REQ-GE-01,REQ-GE-02,REQ-GE-03] [AC-GE-01,AC-GE-02,AC-GE-03] [Phase Verify] [Size: M] Capture one final candidate, execute the full matrix, and obtain a whole-change review.
   - Depends on: T000 through T004 each approved with durable evidence; authorized PR controller and PR URL
   - Files: `.sdc/changes/active/2026-09-08-gate-evidence-schema/tasks.md`, `.sdc/changes/active/2026-09-08-gate-evidence-schema/notes.md`
   - Consumes: final `C900=HEAD`; all prior approval evidence; Candidate Snapshot Ledger; Artifact Output Contract; GC-GE-01 through GC-GE-09
   - Produces: final PR checkpoint for Base, `C900`, PR URL, and observed matching head; final review package; Final Whole-Change Review with separate approved verdicts and durable `git:C900` evidence.
   - Verify: In that task's fresh shell, require `SDC_PR_URL` and run `set -o pipefail && BASE=e10a5d221f081fb6d099d342597a707b0dad91c9 && CHANGE=2026-09-08-gate-evidence-schema && : "${SDC_PR_URL:?set SDC_PR_URL to the authorized PR URL}" && C900="$(git rev-parse HEAD)" && PR_HEAD="$(gh pr view "$SDC_PR_URL" --json headRefOid --jq .headRefOid)" && test "$C900" = "$PR_HEAD" && test -z "$(git status --porcelain --untracked-files=all)" && git merge-base --is-ancestor "$BASE" "$C900" && python3 tests/test_gate_evidence_schema.py && git cat-file -e "${BASE}:sdc-cli.py" && git show "${BASE}:sdc-cli.py" | python3 - validate "$CHANGE" && git diff --check "$BASE..$C900" && CHANGED_PATHS="$(git diff --name-only "$BASE..$C900")" && ! printf '%s\n' "$CHANGED_PATHS" | rg -n -v "^(sdc-references/workflow-standards\.md|tests/test_gate_evidence_schema\.py|\.sdc/changes/active/$CHANGE/)" && python3 scripts/sdc-review-package.py "$BASE" "$C900" "$CHANGE" final`.
   - Expected: every AC is covered; final review names the same Base/`C900`/PR-head snapshot; no product, runtime, profile, default-command, JSON manifest, or lifecycle-state path changes.
-  - Review: Pending
-  - Evidence: Pending
+  - Review: Approved
+  - Evidence: `git:918b62d94c278407accb102e2f684ecc5ab0257c`
   - Source: `spec.md#AC-GE-01`, `spec.md#AC-GE-02`, `spec.md#AC-GE-03`
 
 ## Per-Task Review Gates

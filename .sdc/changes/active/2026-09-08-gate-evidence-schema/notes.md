@@ -58,48 +58,91 @@
 
 ## Task Review Evidence
 
-### T000 — approved
+### T000
 
 - Candidate: `git:9e6484ba0bda0fd0bfc98d6972aa33abe7136d12` (`H0`), parent exactly `e10a5d221f081fb6d099d342597a707b0dad91c9`.
 - Plan input: `.sdc/runtime/plan-input/ANDY-159-plan-review-reconstructed.bundle`, SHA-256 `b99400ab6ba4c4d7a2a83250bee37bc97e8fc510555c1b0fd1ed60dd94ba5cc8`; `git bundle verify` passed; revision `4ac5d46a203d1652a5e5a4843d9c8b36d65f5293` is a Base descendant and its complete sorted diff is exactly the nine planned Markdown paths.
 - Source/provenance note: the attached Stage-1 bundle available to this run was obsolete (`2ea835fe334525ef1d799e561ea6b51200095ea2`, SHA-256 `47d6db70fe9737be5594625251d4aac386e3f9fda47fca7aec73cd8af3b1fe8f`). Per the latest Apply handoff, the current reviewed revision was reconstructed from the independently retrievable `origin` ref `refs/heads/ANDY-158-runtime-context-plan` and verified before import; the obsolete attachment was not used.
 - Verification: Base `sdc-cli.py validate` passed; Base task-brief and review-package helpers emitted only ignored Markdown handoffs; `git diff --check` and the focused nine-path allowlist passed; no runtime-context script, JSONL manifest, or lifecycle-state path entered the candidate.
 - Review: independent read-only `t000_reviewer_luna` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning findings. The reviewer could not independently attest to human-vs-agent authorship of the platform Apply handoff; the current execution is authorized by the latest direct Autopilot instruction recorded above.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:9e6484ba0bda0fd0bfc98d6972aa33abe7136d12`
 
-### T001 — approved
+### T001
 
 - Candidate: `git:4f1e9dbd634aa8e97d604474257fae7342f7e274` (`H1`), exact range `e10a5d221f081fb6d099d342597a707b0dad91c9..4f1e9dbd634aa8e97d604474257fae7342f7e274`.
 - Verification: `python3 tests/test_gate_evidence_schema.py` returned nonzero with 8 tests, 7 passing and the one expected `section-count: 0 != 1` failure on the Base-standard shape; diagnostics do not echo opaque source values. `git diff --check` and the focused allowlist passed; the test uses only Python standard library and local Markdown fixtures.
 - Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:4f1e9dbd634aa8e97d604474257fae7342f7e274`
 
-### T002 — approved
+### T002
 
 - Candidate: `git:d73900c5a3b63497211c5079c2827d82f78909a4` (`H2`), exact reviewed range `e10a5d221f081fb6d099d342597a707b0dad91c9..d73900c5a3b63497211c5079c2827d82f78909a4`.
 - Implementation: added the Layout A `## Gate Evidence` standard immediately after `## Evidence Discipline`, preserving the `## Task Format` → `## Evidence Discipline` audit boundary. The section has exactly the five required fields and the specified Closed/lowercase-UUID/source-opacity rules.
 - Verification: `python3 tests/test_gate_evidence_schema.py` passed all 8 tests; T002 review package was generated and bound to Base/Head; `git diff --check` and the focused allowlist passed. No runtime, default-command, script, profile, hook, or CLI path changed.
 - Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:d73900c5a3b63497211c5079c2827d82f78909a4`
 
-### T003 — approved
+### T003
 
 - Candidate snapshot: `C3=git:6d05819c2fab2f000b43fee421f730203dc8363b`; Base `e10a5d221f081fb6d099d342597a707b0dad91c9`; exact range `Base..C3`.
 - PR controller snapshot: `https://github.com/ruanjianershu/spec-driven-coding/pull/7`, observed open PR head exactly matched C3. Title `ANDY-152: Gate Evidence schema contract`; body included `ANDY-152` and no `closes`/`fixes`/`resolves` auto-close directive. The PR body explicitly disclaimed merge, deploy, release, and publication authorization.
 - Verification: clean porcelain, Base ancestry, green 8-test direct suite, Base validator pass, `git diff --check`, focused changed-path allowlist, and T003 review package all passed. No runtime/default-command/script/profile/hook/JSONL/lifecycle-state path changed.
 - Review: independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:6d05819c2fab2f000b43fee421f730203dc8363b`
 
-### T004 — approved
+### T004
 
 - Reviewed candidate: `C3=git:6d05819c2fab2f000b43fee421f730203dc8363b`; exact range `e10a5d221f081fb6d099d342597a707b0dad91c9..6d05819c2fab2f000b43fee421f730203dc8363b`.
 - Verification: exact C3 existed and descended from Base; isolated C3 test/standard content passed all 8 tests; Base validator, `git diff --check`, focused allowlist, and T004 review package all passed. No runtime/default-command/script/profile/hook/JSONL/lifecycle-state path changed.
 - Review: fresh independent read-only `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings. The reviewer confirmed the current HEAD was later than C3 only because it contains durable task evidence updates; product files matched C3.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:6d05819c2fab2f000b43fee421f730203dc8363b`
+
+### T900
+
+- Candidate: `git:918b62d94c278407accb102e2f684ecc5ab0257c` (`C900`), exact range `e10a5d221f081fb6d099d342597a707b0dad91c9..918b62d94c278407accb102e2f684ecc5ab0257c`.
+- Verification: PR #7 head matched C900; clean porcelain, Base ancestry, green 8-test direct suite, Base validator, `git diff --check`, focused allowlist, and final review package all passed.
+- Review: independent whole-change `t001_reviewer_retry` — Spec Compliance **Approved**, Code Quality **Approved**, no Critical/Important/Warning/Cannot-verify findings.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:918b62d94c278407accb102e2f684ecc5ab0257c`
 
 ## Candidate Snapshot Ledger
 
-No Apply checkpoint exists in this planning package.  During Apply, T003 and T900 each record Base, content candidate, PR URL, observed PR head, exact range, changed-path allowlist result, command-result summary, checkpoint permalink, reviewer reference, and the matching `git:` evidence in this section.
+### T003 checkpoint
+
+- Base: `e10a5d221f081fb6d099d342597a707b0dad91c9`
+- Content candidate: `git:6d05819c2fab2f000b43fee421f730203dc8363b`
+- PR URL: `https://github.com/ruanjianershu/spec-driven-coding/pull/7`
+- Observed PR head: matched C3 exactly at T003.
+- Range and checks: `Base..C3`, test, Base validator, diff-check, and allowlist all passed.
+
+### T900 checkpoint
+
+- Base: `e10a5d221f081fb6d099d342597a707b0dad91c9`
+- Content candidate: `git:918b62d94c278407accb102e2f684ecc5ab0257c`
+- PR URL: `https://github.com/ruanjianershu/spec-driven-coding/pull/7`
+- Observed PR head: matched C900 exactly at final matrix time.
+- Range and checks: `Base..C900`, test, Base validator, diff-check, and allowlist all passed.
 
 ## Final Whole-Change Review
 
-No Apply final review exists in this planning package.  T900 writes the final candidate, matching PR-head snapshot, review reference, both approved verdicts, and durable `git:` evidence after the independent review.
+- Status: Approved
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:918b62d94c278407accb102e2f684ecc5ab0257c`
+- Candidate: `C900=git:918b62d94c278407accb102e2f684ecc5ab0257c`; Base `e10a5d221f081fb6d099d342597a707b0dad91c9`; PR #7 head matched C900.
+- Review: independent whole-change review `t001_reviewer_retry`; no Critical, Important, Warning, or Cannot-verify findings.
 
 ## Apply Gate
 
-The only current execution prerequisites are a portable bundle that passes GC-GE-10 and explicit human Apply confirmation meeting GC-GE-09.  This plan revision does not substitute for that confirmation.
+The portable bundle passed GC-GE-10, and the latest ANDY-159 Autopilot handoff authorized governed Apply for reviewed revision `4ac5d46a203d1652a5e5a4843d9c8b36d65f5293`; the superseded Apply stop-line was not retained. Merge, deploy, release, and publication remain outside this execution's authorization.
