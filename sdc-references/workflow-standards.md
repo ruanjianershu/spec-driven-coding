@@ -205,6 +205,20 @@ SDC conclusions must be evidence-backed:
 
 README files, comments, old docs, and historical notes are clues. They are not confirmed facts unless current code or the user confirms them.
 
+## Gate Evidence
+
+A local Gate Evidence record is valid only when it contains exactly one instance of each field below, in this order:
+
+| Field | Rule |
+|---|---|
+| Status | exactly `Closed` |
+| Resolution ID | lowercase hexadecimal UUID in `8-4-4-4-12` textual form |
+| Resolution Source | exactly once and nonempty after trimming |
+| Closure ID | lowercase hexadecimal UUID in `8-4-4-4-12` textual form |
+| Closure Source | exactly once and nonempty after trimming |
+
+A missing field, duplicate field, malformed ID, status other than `Closed`, blank named source, or more than one `## Gate Evidence` section is invalid. Resolution/closure source values are opaque local Markdown text; this contract does not parse, open, dereference, or authenticate them.
+
 ## Expert Routing Discipline
 
 SDC keeps the public command surface small. Expert behavior must be routed internally, not exposed as a large command list.
