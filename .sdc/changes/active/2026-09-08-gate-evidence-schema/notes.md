@@ -4,8 +4,8 @@
 
 - Change: `2026-09-08-gate-evidence-schema`
 - Exact Base: `origin/main@e10a5d221f081fb6d099d342597a707b0dad91c9`
-- Planning role: architecture planning only; no runtime/profile/product implementation, PR, merge, deployment, publishing, or release occurred.
-- Apply authorization: not granted.  A human must explicitly authorize Apply and name `SDC_PLAN_REVISION` plus the PR controller before T000 starts.
+- Execution role: governed Apply implementation; no runtime/profile/product behavior, merge, deployment, publishing, or release is authorized.
+- Apply authorization: satisfied for this run by the 2026-09-09 Autopilot direct user authorization recorded on ANDY-159, bound to reviewed plan revision `4ac5d46a203d1652a5e5a4843d9c8b36d65f5293`. The override explicitly removes the prior human-authority/PR-controller stop-line; merge, deployment, publishing, and release remain unauthorized.
 
 ## Root-Cause Repair
 
@@ -72,10 +72,20 @@ No Apply checkpoint exists in this planning package.  During Apply, T003 and T90
 - Code Quality: Approved
 - Evidence: `git:ceaacfa421cbc8359e41b5deaff2f2a9697d1ba1`
 
+### T001
+
+- Candidate: `git:d70439ece43a52c65c4edc90923f8abaca6eb7fa` (`H1`); exact range `e10a5d221f081fb6d099d342597a707b0dad91c9..d70439ece43a52c65c4edc90923f8abaca6eb7fa`.
+- Implementation: added a standard-library `unittest` entrypoint with test-local compliant and malformed record fixtures. The parser reports only rule/field classes and never echoes opaque source values.
+- Verification: `python3 tests/test_gate_evidence_schema.py` returned exit 1 with 8 tests, 7 passing and exactly one expected failure (`section-count`, because the Base standard has no Gate Evidence section). Invalid UUID, missing field, non-Closed status, missing/blank/duplicate named source, duplicate section, and diagnostic-boundary cases all exercised as intended. `git diff --check`, Base ancestry, and the focused allowlist passed; T001 review package was generated under ignored runtime scratch.
+- Review: independent read-only T001 review — Spec Compliance **Approved**, Code Quality **Approved**, Critical/Important/Warning/Cannot-verify **none**.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:d70439ece43a52c65c4edc90923f8abaca6eb7fa`
+
 ## Final Whole-Change Review
 
 No Apply final review exists in this planning package.  T900 writes the final candidate, matching PR-head snapshot, review reference, both approved verdicts, and durable `git:` evidence after the independent review.
 
 ## Apply Gate
 
-The only current execution prerequisites are a portable bundle that passes GC-GE-10 and explicit human Apply confirmation meeting GC-GE-09.  This plan revision does not substitute for that confirmation.
+The portable bundle passed GC-GE-10.  For this run, the current Autopilot direct user authorization is the governing Apply confirmation for reviewed revision `4ac5d46a203d1652a5e5a4843d9c8b36d65f5293`; the superseded human-confirmation stop-line is not retained.  Merge, deployment, publishing, and release remain outside authorization.

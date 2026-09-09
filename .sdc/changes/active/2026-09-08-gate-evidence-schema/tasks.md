@@ -41,15 +41,15 @@
   - Evidence: `git:ceaacfa421cbc8359e41b5deaff2f2a9697d1ba1`
   - Source: `spec.md#REQ-GE-03`, `spec.md#AC-GE-03`
 
-- [ ] T001 [REQ-GE-02] [AC-GE-02] [Phase 1] [Size: M] Write the direct red local Gate Evidence contract test and obtain its exact-candidate review.
+- [x] T001 [REQ-GE-02] [AC-GE-02] [Phase 1] [Size: M] Write the direct red local Gate Evidence contract test and obtain its exact-candidate review.
   - Depends on: T000 approved review and durable evidence
   - Files: `tests/test_gate_evidence_schema.py`, `.sdc/changes/active/2026-09-08-gate-evidence-schema/tasks.md`, `.sdc/changes/active/2026-09-08-gate-evidence-schema/notes.md`
   - Consumes: T000 `H0`; `design.md#gate-evidence-contract`; GC-GE-03 through GC-GE-05 and GC-GE-08
   - Produces: clean candidate `H1` containing a standard-library `unittest` entrypoint and test-local fixtures; a nonzero red result because the Base-standard shape lacks the section; an ignored T001 review package; separate read-only review; durable T001 evidence.
   - Verify: From clean reviewed T000 head, write and commit `H1`; in that task's fresh shell run `set -o pipefail && BASE=e10a5d221f081fb6d099d342597a707b0dad91c9 && CHANGE=2026-09-08-gate-evidence-schema && H1="$(git rev-parse HEAD)" && ! python3 tests/test_gate_evidence_schema.py && python3 scripts/sdc-review-package.py "$BASE" "$H1" "$CHANGE" T001 && git diff --check "$BASE..$H1" && CHANGED_PATHS="$(git diff --name-only "$BASE..$H1")" && ! printf '%s\n' "$CHANGED_PATHS" | rg -n -v "^(tests/test_gate_evidence_schema\.py|\.sdc/changes/active/$CHANGE/)"`.
   - Expected: the test fails only for the missing governed section; diagnostics identify a rule/field class without printing a source value; the review package binds the full candidate SHA.
-  - Review: Pending
-  - Evidence: Pending
+  - Review: Approved
+  - Evidence: `git:d70439ece43a52c65c4edc90923f8abaca6eb7fa`
   - Source: `spec.md#REQ-GE-02`, `spec.md#AC-GE-02`
 
 - [ ] T002 [REQ-GE-01,REQ-GE-02] [AC-GE-01,AC-GE-02] [Phase 2] [Size: M] Add the audit-safe Layout A section, turn the direct test green, and obtain its exact-candidate review.
