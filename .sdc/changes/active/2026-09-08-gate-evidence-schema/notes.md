@@ -82,6 +82,16 @@ No Apply checkpoint exists in this planning package.  During Apply, T003 and T90
 - Code Quality: Approved
 - Evidence: `git:d70439ece43a52c65c4edc90923f8abaca6eb7fa`
 
+### T002
+
+- Candidate: `git:e6c8491158b028942cb64fa9f6c6d6c287af9efc` (`H2`); exact range `e10a5d221f081fb6d099d342597a707b0dad91c9..e6c8491158b028942cb64fa9f6c6d6c287af9efc`.
+- Implementation: added exactly one `## Gate Evidence` section immediately after `## Evidence Discipline`, preserving the bounded Task Format audit range. The section defines the five fields, literal `Closed` status, lowercase hexadecimal `8-4-4-4-12` IDs, exactly-once nonblank named sources, and opaque local provenance boundary.
+- Verification: `python3 tests/test_gate_evidence_schema.py` passed 8/8; `node scripts/audit-release.mjs` passed; Base `sdc-cli.py validate 2026-09-08-gate-evidence-schema` passed; `git diff --check` and the focused changed-path allowlist passed. No runtime, CLI, script, profile, hook, JSONL, or lifecycle-state path changed.
+- Review: independent read-only T002 review — Spec Compliance **Approved**, Code Quality **Approved**, Critical/Important/Warning/Cannot-verify **none**.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:e6c8491158b028942cb64fa9f6c6d6c287af9efc`
+
 ## Final Whole-Change Review
 
 No Apply final review exists in this planning package.  T900 writes the final candidate, matching PR-head snapshot, review reference, both approved verdicts, and durable `git:` evidence after the independent review.
