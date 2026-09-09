@@ -62,7 +62,15 @@ No Apply checkpoint exists in this planning package.  During Apply, T003 and T90
 
 ## Task Review Evidence
 
-No Apply task is complete in this planning package.  Each completed task adds a durable block with Spec Compliance, Code Quality, exact reviewed range, and evidence reference.
+### T000
+
+- Candidate: `git:ceaacfa421cbc8359e41b5deaff2f2a9697d1ba1` (`H0`); parent exactly `e10a5d221f081fb6d099d342597a707b0dad91c9`.
+- Plan input: the attached Stage-1 bundle `ANDY-157-plan-review-final-v2.bundle` was downloaded and verified (`SHA-256 47d6db70fe9737be5594625251d4aac386e3f9fda47fca7aec73cd8af3b1fe8f`, `git bundle verify` exit 0) but contains revision `2ea835fe334525ef1d799e561ea6b51200095ea2`, not the exact reviewed head `4ac5d46a203d1652a5e5a4843d9c8b36d65f5293`. Per the current Autopilot Apply authorization, the mismatch was handled as a verifiable plan-input gap rather than an authorization blocker: a complete-history bundle was reconstructed from the independently readable reviewed ref, with `SDC_PLAN_REVISION=4ac5d46a203d1652a5e5a4843d9c8b36d65f5293` and SHA-256 `df692059209ec8a3d7cc19b20a2b20a553a775c34d0baf9302ff4a9d0360b12b`.
+- Verification: from clean `origin/main@e10a5d221f081fb6d099d342597a707b0dad91c9`, digest and bundle checks passed; the reviewed revision existed in a `git clone --no-checkout`, descended from Base, and its complete sorted `Base..revision` path list equaled the fixed nine Markdown paths. The package was imported and only its directory was staged; `H0` was committed before Base validation. Base `sdc-cli.py validate`, `scripts/sdc-task-brief.py`, and `scripts/sdc-review-package.py` all exited 0; the four expected handoff files were generated under ignored `.sdc/runtime/2026-09-08-gate-evidence-schema/`; `git diff --check` and the nine-path allowlist passed. Base lookup of `scripts/sdc-runtime-context.py` failed with the expected exit 128, and no runtime/JSONL/lifecycle-state path entered the candidate.
+- Review: independent read-only T000 review — Spec Compliance **Approved**, Code Quality **Approved**, Critical/Important/Warning **none**. The reviewer noted only that helper report/progress files are runtime templates and that command ordering/authorization cannot be proven from a Git diff; those limitations do not affect the verified T000 artifact or candidate.
+- Spec Compliance: Approved
+- Code Quality: Approved
+- Evidence: `git:ceaacfa421cbc8359e41b5deaff2f2a9697d1ba1`
 
 ## Final Whole-Change Review
 
