@@ -33,7 +33,7 @@ def gate_evidence_sections(markdown):
     """Return peer-level Gate Evidence section bodies without touching sources."""
 
     return re.findall(
-        r"(?ms)^## Gate Evidence[ \t]*(?:\n|\Z)(.*?)(?=^## |\Z)",
+        r"(?ms)^## Gate Evidence[ \t]*(?:\r?\n|\r|\Z)(.*?)(?=^## |\Z)",
         markdown,
     )
 
@@ -175,6 +175,10 @@ class GateEvidenceSchemaTests(unittest.TestCase):
             "eof-space": "## Gate Evidence ",
             "eof-tab": "## Gate Evidence\t",
             "newline": "## Gate Evidence\n",
+            "carriage-return": "## Gate Evidence\r",
+            "carriage-return-newline": "## Gate Evidence\r\n",
+            "space-carriage-return-newline": "## Gate Evidence \r\n",
+            "tab-carriage-return-newline": "## Gate Evidence\t\r\n",
         }
         for boundary, duplicate_title in cases.items():
             with self.subTest(boundary=boundary):
