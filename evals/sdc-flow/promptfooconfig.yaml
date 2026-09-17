@@ -514,3 +514,210 @@ tests:
         value: "source-only paths absent: yes"
       - type: contains
         value: "deterministic digest: yes"
+
+  - description: lifecycle advances one evidence-gated state at a time
+    vars:
+      scenario: lifecycle_state_machine_AC_01
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "final archivable: yes"
+
+  - description: lifecycle transitions reject missing wrong or unsafe evidence
+    vars:
+      scenario: lifecycle_evidence_gate_AC_01
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "valid evidence accepted: yes"
+
+  - description: lifecycle content gates block pending tasks and unapproved final reviews
+    vars:
+      scenario: lifecycle_content_gates_AC_01
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "approved delivery archivable: yes"
+
+  - description: archive requires the terminal runtime state
+    vars:
+      scenario: archive_requires_archivable_state_AC_01
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "stable spec untouched: yes"
+
+  - description: archive rejects forged lifecycle payloads before mutation
+    vars:
+      scenario: archive_rejects_forged_state_AC_01
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "forged state rejected: yes"
+
+  - description: active change resolver uses exact deterministic precedence
+    vars:
+      scenario: active_change_resolver_AC_02
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "ambiguous rejected: yes"
+
+  - description: direct active change symlinks are rejected
+    vars:
+      scenario: unsafe_active_change_symlink_AC_02
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "outside state untouched: yes"
+
+  - description: workspace and runtime ancestor symlinks cannot escape the repository
+    vars:
+      scenario: unsafe_runtime_ancestor_symlinks_AC_02
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "outside runtime untouched: yes"
+
+  - description: an explicitly empty active change selector is invalid
+    vars:
+      scenario: explicit_empty_selector_AC_02
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "explicit empty rejected: yes"
+
+  - description: public CLI paths reject active and archive symlink boundaries
+    vars:
+      scenario: public_cli_symlink_boundaries_AC_02
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "outside archive untouched: yes"
+
+  - description: plan role context manifests are deterministic safe and hash backed
+    vars:
+      scenario: role_context_manifests_AC_03
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "hashes current: yes"
+
+  - description: local memory recall is bounded read only and Candidate only
+    vars:
+      scenario: memory_recall_candidate_AC_04
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "read only: yes"
+
+  - description: recall excerpts do not leak adjacent sensitive lines
+    vars:
+      scenario: recall_redacts_adjacent_sensitive_lines_AC_04
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "adjacent secret redacted: yes"
+
+  - description: recall stays inside each allowlisted root across symlinks
+    vars:
+      scenario: recall_root_containment_AC_04
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "internal symlink excluded: yes"
+
+  - description: recall and runtime evidence never persist raw credential-shaped values
+    vars:
+      scenario: sensitive_runtime_values_AC_04
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "raw summary not persisted: yes"
+
+  - description: research stays internal and routes through candidate artifacts
+    vars:
+      scenario: research_routing_no_public_command_AC_05
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "no public command: yes"
+
+  - description: session adapters emit compact context and bounded runtime evidence
+    vars:
+      scenario: session_context_adapter_and_evidence_AC_06
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "codex adapter shape: yes"
+
+  - description: Claude hook does not reuse a default pointer without a trusted session id
+    vars:
+      scenario: hook_requires_trustworthy_session_id_AC_06
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "stale pointer not reused: yes"
+
+  - description: session pointers require provenance and hook payload identity wins
+    vars:
+      scenario: session_pointer_and_hook_identity_AC_06
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "payload session preferred: yes"
+
+  - description: Claude installs hooks while Codex explicitly omits them
+    vars:
+      scenario: hook_files_and_installer_boundaries_AC_07
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "codex hooks omitted: yes"
+
+  - description: init creates and migrates the runtime contract safely
+    vars:
+      scenario: runtime_contract_templates_AC_07
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "active artifacts preserved: yes"
+
+  - description: distribution inventories keep Claude and Codex runtime boundaries aligned
+    vars:
+      scenario: runtime_distribution_inventory_AC_07
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "Codex pack excludes hooks: yes"
+
+  - description: repository root is a valid Claude marketplace without duplicate public skills
+    vars:
+      scenario: source_marketplace_layout_AC_07
+    assert:
+      - type: contains
+        value: "RESULT: PASS"
+      - type: contains
+        value: "configured source paths exist: yes"

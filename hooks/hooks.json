@@ -1,0 +1,19 @@
+{
+  "description": "Inject compact SDC active-change context on supported Claude Code session starts.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start\"",
+            "shell": "bash",
+            "async": false,
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -5,6 +5,8 @@ description: "Use when requirements must be refined into a structured SDC specif
 
 # Skill: SDC 规范生成 sdc-spec
 
+Resolve `SDC_PLUGIN_ROOT` from this installed command/skill: the parent of `commands/`, or two levels above `skills/<skill>/`. Do not assume this variable is already set. Verify the helper exists and keep the target project as the working directory when invoking it. For legacy direct skills and Hermes layouts, if the derived root lacks `sdc-cli.py`, use its `sdc-runtime/` child after verifying both the CLI and runtime helper exist there. Missing helpers are an installation blocker, not permission to guess another checkout.
+
 ## 触发条件
 
 当用户输入以下任一内容时，自动触发本技能：
@@ -38,14 +40,15 @@ Load only what is needed:
 ## 执行步骤
 
 1. 读取 `.sdc/constitution.md`、`.sdc/project.md`、`.sdc/common-ground.md`、`.sdc/knowledge/index.md`、相关产品/技术知识、当前 change 的 `proposal.md`、`discovery.md` 和已有 `spec.md`。
-2. 如果 `discovery.md` 仍有阻塞问题，不能输出 `Confirmed` spec。
+2. 如果 `discovery.md` 仍有阻塞问题，只维护已授权的 discovery、可选 Draft proposal 和简短 notes，不创建 spec/design/tasks。
 3. 如果需求明显不确定且没有 discovery，建议回到 `/sdc:change` 的 Discovery Gate。
 4. 建立或更新 Decision Ledger。
 5. 只把 `Confirmed` 或明确不影响当前 MVP 的 `Deferred` 决策写入正式 REQ/AC/INV。
 6. 记录 Knowledge Sources Used；如果知识缺失、过期或冲突，输出 Knowledge Gap / Stop-Line。
 7. 输出 SCN/REQ/AC、业务不变量、验证策略、风险、追溯矩阵和下一步。
 8. 输出或更新 Artifact Output Contract：记录本需求是否触发流程图、时序/集成图、API 契约、数据/迁移契约、UX 状态、测试矩阵、上线检查清单和 AI 参与说明。未确认的输出要求保持 Proposed，不得进入 final spec。
-9. 如果仍缺关键确认，优先输出 Stop-Line 信息和下一批 3-5 个确认问题；只有用户明确要求保留草稿时，才输出 Draft spec。
+9. 只询问缺失的阻塞项，不设问题数量；引用仍有效的已有确认或有边界的明确授权，不重复确认。未决事项留在 discovery 中。
+10. Confirmed spec 和 Discovery Exit Criteria 有效时，执行 `python3 "$SDC_PLUGIN_ROOT/scripts/sdc-runtime-context.py" state set --change <change-id> --state confirmed --source spec-stage --evidence spec.md`。存量项目在此后完成 impact 分析，再进入 plan。相同且仍有效的状态可幂等恢复；改变需求须按 `runtime-context.md` 显式 reopen，不能跳过确认。
 
 ## Spec 要求
 

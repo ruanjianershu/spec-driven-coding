@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Claude SessionStart adapter for local SDC runtime context.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+HOOK_INPUT="$(cat 2>/dev/null || true)"
+SESSION_ID=""
+
+if [ -n "${HOOK_INPUT}" ]; then
+  SESSION_ID="$(printf '%s' "${HOOK_INPUT}" | python3 -c 'import json, sys; data = json.load(sys.stdin); value = data.get("session_id", ""); print(value if isinstance(value, str) else "")' 2>/dev/null || true)"
+fi
+
+if [ -z "${SESSION_ID}" ] && [ "${SDC_ALLOW_ENV_SESSION_ID:-}" = "1" ]; then
+  SESSION_ID="${SDC_SESSION_ID:-}"
+fi
+
+fallback() {
+  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "SDC runtime context unavailable; manual fallback remains available: run the normal SDC stage command and pass --change or set SDC_ACTIVE_CHANGE when needed."\n  }\n}\n'
+}
+
+if [ "${SDC_RUNTIME_FORCE_HOOK_FAILURE:-}" = "1" ]; then
+  fallback
+  exit 0
+fi
+
+RUNTIME_ARGS=(session-context --client claude)
+if [ -n "${SESSION_ID}" ]; then
+  RUNTIME_ARGS+=(--session-id "${SESSION_ID}")
+fi
+
+if output="$(python3 "${PLUGIN_ROOT}/scripts/sdc-runtime-context.py" "${RUNTIME_ARGS[@]}" 2>/dev/null)"; then
+  printf '%s\n' "$output"
+else
+  fallback
+fi
+
+exit 0

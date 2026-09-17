@@ -1,6 +1,6 @@
 # SDC Discipline Core
 
-SDC v1.3.0 keeps the public command surface small while strengthening requirement governance and post-plan execution discipline.
+SDC keeps six public lifecycle entries while making intake, context loading, and verification evidence-governed and proportionate to risk.
 
 The goal is not to copy every OpenSpec, Superpowers, or internal workflow command. The goal is to keep their useful core:
 
@@ -12,7 +12,7 @@ The goal is not to copy every OpenSpec, Superpowers, or internal workflow comman
 
 ## Public Surface
 
-Normal users should only need these commands or natural-language equivalents:
+The six lifecycle commands, or their natural-language equivalents, are:
 
 ```text
 /sdc:init
@@ -21,10 +21,9 @@ Normal users should only need these commands or natural-language equivalents:
 /sdc:apply
 /sdc:check
 /sdc:archive
-/sdc:harness
 ```
 
-Detailed skills such as `sdc:spec`, `sdc:validate`, `sdc:review`, `sdc:test`, and `sdc:quality` remain available for advanced users and internal routing.
+`/sdc` remains the router; `/sdc:harness` remains an optional guardrail utility, not a seventh lifecycle stage. Detailed skills such as `sdc:spec`, `sdc:validate`, `sdc:review`, `sdc:test`, and `sdc:quality` remain available for advanced use and internal routing. Risk policy, reopen, manifests, and receipts add no public commands.
 
 Do not add a separate public compact command. Knowledge compaction is part of `/sdc:archive`.
 
@@ -105,7 +104,51 @@ Plan Preflight -> task brief -> implement -> task review -> progress ledger -> f
 
 Plans carry exact cross-artifact Global Constraints and per-task Files, Consumes, Produces, Verify, Expected, Review, Evidence, and Source fields. Plan Preflight records reviewed sources and closed findings, not only a self-declared status. Large task text, implementer reports, and diffs move through git-ignored files under `.sdc/runtime/<change-id>/` so a coordinating agent does not repeatedly pay for the same context. A WORKTREE review stops when untracked files would be omitted.
 
-Implementation tasks run serially through implement -> review -> durable evidence -> ledger update. Task review is read-only and returns separate Spec Compliance and Code Quality verdicts backed by a project-local, non-ignored evidence reference. Critical/Important findings and acceptance-affecting `Cannot verify from diff` items block completion. The runtime ledger supports recovery after context compaction, while durable evidence remains in tasks, notes, reports, and archive artifacts.
+Coherent implementation tasks run serially through implement -> review -> durable evidence -> ledger update. Do not split a tiny change into artificial test/edit/review loops. Task review is read-only and returns separate Spec Compliance and Code Quality verdicts backed by durable evidence. Critical/Important findings and acceptance-affecting `Cannot verify from diff` items block completion. Independent reviewer judgment and final whole-change review are required at every risk level. For a single-task light change, one pass over the final snapshot may provide both task and final verdict records; check can reuse unchanged evidence.
+
+Use a separate reviewer context when supported and authorized. Otherwise perform an explicit skeptical role-separated pass and disclose the isolation limitation; do not claim it was external review. Fresh implementers and a multi-agent swarm are not requirements. The runtime ledger supports recovery, while tasks, notes, reports, and archive artifacts preserve durable evidence.
+
+## Internal Risk Policy
+
+The authoritative rules are in [Workflow Standards](../sdc-references/workflow-standards.md#risk-proportionate-policy); consult them when choosing or changing effort, authorization, or context scope.
+
+| Level | Trigger | Effort |
+| --- | --- | --- |
+| light | Confirmed, narrow, isolated, reversible, behavior-neutral work with known impact and no high-impact boundary change | Affected sources, focused validation, one coherent task when sufficient |
+| standard | Routine implementation within existing architecture/contracts, bounded impact, no strict trigger; minimum for unresolved technical impact | Focused impact, affected behavior/regression tests, task and final integration coverage |
+| strict | Security/permissions, sensitive data, billing, deletion/retention/migration, destructive actions, public contracts/compatibility, architecture/stack, production rollout, or broad shared/cross-service impact | Authoritative decisions, relevant specialist standards, failure/compatibility and rollback evidence as applicable |
+
+Use the highest applicable level and disclose triggers, evidence, authorization, context scope, and verification rationale. Plausible strict risks remain strict until investigated. Downgrades need new evidence, recorded rationale, and explicit user approval; never silently reduce effort. All levels keep the same semantic acceptance, consent, traceability, impact, output contracts, independent review, and final review. Unknown business requirements remain in discovery at every level.
+
+There is no mandatory full-repository read, expert quota, or repeated test/review loop for small work. Reuse current evidence only when it still covers the delivered change; rerun for changed inputs, missing coverage, or a named unresolved risk.
+
+## Runtime Context And Client Adapters
+
+The Trellis-inspired runtime makes lifecycle and context routing explicit without copying external source code, adding a service, or expanding SDC's public commands.
+
+Design provenance: the comparison used [mindfold-ai/Trellis](https://github.com/mindfold-ai/Trellis) at revision `64e663694201005bc87766ef22de89b8da3d4d79` (AGPL-3.0) as an external conceptual reference for lifecycle visibility, task context, local memory, and client adapters. SDC's implementation was written independently under its own MIT codebase. No Trellis source code or prompt text was copied.
+
+Each active change normally advances through this evidence-gated sequence:
+
+```text
+intake -> discovery -> confirmed -> planned -> applying -> checking -> archivable
+```
+
+State labels cannot close discovery or bless stale artifacts. Same-state retries are idempotent only while their evidence stays fresh. Use the internal runtime helper to reopen explicitly with a reason: `state reopen --change <id> --state confirmed --reason "<reason>"` permits replanning only with unchanged snapshotted requirements; `--state discovery` reopens changed requirements. Both archive downstream artifacts under `revisions/<id>`, retain history, and invalidate old receipts via a revision nonce. Discovery reopen also archives superseded requirement artifacts. This is not a public lifecycle entry.
+
+The runtime resolves exactly one active change using this precedence: explicit change argument, valid `SDC_ACTIVE_CHANGE`, valid local session pointer, then the sole directory under `.sdc/changes/active/`. An invalid higher-priority selector, zero candidates, or multiple candidates stops execution; modification time is never authority.
+
+After Plan Preflight passes, `plan` generates deterministic `apply-context.jsonl` and `check-context.jsonl` manifests alongside `context-pack.md`. JSONL records contain ordered repository-relative references, sections, purposes, required flags, source types, and current SHA-256 provenance rather than copied file bodies.
+
+`manifest verify --change <id> --role apply|check` verifies exact schema, sources, and hashes before use. Refresh manifests after task/notes progress at safe checkpoints; regeneration does not approve changed requirements. Missing, malformed, or stale required manifests cannot authorize execution.
+
+`evidence run --change <id> --stage apply|check --task T001 --timeout 300 -- <exact Verify argv>` executes bounded validation and captures actual exit status and source snapshot. Delivery requires the latest fresh passed receipt per completed task, exactly matching its Verify argv. Repeated `--task` flags can share a run only for the same argv; shell pipelines must explicitly use `sh -c`. An appended assertion is never proof.
+
+Write last-task progress and final approved independent review notes before `evidence review --change <id> --reviewer "<attribution>"`. It binds those notes/tasks and source snapshots; it does not perform a review or authenticate reviewer identity. Subsequent code changes invalidate it. `evidence verify --change <id>` checks both execution and review receipts. These are internal `python3 scripts/sdc-runtime-context.py` operations; see [Runtime Context](../sdc-references/runtime-context.md) for details.
+
+Memory recall is bounded, deterministic, local, and read-only. It reads only allowlisted project Markdown, excludes runtime payloads and unsafe paths, and labels every result `Candidate`; recall cannot update knowledge, memory, lifecycle state, or Git. Research remains an internal lens of `change`, `plan`, `apply`, and `check`: scratch stays under `.sdc/runtime/<change-id>/research/`, verified citations enter discovery or notes, and reusable findings enter `knowledge-candidates.md` pending archive confirmation.
+
+Supported Claude/Codex packages may use opt-in native hooks for compact, non-authoritative session context. Hooks are never assumed available or enabled. Absent, unsupported, or failed hooks fall back to the portable `session-context` adapter through stage instructions; neither path authorizes execution or promotes memory.
 
 ## Project Knowledge And Memory
 
@@ -130,7 +173,7 @@ The split is intentional:
 
 - Product knowledge answers why the project exists, who uses it, what flows and business rules matter, and what is explicitly out of scope.
 - Technical knowledge answers how the system is built, where capabilities live, how data and interfaces work, and how to test, deploy, roll back, or debug it.
-- Memory records candidates, procedures, lessons, and episodic summaries. It helps future agents recall context but does not override confirmed knowledge.
+- Project, personal, native-client, and cross-device memory record candidates, procedures, lessons, and episodic summaries. Recall is read-only Candidate context and cannot override confirmed project knowledge. Durable promotion needs explicit confirmation of content and destination; cross-device writes need an explicit user request.
 
 Required knowledge states:
 
@@ -150,6 +193,10 @@ read knowledge index -> load relevant product/technical knowledge -> create spec
 ```
 
 Final `spec.md`, `design.md`, and `context-pack.md` must list Knowledge Sources Used. If relevant knowledge is missing, stale, or conflicting, the agent should record a Knowledge Gap or Stop-Line Report instead of guessing.
+
+Load binding governance and short indexes, then only the sources needed for the current stage: intake confirmations in change, confirmed spec/impact in plan, verified manifest/current task in apply, diff/ACs/receipts in check, and candidates/affected sources in archive. Expand for a named gap or risk, not to reread the whole repository.
+
+Freshness means applicable source identity, not date alone: compare Verified Against revision/hash, affected dirty/untracked files, current contracts, and authorization scope. Refresh affected source evidence within existing authority and record drift; do not ask again for an authorized read or silently rewrite durable knowledge. Changed governing sources invalidate affected approvals. Unchanged unrelated sources do not require a full refresh.
 
 Hard rules:
 
@@ -185,7 +232,7 @@ If a company rule conflicts with the project constitution, confirmed knowledge, 
 
 SDC v1.1.1 adds consent gates to prevent AI-generated defaults from becoming project truth.
 
-AI may propose options, but high-impact decisions must be confirmed before they enter `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `tasks.md`.
+AI may propose options, but high-impact decisions need authoritative confirmation or bounded explicit delegation before entering `REQ-*`, `AC-*`, `INV-*`, `design.md`, or `tasks.md`. Valid prior confirmation can be cited without asking again.
 
 High-impact decisions include:
 
@@ -206,9 +253,11 @@ Use a Decision Ledger for these decisions:
 
 This is the rule: suggestions are useful, silent defaults are not.
 
+Bounded authorized reversible actions may proceed. Record the approving source, allowed action, scope, constraints, and stopping condition. Delegation must identify the decision area, allowed choices, and impact limits; record the chosen option in the Decision Ledger. Generic "use your judgment" does not grant new scope, data, permission, public-contract, or architecture authority and cannot supply unknown business requirements.
+
 ## Discovery Gate
 
-`/sdc:change` is the normal entry point for new work. It must always start with Mandatory Change Intake Gate before creating files. The agent must not decide silently whether the request is "clear enough".
+`/sdc:change` is the normal entry point for new work. Before change-file writes, its evidence-backed intake covers project context, core scope, technical preferences, and constraints/acceptance using cited current or still-valid prior user/project confirmation. Coverage is mandatory; four new questions are not.
 
 Discovery Gate is SDC's built-in requirement exploration workflow. It borrows the useful shape of brainstorming, but it must end in SDC artifacts:
 
@@ -216,7 +265,7 @@ Discovery Gate is SDC's built-in requirement exploration workflow. It borrows th
 discovery.md -> Decision Ledger -> confirmed MVP -> spec.md
 ```
 
-Mandatory Change Intake Gate always asks project context, core scope, technical preferences, and constraints/acceptance questions. After intake, continue Discovery Gate when any of these remain unresolved:
+Ask only missing blocking questions. Record evidence-based non-applicability for irrelevant preferences instead of inventing a blocker. Continue Discovery Gate when any needed item remains unresolved:
 
 - target user or affected actor.
 - business goal.
@@ -225,13 +274,13 @@ Mandatory Change Intake Gate always asks project context, core scope, technical 
 - acceptance direction.
 - high-impact product or technical decisions.
 
-While Discovery Gate is open, keep artifacts intentionally small. The default output is the next 3-5 confirmation questions in chat. If persistence is needed after intake confirmation, create or update only `discovery.md`, optional Draft `proposal.md`, and brief `notes.md`. Do not create or update `spec.md`, `design.md`, `tasks.md`, `impact.md`, `context-pack.md`, or `knowledge-candidates.md` until the gate exits.
+While Discovery Gate is open, ask only the missing blocking questions in chat. With explicit persistence authorization, create or update only `discovery.md`, optional Draft `proposal.md`, and brief `notes.md`; the internal lifecycle record may track discovery only. Do not create or update `spec.md`, `design.md`, `tasks.md`, `impact.md`, `context-pack.md`, or `knowledge-candidates.md` until the gate exits. Unknown business requirements cannot be hidden in draft specs, designs, or investigation tasks.
 
-`discovery.md` should contain current understanding, candidate directions, tradeoffs, recommended MVP, Decision Ledger, open questions, and exit criteria.
+`discovery.md` records current understanding, four-category coverage/source citations, authorization, risk rationale, relevant directions/tradeoffs, MVP, Decision Ledger, blocking questions, and exit criteria.
 
 Exit Discovery Gate only when the current MVP scope is confirmed, high-impact decisions are confirmed or explicitly deferred, and no blocking open questions remain.
 
-Interpretation summaries are not consent. "If wrong, tell me and I will update" is forbidden as write authorization. State the interpretation as `Proposed`, ask a yes/no or option-selection question, wait for the user, then write durable artifacts.
+Interpretation summaries are not consent. "If wrong, tell me and I will update" is forbidden as write authorization. Cite explicit authorization already covering the action; if none exists, state the proposal, ask a focused question, and wait before writing. Do not repeat approval solely because a stage or session changed.
 
 ## Brownfield / Legacy Gates
 
@@ -254,7 +303,7 @@ project-cognition.md -> confirmed spec.md -> impact.md -> plan -> apply
 
 `impact.md` is per-change and focused. It should use `project-cognition.md`, relevant product/technical knowledge, and current code evidence to identify only the necessary impact radius: change entry points, direct modification points, cascading impacts, contracts, data/config changes, security/observability effects, regression strategy, rollout order, rollback boundary, and open questions.
 
-Important rule: only confirmed impact can become implementation tasks. Reasonable inferences may become investigation tasks. Open questions that affect scope, acceptance, contracts, data, permissions, security, or rollout must stop plan/apply.
+Important rule: only confirmed impact can become implementation tasks. Resolve technical inferences by focused investigation within confirmed scope before finalizing dependent tasks. Unknown business requirements stay in discovery; open scope, acceptance, contract, data, permission, security, or rollout decisions stop dependent plan/apply.
 
 At final `sdc-review` or `/sdc:check`, Brownfield/Legacy delivery must include a legacy final impact review: compare actual diff and validation evidence against `impact.md`, then list old-system modification points, impact points, deviations, and residual risks.
 
@@ -289,7 +338,7 @@ Conditional memory updates:
 - `.sdc/project.md` when stack, validation commands, deployment, or long-lived constraints changed.
 - `.sdc/project-cognition.md` only when repo-level cognition is stale, incomplete, or affected by structural changes.
 
-The agent must recommend conditional updates with evidence and target files, then ask for explicit yes/no confirmation before writing them. Archive should not update every knowledge asset by habit.
+The agent proposes incremental conditional updates with exact targets, evidence, freshness checks, and content summary, then obtains explicit confirmation before writing. Candidate and affected-source links guide selection; archive should neither reread nor update every knowledge asset by habit.
 
 ## Traceability Chain
 
@@ -305,7 +354,7 @@ Where:
 - `REQ-*` is a requirement or business rule.
 - `AC-*` is an acceptance criterion, preferably expressed with Given/When/Then.
 - `T###` is a concrete task in `tasks.md`.
-- Validation evidence is a test command, review note, manual verification, or documented blocker.
+- Validation evidence is an actual execution receipt, scoped review, or manual verification. A documented blocker is a limitation, not a passing check.
 
 ## Stop-Line Report
 
@@ -351,16 +400,22 @@ This keeps the public interface simple without losing the deeper workflows.
 Tasks must stay small and traceable:
 
 ```markdown
-- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] Write failing test for invalid login.
+- [ ] T001 [REQ-01] [AC-01] [Phase 1] [Size: S] Reject invalid login and verify the regression.
   - Depends on: none
+  - Files: src/auth.js, tests/auth.test.js
+  - Consumes: confirmed invalid-login behavior in REQ-01
+  - Produces: invalid-login rejection with a regression test
   - Verify: npm test -- auth
+  - Expected: the regression fails before the fix and passes after it
+  - Review: Pending
+  - Evidence: Pending
   - Source: .sdc/changes/active/2026-05-15-login/spec.md#AC-01
 ```
 
 Rules:
 
 - `Size` is `S` or `M`; never `L`.
-- tests come before implementation tasks.
+- meaningful behavior tests come before implementation within the same coherent task where possible; behavior-neutral edits use focused validation.
 - each task references at least one `REQ-*` and one `AC-*`.
 - each task has dependency, verification, and source information.
 

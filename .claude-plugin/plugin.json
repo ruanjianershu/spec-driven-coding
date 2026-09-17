@@ -11,12 +11,12 @@
   "repository": "https://github.com/ruanjianershu/spec-driven-coding",
   "license": "MIT",
   "skills": [
-    "./.claude/skills/sdc-spec",
-    "./.claude/skills/sdc-implement",
-    "./.claude/skills/sdc-review",
-    "./.claude/skills/sdc-test",
-    "./.claude/skills/sdc-quality",
-    "./.claude/skills/sdc-validate"
+    "./skills/sdc-spec",
+    "./skills/sdc-implement",
+    "./skills/sdc-review",
+    "./skills/sdc-test",
+    "./skills/sdc-quality",
+    "./skills/sdc-validate"
   ],
   "commands": "./commands/",
   "keywords": [
@@ -28,6 +28,8 @@
     "expert-routing",
     "artifact-output-contracts",
     "execution-orchestration",
+    "runtime-context",
+    "session-adapter",
     "plan-preflight",
     "task-review",
     "context-pack",

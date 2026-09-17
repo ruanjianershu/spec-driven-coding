@@ -54,14 +54,14 @@ Change impact analysis is not a full repository audit. It must start from:
 confirmed spec.md + project-cognition.md + current code evidence
 ```
 
-Also read relevant `.sdc/knowledge/product/` and `.sdc/knowledge/technical/` files. Use the `legacy-modernizer` expert profile plus any applicable architecture, api-contract, data, security, operations, or test-strategy profile. If those files or Common Ground items are stale or conflict with code evidence, record the conflict and ask whether to refresh knowledge before final plan/apply.
+Also read relevant `.sdc/knowledge/product/` and `.sdc/knowledge/technical/` sections. Use the `legacy-modernizer` lens plus only profiles triggered by affected risks. Compare source identity and applicability, not just dates. Refresh affected source evidence within existing authority; record drift and propose durable knowledge updates separately. Stop dependent work when a conflict, business gap, or high-impact decision needs authoritative confirmation. See `workflow-standards.md` for risk and freshness rules.
 
 Then identify only the necessary impact radius for the current change: entry points, direct modification points, cascading impacts, contracts/data/config/security/observability effects, regression tests, rollout, rollback, and open questions.
 
 Minimum trigger:
 
 - The project is Brownfield/Legacy.
-- The current change has a confirmed or nearly confirmed spec.
+- The current change has a confirmed spec; nearly confirmed business requirements remain in discovery and do not authorize `impact.md` or execution artifacts.
 - The project type is Unknown and has not been proven Greenfield.
 
 ## `impact.md` Required Contents

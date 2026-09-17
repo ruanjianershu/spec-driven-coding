@@ -15,11 +15,12 @@
     "traceability",
     "knowledge-base",
     "brownfield",
+    "runtime-context",
+    "session-adapter",
     "tdd",
     "code-review",
     "execution-orchestration"
   ],
-  "hooks": {},
   "interface": {
     "displayName": "SDC",
     "shortDescription": "规范驱动开发工作流，用少量入口连接需求治理、知识库、产物契约、执行编排、遗留影响分析、追溯和知识沉淀。",
@@ -42,5 +43,6 @@
     "brandColor": "#2563EB",
     "screenshots": []
   },
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "hooks": []
 }

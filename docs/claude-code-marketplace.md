@@ -4,19 +4,26 @@ SDC is designed to be submitted to the Claude plugin directory and used from Cla
 
 ## Current Distribution
 
-Before SDC is accepted into the official marketplace, users can install it through npm or the generated local marketplace:
+Before SDC is accepted into the official marketplace, users can install it through npm:
 
 ```bash
 npx sdc-spec@latest
 ```
 
-or from a cloned repository:
+from a cloned repository:
 
 ```bash
 node bin/install.js
 ```
 
-Do not add the repository root directly as a Claude marketplace. The repository root contains `skills/` for Codex/Hermes and `.claude/skills/` for Claude compatibility; the installer generates a Claude-specific marketplace that exposes only `.claude/skills/` to avoid duplicate skill registration.
+or directly as a Git-hosted Claude marketplace:
+
+```text
+/plugin marketplace add ruanjianershu/spec-driven-coding
+/plugin install sdc@sdc-local
+```
+
+The repository root is a valid marketplace source. Its manifest explicitly lists only the six advanced `skills/sdc-*` directories. Under Claude's marketplace-root rule, these specific paths replace the default `skills/` scan, so the public workflows remain slash commands and are not registered a second time as skills. The same source tree remains usable by Codex/Hermes.
 
 After installation, restart Claude Code or run `/reload-plugins` when available.
 
@@ -65,7 +72,7 @@ This produces user-facing Claude Code commands such as:
 /sdc:plan
 ```
 
-SDC also generates a `.claude/skills/` compatibility layout during install for advanced non-public capabilities. Public workflows such as init, change, plan, apply, check, archive, harness, and the main SDC entry are exposed only through slash commands. Generated Claude skill directories are limited to advanced skills such as `.claude/skills/sdc-spec/`, `.claude/skills/sdc-review/`, and `.claude/skills/sdc-validate/`, so users do not see duplicate entries like `sdc:apply` and `sdc:sdc-apply`.
+The Claude manifest explicitly exposes advanced non-public capabilities such as `skills/sdc-spec/`, `skills/sdc-review/`, and `skills/sdc-validate/`. Public workflows such as init, change, plan, apply, check, archive, harness, and the main SDC entry are exposed only through slash commands, so users do not see duplicate entries like `sdc:apply` and `sdc:sdc-apply`.
 
 ## Marketplace Submission Positioning
 
@@ -75,7 +82,7 @@ Use this concise description when submitting:
 
 Use this longer description when a form allows more context:
 
-> SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills. It creates a local `.sdc/` workspace for specs, changes, product knowledge, technical knowledge, memory candidates, standards, decisions, and reports; uses shared English Role Prompt Contracts for expert behavior, evidence rules, and output discipline while keeping each SKILL.md compact; requires Mandatory Change Intake Gate before creating change files; continues Discovery Gate with minimal draft artifacts for unresolved requirements before confirmed specs; forbids write-ahead confirmation patterns such as "if wrong, tell me and I will update now"; creates project cognition for brownfield repositories; runs Change Impact Gate after legacy requirements are confirmed; preserves `SCN -> REQ -> AC -> task -> evidence` traceability; uses consent gates so high-impact AI suggestions do not become silent defaults; generates a short context pack for execution; applies changes incrementally; runs combined validation, review, test, quality, bug, impact, and repo checks; archives completed changes into stable project specs; and runs Knowledge Compact Gate to recommend durable updates to product knowledge, technical knowledge, memory, decisions, standards, reports, AGENTS.md, project context, or project cognition. SDC is local-first and uses deterministic local helper scripts: it ships no MCP server, no telemetry, no background daemon, no active hooks, and no external service dependency.
+> SDC packages a complete spec-driven development lifecycle into a small set of Claude Code commands and skills. It creates a local `.sdc/` workspace for specs, changes, product knowledge, technical knowledge, memory candidates, standards, decisions, and reports; requires confirmed intake and discovery before execution; preserves `SCN -> REQ -> AC -> task -> evidence` traceability; carries an evidence-gated seven-state lifecycle; generates deterministic apply/check context manifests; keeps recall local, read-only, and Candidate-only; analyzes brownfield impact; applies reviewed task slices; runs delivery checks; and compacts durable knowledge at archive. SDC ships no MCP server, telemetry, background daemon, or external service dependency. Its optional local Claude `SessionStart` adapter has a safe manual fallback.
 
 ## Review Notes
 
@@ -85,7 +92,7 @@ For official review, emphasize:
 - no telemetry or analytics
 - no external service integration
 - no MCP server or background process
-- no default hooks
+- optional local Claude `SessionStart` adapter with safe manual fallback
 - local project artifacts only
 - explicit uninstall command
 - commands are scoped to a spec-driven development lifecycle
@@ -96,8 +103,9 @@ For official review, emphasize:
 ```bash
 node scripts/audit-release.mjs
 node --check bin/install.js
+claude plugin validate --strict .
 node bin/install.js
-claude plugin validate "$HOME/.claude/plugins/marketplaces/sdc-local"
+claude plugin validate --strict "$HOME/.claude/plugins/marketplaces/sdc-local"
 npm pack --dry-run
 ```
 

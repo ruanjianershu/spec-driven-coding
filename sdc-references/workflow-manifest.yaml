@@ -24,8 +24,40 @@ shared_references:
   - expert-routing.md
   - artifact-output-contracts.md
   - execution-orchestration.md
+  - runtime-context.md
   - artifact-schemas.md
   - delivery-gates.md
+runtime_contract:
+  helper: scripts/sdc-runtime-context.py
+  states:
+    - intake
+    - discovery
+    - confirmed
+    - planned
+    - applying
+    - checking
+    - archivable
+  active_change_precedence:
+    - explicit
+    - environment
+    - session
+    - single-active
+  durable:
+    - state.json
+    - apply-context.jsonl
+    - check-context.jsonl
+    - evidence/
+    - revisions/
+  ignored:
+    - .sdc/runtime/sessions/
+    - .sdc/runtime/<change-id>/research/
+    - .sdc/runtime/<change-id>/evidence.jsonl
+  rules:
+    - "Resolve exactly one valid non-symlink active change or stop."
+    - "Candidate recall and runtime evidence never become confirmed knowledge automatically."
+    - "Client automation failure falls back to normal SDC stage instructions."
+    - "Same-state retries are idempotent only with fresh evidence; explicit reopen preserves history and invalidates downstream approvals."
+    - "Verify manifest schema/source hashes and revision-bound measured execution/review receipts before delivery."
 flow:
   init:
     purpose: "Create or repair .sdc, seed knowledge, memory, common ground, expert routing, standards, and project cognition."
@@ -49,6 +81,10 @@ flow:
       - "Do not perform per-change impact analysis during init."
   change:
     purpose: "Run mandatory intake and discovery before creating final artifacts."
+    state_transition: "materialize discovery after confirmed intake creates the minimal change artifacts"
+    runtime_actions:
+      - "Resolve an explicitly named change; never select by recency."
+      - "Use Candidate recall and internal research routing only for evidence gathering."
     inputs:
       - user requirement
       - .sdc/common-ground.md
@@ -60,12 +96,13 @@ flow:
       - brief notes.md
       - draft artifact output contract
     gates:
-      - "Ask the required intake questions before writing change files."
+      - "Cover four intake categories with cited confirmation; ask only missing blocking questions and preserve write authorization."
       - "Keep artifacts minimal while Discovery Gate is open."
       - "High-impact decisions remain Proposed or Assumed until confirmed."
       - "Identify likely required outputs without generating final design artifacts."
   spec:
     purpose: "Convert confirmed discovery into SCN/REQ/AC with traceability."
+    state_transition: "discovery -> confirmed after discovery closure and final spec pass; required impact is completed before planning"
     inputs:
       - confirmed discovery
       - established common ground
@@ -79,6 +116,10 @@ flow:
       - "No Proposed or Assumed decision may enter final requirements."
   plan:
     purpose: "Generate design, tasks, and context-pack from confirmed scope and impact."
+    state_transition: "confirmed -> planned after Plan Preflight and both role manifests pass"
+    runtime_actions:
+      - "Generate deterministic apply-context.jsonl and check-context.jsonl."
+      - "Preserve context-pack.md as the human-readable handoff."
     inputs:
       - confirmed spec.md
       - impact.md when required
@@ -100,6 +141,10 @@ flow:
       - "Plan Preflight must pass before apply."
   apply:
     purpose: "Implement planned tasks and record evidence."
+    state_transition: "planned -> applying before edits; applying -> checking after all tasks and the whole-change review complete"
+    runtime_actions:
+      - "Use the apply role manifest and local session adapter when needed."
+      - "Record actual verification receipts matching task Verify commands; ignored asserted evidence is not execution proof. Route research without promoting Candidate memory."
     inputs:
       - context-pack.md
       - tasks.md
@@ -121,6 +166,10 @@ flow:
       - "Reviewers are read-only and cannot be coached to suppress findings."
   check:
     purpose: "Combine validate, review, test, quality, impact, and knowledge drift checks."
+    state_transition: "checking -> archivable only after every required gate passes"
+    runtime_actions:
+      - "Use the check role manifest and verify current hashes."
+      - "Keep failed checks in checking state."
     inputs:
       - artifacts
       - actual diff
@@ -140,6 +189,7 @@ flow:
       - "Missing approved task reviews, unresolved Cannot verify items, or missing whole-change review block delivery."
   archive:
     purpose: "Preserve completed change and propose durable knowledge updates."
+    state_transition: "require archivable before moving the completed change; preserve state.json in the archive"
     inputs:
       - completed checked change
       - final spec

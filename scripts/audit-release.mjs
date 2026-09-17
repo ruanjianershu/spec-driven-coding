@@ -44,6 +44,72 @@ for (const [file, fileVersion] of Object.entries(versionSources)) {
 if (packageJson.files?.includes('.claude/')) {
   fail('package.json files must not include root .claude/; installers generate platform-specific .claude/skills.');
 }
+if (packageJson.bin?.sdc !== 'bin/sdc.js') {
+  fail('package.json bin.sdc must preserve the public bin/sdc.js validate dispatcher.');
+}
+for (const name of ['sdc-bootstrap', 'sdc-init']) {
+  if (Object.prototype.hasOwnProperty.call(packageJson.bin || {}, name) || fs.existsSync(path.join(root, 'bin', name))) {
+    fail(`Public releases must not include the private shell command ${name}.`);
+  }
+}
+
+// Inspect public payload roots only; never traverse project-local .sdc data or symlinks.
+const auditedPayloadPaths = new Set();
+function auditPublicPayload(relativePath) {
+  if (typeof relativePath !== 'string' || path.isAbsolute(relativePath) ||
+      /[\\*?\[\]{}!]/.test(relativePath) || relativePath.split('/').includes('..')) {
+    fail('Public package entries must be explicit paths inside the repository.');
+    return;
+  }
+  const relative = path.posix.normalize(relativePath).replace(/\/$/, '');
+  if (relative === '.' || /(^|\/)(?:\.sdc|company|company[-_]standards|spec-rules)(\/|$)/i.test(relative) ||
+      /^bin\/sdc-(?:bootstrap|init)(?:[./]|$)/.test(relative)) {
+    fail(`Public payload must not include private workspace, bootstrap, or company assets: ${relative}`);
+    return;
+  }
+  if (auditedPayloadPaths.has(relative)) return;
+  auditedPayloadPaths.add(relative);
+  const target = path.join(root, relative);
+  let stat;
+  try {
+    let current = root;
+    for (const part of relative.split('/')) {
+      current = path.join(current, part);
+      stat = fs.lstatSync(current);
+      if (stat.isSymbolicLink()) {
+        fail(`Public payload must not follow symbolic links into private assets: ${relative}`);
+        return;
+      }
+    }
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+  if (stat.isDirectory()) {
+    for (const entry of fs.readdirSync(target)) {
+      if (entry === '__pycache__' || /\.py[cod]$/.test(entry)) continue;
+      auditPublicPayload(`${relative}/${entry}`);
+    }
+    return;
+  }
+  if (!stat.isFile() || !['', '.md', '.json', '.yaml', '.yml', '.toml', '.js', '.mjs', '.cjs', '.py', '.sh', '.txt'].includes(path.extname(relative))) return;
+  const content = readText(relative);
+  const urls = content.match(/\b(?:https?|ssh):\/\/[^\s"'<>`\\]+/gi) || [];
+  const hosts = urls.flatMap((url) => {
+    try { return [new URL(url).hostname.toLowerCase()]; } catch { return []; }
+  });
+  for (const match of content.matchAll(/\bgit@(gitlab[.\w-]+):/gi)) hosts.push(match[1].toLowerCase());
+  if (hosts.some((host) => host.startsWith('gitlab.') && host !== 'gitlab.com')) {
+    fail(`Public assets must not contain internal GitLab installation links: ${relative}`);
+  }
+}
+for (const entry of new Set([
+  ...(packageJson.files || []), ...Object.values(packageJson.bin || {}),
+  'README.md', 'CHANGELOG.md', 'PRIVACY.md', 'SECURITY.md', 'LICENSE', 'package.json',
+  'bin', 'commands', 'skills', 'sdc-references', 'hooks', 'scripts', 'docs',
+])) {
+  auditPublicPayload(entry);
+}
 
 if (!packageJson.scripts?.audit) {
   fail('package.json must expose npm run audit.');
@@ -59,6 +125,9 @@ if (!packageJson.scripts?.['sync:skills']) {
 }
 if (!packageJson.files?.includes('.agents/')) {
   fail('package.json files must include the repo-local Codex marketplace manifest under .agents/.');
+}
+if (!packageJson.files?.includes('hooks/')) {
+  fail('package.json files must include the platform-specific SessionStart adapters under hooks/.');
 }
 const expectedEvalFiles = [
   'evals/sdc-flow/README.md',
@@ -81,6 +150,8 @@ for (const scriptFile of [
   'scripts/audit-release.mjs',
   'scripts/package-codex-plugin.py',
   'scripts/sdc-review-package.py',
+  'scripts/sdc-runtime-context.py',
+  'scripts/sdc_evidence.py',
   'scripts/sdc-task-brief.py',
 ]) {
   if (!packageJson.files?.includes(scriptFile)) {
@@ -141,30 +212,105 @@ if (missingSkills.length > 0) {
 
 const sourceClaudeSkills = path.join(root, '.claude', 'skills');
 if (fs.existsSync(sourceClaudeSkills)) {
-  fail('Source repo must not contain .claude/skills/; the installer generates it from skills/. Ignore via .gitignore.');
+  fail('Source repo must not contain a generated .claude/skills/ tree; Claude uses explicit existing skills/* paths.');
 }
 
 const claudePlugin = readJSON('.claude-plugin/plugin.json');
 const expectedClaudeSkills = [
-  './.claude/skills/sdc-spec',
-  './.claude/skills/sdc-implement',
-  './.claude/skills/sdc-review',
-  './.claude/skills/sdc-test',
-  './.claude/skills/sdc-quality',
-  './.claude/skills/sdc-validate',
+  './skills/sdc-spec',
+  './skills/sdc-implement',
+  './skills/sdc-review',
+  './skills/sdc-test',
+  './skills/sdc-quality',
+  './skills/sdc-validate',
 ];
 if (!Array.isArray(claudePlugin.skills)) {
-  fail('Claude plugin skills must be an explicit array, not a whole .claude/skills/ directory scan.');
+  fail('Claude plugin skills must be an explicit array of advanced source skill paths.');
 } else {
   sameSet(claudePlugin.skills, expectedClaudeSkills, 'Claude plugin explicit skills');
+  for (const skillPath of claudePlugin.skills) {
+    if (!fs.existsSync(path.join(root, skillPath, 'SKILL.md'))) {
+      fail(`Claude plugin source skill path does not exist: ${skillPath}`);
+    }
+  }
+}
+const claudeHooks = readJSON('hooks/hooks.json');
+const sessionStartHook = readText('hooks/session-start');
+if (!Array.isArray(claudeHooks.hooks?.SessionStart) || !JSON.stringify(claudeHooks.hooks.SessionStart).includes('hooks/session-start')) {
+  fail('Claude hooks/hooks.json must register the local SessionStart adapter.');
+}
+if (!sessionStartHook.includes('sdc-runtime-context.py') || !sessionStartHook.includes('runtime context unavailable')) {
+  fail('Claude SessionStart adapter must call the shared runtime helper and provide a safe fallback.');
+}
+if ((fs.statSync(path.join(root, 'hooks/session-start')).mode & 0o111) === 0) {
+  fail('Claude hooks/session-start must be executable.');
 }
 
 const codexPlugin = readJSON('.codex-plugin/plugin.json');
 if (Object.prototype.hasOwnProperty.call(codexPlugin, 'commands')) {
   fail('Codex plugin must be skill-plugin only and must not declare slash commands.');
 }
-if (JSON.stringify(codexPlugin.hooks) !== '{}') {
-  fail('Codex plugin must declare hooks: {} to disable SessionStart auto-discovery fallback.');
+function validateCodexHookConfig(config, label) {
+  const events = config?.hooks;
+  if (!events || typeof events !== 'object' || Array.isArray(events) ||
+      Object.keys(events).length !== 1 || !Array.isArray(events.SessionStart) || events.SessionStart.length !== 1) {
+    fail(`${label}: Codex SDC hooks must contain one SessionStart adapter only.`);
+    return;
+  }
+  const group = events.SessionStart[0];
+  try {
+    if (typeof group.matcher !== 'string' ||
+        !['startup', 'resume', 'clear', 'compact'].every((source) => new RegExp(group.matcher).test(source))) {
+      fail(`${label}: Codex SessionStart must cover startup, resume, clear, and compact.`);
+    }
+  } catch {
+    fail(`${label}: Codex SessionStart matcher is invalid.`);
+  }
+  if (!Array.isArray(group?.hooks) || group.hooks.length !== 1) {
+    fail(`${label}: Codex SessionStart requires one command handler.`);
+    return;
+  }
+  const handler = group.hooks[0];
+  const allowed = new Set(['type', 'command', 'timeout', 'additionalContextLimit', 'statusMessage']);
+  if (!handler || Object.keys(handler).some((key) => !allowed.has(key)) ||
+      handler.type !== 'command' ||
+      handler.command !== 'python3 "${PLUGIN_ROOT}/hooks/codex-session-start.py"' ||
+      handler.timeout !== 5 || handler.additionalContextLimit !== 4000) {
+    fail(`${label}: Codex handler must use the bounded native adapter, not the Claude-only payload.`);
+  }
+}
+
+function validateCodexHookEntry(entry) {
+  if (typeof entry === 'string') {
+    const target = path.resolve(root, entry);
+    if (!entry.startsWith('./') || !target.startsWith(`${root}${path.sep}`)) {
+      fail('Codex manifest hook paths must be ./-prefixed and stay inside the plugin root.');
+      return;
+    }
+    try {
+      if (!fs.realpathSync(target).startsWith(`${fs.realpathSync(root)}${path.sep}`)) {
+        fail('Codex manifest hook paths must not resolve outside the plugin root.');
+        return;
+      }
+      validateCodexHookConfig(readJSON(entry), entry);
+    } catch {
+      fail(`Codex manifest hook config is missing or invalid: ${entry}`);
+    }
+  } else {
+    validateCodexHookConfig(entry, 'Codex manifest inline hooks');
+  }
+}
+
+// An explicit empty array prevents source installs discovering Claude hooks/hooks.json.
+if (!Object.prototype.hasOwnProperty.call(codexPlugin, 'hooks')) {
+  fail('Source Codex manifest must override Claude hook autodiscovery with hooks: [] or explicit native hooks.');
+} else {
+  const entries = Array.isArray(codexPlugin.hooks) ? codexPlugin.hooks : [codexPlugin.hooks];
+  for (const entry of entries) validateCodexHookEntry(entry);
+}
+validateCodexHookConfig(readJSON('hooks/codex.json'), 'hooks/codex.json');
+if (!fs.existsSync(path.join(root, 'hooks/codex-session-start.py'))) {
+  fail('Codex native hook configuration requires hooks/codex-session-start.py.');
 }
 if (typeof codexPlugin.author !== 'object' || !codexPlugin.author?.name) {
   fail('Codex plugin author must use the current object form with author.name.');
@@ -191,8 +337,17 @@ if (codexMarketplaceEntry?.source?.url !== './' || codexMarketplaceEntry?.catego
 }
 
 const installJs = readText('bin/install.js');
+const sdcDispatch = readText('bin/sdc.js');
+for (const marker of ["args[0] === 'validate'", "spawnSync('python3'", "'sdc-cli.py'), 'validate', args[1]", 'exitWithChildStatus']) {
+  if (!sdcDispatch.includes(marker)) {
+    fail(`bin/sdc.js must retain installed sdc validate dispatch and exit status propagation: missing ${marker}`);
+  }
+}
 if (installJs.includes('CodeX')) {
   fail('Use Codex spelling consistently; found CodeX in bin/install.js.');
+}
+if (/installUserCommands|sdc-bootstrap|bin\/sdc-init|sdc-init --project/.test(installJs)) {
+  fail('Public installer must not install, remove, or advertise private bootstrap/init shell commands.');
 }
 if (/\/sdc:(spec|implement|review|test|quality|validate)/.test(installJs)) {
   fail('Installer completion guidance must not advertise hidden detailed skills as public slash commands.');
@@ -202,11 +357,19 @@ const pluginEntriesBlock = installJs.slice(
   installJs.indexOf('const SDC_MARKETPLACE_NAME')
 );
 if (pluginEntriesBlock.includes("'.claude',")) {
-  fail('PLUGIN_ENTRIES must not copy a root .claude directory; Claude layout is generated.');
+  fail('PLUGIN_ENTRIES must not copy a generated root .claude directory.');
 }
-for (const marker of ["'scripts'", "'.agents'", "'sdc-references'"]) {
+for (const marker of ["'scripts'", "'.agents'", "'sdc-references'", "'hooks'"]) {
   if (!pluginEntriesBlock.includes(marker)) {
     fail(`PLUGIN_ENTRIES must package execution helpers and Codex marketplace metadata: missing ${marker}`);
+  }
+}
+if (!installJs.includes('includeHooks: false')) {
+  fail('Installer must omit the Claude hooks tree before configuring the Codex adapter.');
+}
+for (const marker of ["process.env.SDC_CODEX_HOOKS === '1'", 'configureCodexAdapter', 'codexAdapter: true', '/hooks']) {
+  if (!installJs.includes(marker)) {
+    fail(`Installer must retain explicit native hook opt-in and user trust guidance: missing ${marker}`);
   }
 }
 if (/\b(init|change|plan|apply|check|archive|harness|spec|implement|review|test|quality|validate):\s*'sdc-/.test(installJs)) {
@@ -218,8 +381,14 @@ if (/'sdc-(core|init|change|plan|apply|check|archive|harness)'/.test(installJs.s
 ))) {
   fail('Claude skill layout must not generate public command backing skills.');
 }
-if (!installJs.includes("'sdc-spec'") || !installJs.includes("path.join(claudeSkillsRoot, skillName)")) {
-  fail('Claude skill layout must generate advanced sdc-* skill directories.');
+const localClaudeMarketplaceBlock = installJs.slice(
+  installJs.indexOf('function writeLocalClaudeMarketplace'),
+  installJs.indexOf('function installClaudePlugin')
+);
+for (const marker of ['includeRootSkills: true', 'includeClaudeSkillLayout: false', 'includePublicWorkflowSkills: true']) {
+  if (!localClaudeMarketplaceBlock.includes(marker)) {
+    fail(`Claude local marketplace must keep the source skills tree and rely on explicit advanced paths: missing ${marker}`);
+  }
 }
 for (const marker of [
   'PUBLIC_WORKFLOW_SKILLS',
@@ -242,6 +411,7 @@ const sharedReferences = [
   'sdc-references/artifact-output-contracts.md',
   'sdc-references/execution-orchestration.md',
   'sdc-references/workflow-manifest.yaml',
+  'sdc-references/runtime-context.md',
 ];
 for (const reference of sharedReferences) {
   if (!fs.existsSync(path.join(root, reference))) {
@@ -282,6 +452,7 @@ for (const marker of [
   '--standards',
   'standards/company/README.md',
   'SDC-MANAGED-STANDARDS-PACK',
+  'relative_parts[0].lower() == "readme.md"',
 ]) {
   if (!cli.includes(marker)) {
     fail(`sdc-cli.py must support company standards pack import: missing ${marker}`);
@@ -306,6 +477,8 @@ for (const marker of [
   'LEGACY_MANAGED_HASHES',
   'is_unmodified_managed_file',
   'preserved-user-owned',
+  'templates/runtime-context.md',
+  'sdc.change-state/v1',
 ]) {
   if (!cli.includes(marker)) {
     fail(`sdc-cli.py must enforce execution orchestration; missing marker: ${marker}`);
@@ -316,7 +489,7 @@ if (!executionOrchestration.includes('do not dispatch multiple implementation ta
   fail('Execution orchestration must serialize implementation tasks through review and ledger completion.');
 }
 
-for (const helper of ['scripts/sdc-task-brief.py', 'scripts/sdc-review-package.py', 'scripts/package-codex-plugin.py']) {
+for (const helper of ['scripts/sdc-task-brief.py', 'scripts/sdc-review-package.py', 'scripts/sdc-runtime-context.py', 'scripts/sdc_evidence.py', 'scripts/package-codex-plugin.py']) {
   if (!fs.existsSync(path.join(root, helper))) {
     fail(`Missing SDC execution/packaging helper: ${helper}`);
   }
@@ -331,10 +504,18 @@ for (const marker of [
   'verify_payload',
   'scripts/sdc-task-brief.py',
   'scripts/sdc-review-package.py',
+  'scripts/sdc-runtime-context.py',
+  'scripts/sdc_evidence.py',
   'relative = path.relative_to(source)',
 ]) {
   if (!codexPackager.includes(marker)) {
     fail(`Codex portal packager must build a minimal rootless runtime payload: missing ${marker}`);
+  }
+}
+for (const marker of ['CODEX_HOOK_ENTRIES', 'hooks/codex.json', 'hooks/codex-session-start.py',
+  'os.environ.get("SDC_CODEX_HOOKS") == "1"', 'native_hooks=native_hooks']) {
+  if (!codexPackager.includes(marker)) {
+    fail(`Codex packager must scope native hooks to the explicit opt-in payload: missing ${marker}`);
   }
 }
 if (codexPackager.includes('Path("sdc") / path.relative_to(source)')) {
@@ -415,12 +596,75 @@ if (!readme.includes('Plan Preflight') || !readme.includes('Spec Compliance') ||
 if (!readme.includes('.sdc/knowledge/product/') || !readme.includes('.sdc/knowledge/technical/') || !readme.includes('context-pack.md')) {
   fail('README.md must document product/technical knowledge and context-pack usage.');
 }
-if (!readme.includes('.sdc/standards/company/') || !readme.includes('sdc standards import /path/to/spec-rules')) {
-  fail('README.md must document company standards pack import.');
+if (!readme.includes('.sdc/standards/company/') || !readme.includes('sdc-cli.py standards import /path/to/spec-rules')) {
+  fail('README.md must document optional user-supplied standards import through the bundled CLI.');
+}
+if (/sdc-bootstrap|bin\/sdc-init|^sdc-init\s*$/m.test(readme)) {
+  fail('README.md must not advertise private bootstrap/init shell commands.');
+}
+if (!readme.includes('python3 /path/to/installed/sdc/sdc-cli.py init') || !readme.includes('npx --yes sdc-spec@latest')) {
+  fail('README.md must retain public installation and bundled CLI initialization guidance.');
+}
+
+const privacy = readText('PRIVACY.md');
+for (const marker of [
+  '.sdc/runtime/',
+  'session identifier',
+  'Candidate recall',
+  'retention',
+  'best-effort',
+  'does not delete project-local `.sdc/` data',
+]) {
+  if (!privacy.toLowerCase().includes(marker.toLowerCase())) {
+    fail(`PRIVACY.md must disclose local runtime processing and retention: missing ${marker}`);
+  }
+}
+
+const security = readText('SECURITY.md');
+for (const marker of [
+  'local runtime helper',
+  'symbolic links',
+  'credential-shaped',
+  'SDC_ALLOW_ENV_SESSION_ID',
+  'not a substitute for a dedicated secret scanner',
+]) {
+  if (!security.toLowerCase().includes(marker.toLowerCase())) {
+    fail(`SECURITY.md must describe the runtime trust boundary: missing ${marker}`);
+  }
+}
+if (security.includes('prompt-only development workflow plugin')) {
+  fail('SECURITY.md must not describe the runtime-enabled package as prompt-only.');
+}
+
+const releaseChecklist = readText('docs/release-checklist.md');
+const officialSubmission = readText('docs/official-submission.md');
+if (officialSubmission.includes('No credential handling') || !officialSubmission.includes('Limited local credential detection and redaction')) {
+  fail('docs/official-submission.md must describe limited local credential detection without claiming no credential handling.');
+}
+for (const [label, content] of [
+  ['docs/release-checklist.md', releaseChecklist],
+  ['docs/official-submission.md', officialSubmission],
+]) {
+  if (!content.includes('claude plugin validate --strict "$HOME/.claude/plugins/marketplaces/sdc-local"')) {
+    fail(`${label} must require strict validation for the installed Claude marketplace.`);
+  }
+}
+
+const disciplineCore = readText('docs/sdc-discipline-core.md');
+for (const marker of [
+  'https://github.com/mindfold-ai/Trellis',
+  '64e663694201005bc87766ef22de89b8da3d4d79',
+  'AGPL-3.0',
+  'No Trellis source code or prompt text was copied',
+]) {
+  if (!disciplineCore.includes(marker)) {
+    fail(`docs/sdc-discipline-core.md must record Trellis design provenance: missing ${marker}`);
+  }
 }
 
 const evalRunner = readText('evals/sdc-flow/run_sdc_flow.py');
 const evalProvider = readText('evals/sdc-flow/sdc_flow_provider.py');
+const evalConfig = readText('evals/sdc-flow/promptfooconfig.yaml');
 if (!evalRunner.includes('All {len(SCENARIOS)} evals passed')) {
   fail('SDC flow eval runner must report all scenario results.');
 }
@@ -484,9 +728,35 @@ for (const scenario of [
   'codex_install_recovers_interrupted_swap',
   'codex_package_is_rootless_and_deterministic',
   'standards_pack_import',
+  'lifecycle_state_machine_AC_01',
+  'lifecycle_evidence_gate_AC_01',
+  'lifecycle_content_gates_AC_01',
+  'archive_requires_archivable_state_AC_01',
+  'archive_rejects_forged_state_AC_01',
+  'active_change_resolver_AC_02',
+  'unsafe_active_change_symlink_AC_02',
+  'unsafe_runtime_ancestor_symlinks_AC_02',
+  'explicit_empty_selector_AC_02',
+  'public_cli_symlink_boundaries_AC_02',
+  'role_context_manifests_AC_03',
+  'memory_recall_candidate_AC_04',
+  'recall_redacts_adjacent_sensitive_lines_AC_04',
+  'recall_root_containment_AC_04',
+  'sensitive_runtime_values_AC_04',
+  'research_routing_no_public_command_AC_05',
+  'session_context_adapter_and_evidence_AC_06',
+  'hook_requires_trustworthy_session_id_AC_06',
+  'session_pointer_and_hook_identity_AC_06',
+  'hook_files_and_installer_boundaries_AC_07',
+  'runtime_contract_templates_AC_07',
+  'runtime_distribution_inventory_AC_07',
+  'source_marketplace_layout_AC_07',
 ]) {
   if (!evalProvider.includes(scenario)) {
     fail(`SDC anti-guess eval provider is missing scenario: ${scenario}`);
+  }
+  if (!evalConfig.includes(`scenario: ${scenario}`)) {
+    fail(`SDC promptfoo config is missing scenario: ${scenario}`);
   }
 }
 
@@ -508,6 +778,12 @@ const publicDocs = [
   readText('docs/sdc-discipline-core.md'),
   ...commandFiles.map((name) => readText(path.join('commands', `${name}.md`))),
 ].join('\n');
+const claudeMarketplaceDocs = readText('docs/claude-code-marketplace.md');
+for (const staleClaim of ['no active hooks', 'no default hooks', 'Do not add the repository root directly']) {
+  if (claudeMarketplaceDocs.includes(staleClaim)) {
+    fail(`Claude marketplace docs contain stale distribution guidance: ${staleClaim}`);
+  }
+}
 if (/\/sdc:compact/.test(publicDocs)) {
   fail('Do not advertise a public /sdc:compact command; compaction belongs inside archive.');
 }
@@ -515,6 +791,23 @@ if (/\/sdc:compact/.test(publicDocs)) {
 const commandDocs = commandFiles.map((name) => readText(path.join('commands', `${name}.md`))).join('\n');
 if (/Follow the installed `sdc-(core|init|change|plan|apply|check|archive|harness)` skill exactly/.test(commandDocs)) {
   fail('Claude public commands must be self-contained and must not reference hidden public backing skills.');
+}
+
+const initCommand = readText('commands/init.md');
+for (const marker of [
+  'In Claude Code, `/sdc:init` is the single project-level entry',
+  'python3 "$SDC_PLUGIN_ROOT/sdc-cli.py" init',
+  'Only if the user explicitly supplies a private standards path',
+  'an absent pack is not a setup warning',
+  '.sdc/standards/company/README.md',
+  'project-cognition.md',
+]) {
+  if (!initCommand.includes(marker)) {
+    fail(`commands/init.md must make /sdc:init the single Claude Code initialization entry: missing ${marker}`);
+  }
+}
+if (/bin\/sdc-init|sdc-init --project|\$HOME\/workspace\/|imported automatically/.test(initCommand)) {
+  fail('Public init must not discover private bootstrap checkouts or automatically import company rules.');
 }
 
 if (errors.length > 0) {

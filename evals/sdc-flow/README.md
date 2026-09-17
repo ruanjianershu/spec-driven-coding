@@ -41,6 +41,14 @@ The local runner does not call an LLM or require API keys. It creates temporary 
 - file-based task brief and review-package handoffs
 - refusing incomplete WORKTREE review packages when untracked files would be omitted
 - keeping shared/apply/generated execution contracts serial and in sync
+- validating all seven lifecycle states, legal forward transitions, and mutation-free rejected transitions
+- resolving exactly one active change with explicit/environment/session/sole-directory precedence and non-zero ambiguity failures
+- generating byte-identical, ordered, path-safe, hash-backed apply/check JSONL context manifests
+- keeping bounded local memory recall deterministic, read-only, and `Candidate`-only while excluding sensitive or unsafe sources
+- routing research scratch, citations, and knowledge candidates internally without adding a public command
+- emitting compact Claude `SessionStart` context with safe failure fallback
+- using the Codex skill adapter without a native hook field or client-package cross-contamination
+- validating the repository root as a Claude marketplace with explicit advanced source skills and no duplicate public workflow registration
 - removing stale pre-1.3 Codex plugin layout during upgrade
 - recovering interrupted Codex plugin replacement transactions
 - rootless, minimal, deterministic Codex portal packaging

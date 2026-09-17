@@ -1,6 +1,8 @@
 import hashlib
 import importlib.util
+import json
 import os
+import shutil
 import subprocess
 import tempfile
 import zipfile
@@ -13,12 +15,28 @@ TASK_BRIEF = REPO_ROOT / "scripts" / "sdc-task-brief.py"
 REVIEW_PACKAGE = REPO_ROOT / "scripts" / "sdc-review-package.py"
 PACKAGE_CODEX = REPO_ROOT / "scripts" / "package-codex-plugin.py"
 INSTALLER = REPO_ROOT / "bin" / "install.js"
+RUNTIME_CONTEXT = REPO_ROOT / "scripts" / "sdc-runtime-context.py"
 
 
 def run_sdc(cwd: Path, *args: str):
     result = subprocess.run(
         ["python3", str(SDC_CLI), *args],
         cwd=cwd,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    return result.returncode, result.stdout
+
+
+def run_runtime(cwd: Path, *args: str, env=None):
+    runtime_env = os.environ.copy()
+    if env:
+        runtime_env.update(env)
+    result = subprocess.run(
+        ["python3", str(RUNTIME_CONTEXT), *args],
+        cwd=cwd,
+        env=runtime_env,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -36,6 +54,19 @@ def active_change(root: Path, suffix: str) -> Path:
 def marker(root: Path, relative: str) -> str:
     status = "exists" if (root / relative).exists() else "absent"
     return f"{relative}: {status}"
+
+
+def tree_digest(root: Path, relative: str) -> str:
+    base = root / relative
+    digest = hashlib.sha256()
+    if not base.exists():
+        return digest.hexdigest()
+    for path in sorted(item for item in base.rglob("*") if item.is_file()):
+        digest.update(path.relative_to(root).as_posix().encode())
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
 
 
 def fingerprinted_managed(relative: str, body: str) -> str:
@@ -341,7 +372,7 @@ Database constraint can be added later if persistence exists.
   - Files: src/booking.py, tests/test_booking.py
   - Consumes: REQ-01 booking request and existing bookings
   - Produces: overlap rejection behavior used by T900
-  - Verify: python3 -m py_compile sdc-cli.py
+  - Verify: python3 -c "assert 1 + 1 == 2"
   - Expected: command exits 0 and overlapping booking behavior remains traceable to AC-01
   - Review: {review_status}
   - Evidence: {evidence_status}
@@ -354,7 +385,7 @@ Database constraint can be added later if persistence exists.
   - Files: .sdc/changes/active/{change.name}/notes.md
   - Consumes: T001 overlap rejection behavior
   - Produces: final AC-01 validation evidence
-  - Verify: sdc validate current-change
+  - Verify: python3 -c "assert 1 + 1 == 2"
   - Expected: validation exits 0 with AC-01 traceability intact
   - Review: {review_status}
   - Evidence: {evidence_status}
@@ -500,6 +531,51 @@ See knowledge-candidates.md.
 | T900 | complete | notes.md#task-review-evidence | Approved |
 """
         )
+        # These are measured fixture checks, not evidence of booking business correctness.
+        root = change.parents[3]
+        if change != root / ".sdc" / "changes" / "active" / change.name or not (root / ".sdc").is_dir():
+            return
+        code, output = run_runtime(root, "evidence", "run", "--change", change.name,
+                                   "--stage", "check", "--task", "T001", "--task", "T900",
+                                   "--", "python3", "-c", "assert 1 + 1 == 2")
+        if code != 0:
+            raise AssertionError(output)
+        code, output = run_runtime(root, "evidence", "review", "--change", change.name,
+                                   "--reviewer", "deterministic-fixture-not-an-agent")
+        if code != 0:
+            raise AssertionError(output)
+
+
+def advance_change_to_archivable(root: Path, change: Path):
+    transitions = [
+        ("confirmed", "spec-stage", ("spec.md",)),
+    ]
+    for state, source, evidence in transitions:
+        args = ["state", "set", "--change", change.name, "--state", state, "--source", source]
+        for path in evidence:
+            args.extend(["--evidence", path])
+        code, output = run_runtime(root, *args)
+        if code != 0:
+            raise AssertionError(output)
+
+    for role in ("apply", "check"):
+        code, output = run_runtime(root, "manifest", "generate", "--change", change.name, "--role", role)
+        if code != 0:
+            raise AssertionError(output)
+
+    transitions = [
+        ("planned", "plan-stage", ("design.md", "tasks.md", "context-pack.md")),
+        ("applying", "apply-stage", ("tasks.md", "context-pack.md")),
+        ("checking", "apply-stage", ("tasks.md", "notes.md")),
+        ("archivable", "check-stage", ("tasks.md", "notes.md")),
+    ]
+    for state, source, evidence in transitions:
+        args = ["state", "set", "--change", change.name, "--state", state, "--source", source]
+        for path in evidence:
+            args.extend(["--evidence", path])
+        code, output = run_runtime(root, *args)
+        if code != 0:
+            raise AssertionError(output)
 
 
 def init_greenfield(root: Path) -> str:
@@ -722,6 +798,7 @@ def archive_knowledge_compact_gate(root: Path) -> str:
     run_sdc(root, "change", "meeting-room", "--confirmed-intake")
     change = active_change(root, "meeting-room")
     write_confirmed_change(change, completed=True)
+    advance_change_to_archivable(root, change)
     validate_code, validate_output = run_sdc(root, "validate", change.name)
     archive_code, archive_output = run_sdc(root, "archive", change.name)
     archive_file = root / ".sdc" / "changes" / "archive" / change.name / "archive.md"
@@ -1508,8 +1585,8 @@ def execution_contract_serializes_tasks(root: Path) -> str:
     skill = (REPO_ROOT / "skills/sdc-apply/SKILL.md").read_text()
     checks = [
         "shared contract serial: yes" if "do not dispatch multiple implementation tasks in parallel" in reference else "shared contract serial: no",
-        "apply command serial: yes" if "Execute tasks serially" in command else "apply command serial: no",
-        "generated skill serial: yes" if "Execute tasks serially" in skill else "generated skill serial: no",
+        "apply command serial: yes" if "serially in dependency order" in command else "apply command serial: no",
+        "generated skill serial: yes" if "serially in dependency order" in skill else "generated skill serial: no",
     ]
     expected = all(check.endswith("yes") for check in checks)
     return "\n".join([*checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
@@ -1605,9 +1682,10 @@ def codex_package_is_rootless_and_deterministic(root: Path) -> str:
         "sdc-references/execution-orchestration.md",
         "scripts/sdc-task-brief.py",
         "scripts/sdc-review-package.py",
+        "scripts/sdc-runtime-context.py",
         "sdc-cli.py",
     }
-    forbidden_prefixes = ("sdc/", ".agents/", ".claude/", ".claude-plugin/", "commands/", "bin/", "docs/", "evals/")
+    forbidden_prefixes = ("sdc/", ".agents/", ".claude/", ".claude-plugin/", "commands/", "bin/", "docs/", "evals/", "hooks/")
     forbidden = [name for name in names if name.startswith(forbidden_prefixes) or "__pycache__" in name or name.endswith(".pyc")]
     digest_match = (
         first.exists()
@@ -1625,9 +1703,920 @@ def codex_package_is_rootless_and_deterministic(root: Path) -> str:
     return "\n".join([*(result.stdout for result in results), *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
 
 
+def runtime_distribution_inventory_AC_07(root: Path) -> str:
+    init_code, init_output = run_sdc(root, "init")
+    if init_code != 0:
+        return f"{init_output}\nRESULT: FAIL"
+    package = json.loads((REPO_ROOT / "package.json").read_text())
+    package_files = set(package.get("files", []))
+    packager = (REPO_ROOT / "scripts" / "package-codex-plugin.py").read_text()
+    readme = (REPO_ROOT / "README.md").read_text()
+    workspace_readme = (root / ".sdc" / "README.md").read_text()
+    submission = (REPO_ROOT / "docs" / "official-submission.md").read_text()
+    submission_lower = submission.lower()
+    checks = [
+        "npm ships runtime helper: yes" if "scripts/sdc-runtime-context.py" in package_files else "npm ships runtime helper: no",
+        "npm ships Claude hooks: yes" if "hooks/" in package_files else "npm ships Claude hooks: no",
+        "Codex pack ships runtime helper: yes" if '"scripts/sdc-runtime-context.py"' in packager else "Codex pack ships runtime helper: no",
+        "Codex pack excludes hooks: yes" if '"hooks"' not in packager.split("PAYLOAD_ENTRIES", 1)[1].split(")", 1)[0] else "Codex pack excludes hooks: no",
+        "README runtime lifecycle: yes" if "archivable" in readme and "apply-context.jsonl" in readme and "Candidate" in readme else "README runtime lifecycle: no",
+        "workspace runtime lifecycle: yes" if "archivable" in workspace_readme and "apply/check JSONL manifests" in workspace_readme else "workspace runtime lifecycle: no",
+        "submission client split: yes" if all(marker in submission_lower for marker in ("claude", "sessionstart", "codex", "portable", "sdc_codex_hooks=1")) else "submission client split: no",
+        "submission no stale no-hooks claim: yes" if "No default hooks" not in submission else "submission no stale no-hooks claim: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([*checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def source_marketplace_layout_AC_07(root: Path) -> str:
+    plugin = json.loads((REPO_ROOT / ".claude-plugin" / "plugin.json").read_text())
+    marketplace = json.loads((REPO_ROOT / ".claude-plugin" / "marketplace.json").read_text())
+    installer = (REPO_ROOT / "bin" / "install.js").read_text()
+    expected_skills = {
+        "./skills/sdc-spec",
+        "./skills/sdc-implement",
+        "./skills/sdc-review",
+        "./skills/sdc-test",
+        "./skills/sdc-quality",
+        "./skills/sdc-validate",
+    }
+    configured = set(plugin.get("skills", []))
+    installer_block = installer.split("function writeLocalClaudeMarketplace", 1)[1].split("function installClaudePlugin", 1)[0]
+    checks = [
+        "marketplace source is root: yes" if marketplace.get("plugins", [{}])[0].get("source") == "./" else "marketplace source is root: no",
+        "explicit advanced source skills: yes" if configured == expected_skills else "explicit advanced source skills: no",
+        "configured source paths exist: yes" if all((REPO_ROOT / path.removeprefix("./") / "SKILL.md").is_file() for path in configured) else "configured source paths exist: no",
+        "installer keeps root skills: yes" if "includeRootSkills: true" in installer_block else "installer keeps root skills: no",
+        "installer omits generated claude layout: yes" if "includeClaudeSkillLayout: false" in installer_block else "installer omits generated claude layout: no",
+        "source has no generated claude tree: yes" if not (REPO_ROOT / ".claude" / "skills").exists() else "source has no generated claude tree: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([*checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def lifecycle_state_machine_AC_01(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "runtime-state", "--confirmed-intake")
+    change = active_change(root, "runtime-state")
+    write_confirmed_change(change, completed=True)
+    state_file = change / "state.json"
+
+    get_code, get_output = run_runtime(root, "state", "get", "--change", change.name)
+    initial = json.loads(get_output) if get_code == 0 else {}
+
+    first_code, first_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "confirmed",
+        "--source",
+        "spec-stage",
+        "--evidence",
+        "spec.md",
+    )
+    before_invalid = state_file.read_bytes() if state_file.exists() else b""
+    invalid_code, invalid_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "applying",
+        "--source",
+        "apply-stage",
+        "--evidence",
+        "tasks.md",
+    )
+    after_invalid = state_file.read_bytes() if state_file.exists() else b""
+
+    for role in ("apply", "check"):
+        run_runtime(root, "manifest", "generate", "--change", change.name, "--role", role)
+    legal_codes = []
+    transitions = [
+        ("planned", "plan-stage", ("design.md", "tasks.md", "context-pack.md")),
+        ("applying", "apply-stage", ("tasks.md", "context-pack.md")),
+        ("checking", "apply-stage", ("tasks.md", "notes.md")),
+        ("archivable", "check-stage", ("tasks.md", "notes.md")),
+    ]
+    for next_state, source, evidence in transitions:
+        args = ["state", "set", "--change", change.name, "--state", next_state, "--source", source]
+        for path in evidence:
+            args.extend(["--evidence", path])
+        code, _ = run_runtime(root, *args)
+        legal_codes.append(code)
+
+    final_code, final_output = run_runtime(root, "state", "get", "--change", change.name)
+    final = json.loads(final_output) if final_code == 0 else {}
+    checks = [
+        "initial discovery: yes" if initial.get("state") == "discovery" else "initial discovery: no",
+        "schema: yes" if initial.get("schema") == "sdc.change-state/v1" else "schema: no",
+        "source provenance: yes" if isinstance(initial.get("source"), dict) else "source provenance: no",
+        "legal first transition: yes" if first_code == 0 else "legal first transition: no",
+        "invalid jump rejected: yes" if invalid_code != 0 and "invalid transition" in invalid_output.lower() else "invalid jump rejected: no",
+        "rejected transition unchanged: yes" if before_invalid == after_invalid else "rejected transition unchanged: no",
+        "legal forward chain: yes" if all(code == 0 for code in legal_codes) else "legal forward chain: no",
+        "final archivable: yes" if final.get("state") == "archivable" else "final archivable: no",
+        "all states known: yes" if set(final.get("states", [])) == {"intake", "discovery", "confirmed", "planned", "applying", "checking", "archivable"} else "all states known: no",
+    ]
+    expected = get_code == 0 and final_code == 0 and all(check.endswith("yes") for check in checks)
+    return "\n".join([get_output, first_output, invalid_output, final_output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def active_change_resolver_AC_02(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "alpha", "--confirmed-intake")
+    run_sdc(root, "change", "beta", "--confirmed-intake")
+    alpha = active_change(root, "alpha")
+    beta = active_change(root, "beta")
+
+    ambiguous_code, ambiguous_output = run_runtime(root, "resolve")
+    explicit_code, explicit_output = run_runtime(root, "resolve", "--change", alpha.name)
+    env_code, env_output = run_runtime(root, "resolve", env={"SDC_ACTIVE_CHANGE": beta.name})
+    invalid_env_code, invalid_env_output = run_runtime(root, "resolve", env={"SDC_ACTIVE_CHANGE": "missing-change"})
+    select_code, select_output = run_runtime(root, "select", "--change", alpha.name, "--session-id", "eval-session")
+    session_code, session_output = run_runtime(root, "resolve", "--session-id", "eval-session")
+
+    single_root = root / "single"
+    single_root.mkdir()
+    run_sdc(single_root, "init")
+    run_sdc(single_root, "change", "only", "--confirmed-intake")
+    only = active_change(single_root, "only")
+    single_code, single_output = run_runtime(single_root, "resolve")
+
+    empty_root = root / "empty"
+    empty_root.mkdir()
+    run_sdc(empty_root, "init")
+    empty_code, empty_output = run_runtime(empty_root, "resolve")
+
+    explicit = json.loads(explicit_output) if explicit_code == 0 else {}
+    env_result = json.loads(env_output) if env_code == 0 else {}
+    session = json.loads(session_output) if session_code == 0 else {}
+    single = json.loads(single_output) if single_code == 0 else {}
+    checks = [
+        "ambiguous rejected: yes" if ambiguous_code != 0 and alpha.name in ambiguous_output and beta.name in ambiguous_output else "ambiguous rejected: no",
+        "explicit wins: yes" if explicit.get("change_id") == alpha.name else "explicit wins: no",
+        "env selector: yes" if env_result.get("change_id") == beta.name else "env selector: no",
+        "invalid env stops: yes" if invalid_env_code != 0 and "missing-change" in invalid_env_output else "invalid env stops: no",
+        "session pointer written: yes" if select_code == 0 and "active-change.json" in select_output else "session pointer written: no",
+        "session pointer resolves: yes" if session.get("change_id") == alpha.name else "session pointer resolves: no",
+        "single active resolves: yes" if single.get("change_id") == only.name else "single active resolves: no",
+        "zero active rejected: yes" if empty_code != 0 and "no active changes" in empty_output.lower() else "zero active rejected: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        ambiguous_output,
+        explicit_output,
+        env_output,
+        invalid_env_output,
+        select_output,
+        session_output,
+        single_output,
+        empty_output,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def unsafe_active_change_symlink_AC_02(root: Path) -> str:
+    run_sdc(root, "init")
+    outside = root / "outside-change"
+    outside.mkdir()
+    active = root / ".sdc" / "changes" / "active"
+    active.joinpath("escape").symlink_to(outside, target_is_directory=True)
+
+    resolve_code, resolve_output = run_runtime(root, "resolve", "--change", "escape")
+    state_code, state_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        "escape",
+        "--state",
+        "discovery",
+        "--source",
+        "eval",
+        "--evidence",
+        "discovery.md",
+    )
+    checks = [
+        "unsafe resolve rejected: yes" if resolve_code != 0 and "unsafe" in resolve_output.lower() else "unsafe resolve rejected: no",
+        "unsafe state rejected: yes" if state_code != 0 and "unsafe" in state_output.lower() else "unsafe state rejected: no",
+        "outside state untouched: yes" if not (outside / "state.json").exists() else "outside state untouched: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([resolve_output, state_output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def unsafe_runtime_ancestor_symlinks_AC_02(root: Path) -> str:
+    active_project = root / "active-project"
+    active_project.mkdir()
+    run_sdc(active_project, "init")
+    active = active_project / ".sdc" / "changes" / "active"
+
+    runtime_project = root / "runtime-project"
+    runtime_project.mkdir()
+    run_sdc(runtime_project, "init")
+    run_sdc(runtime_project, "change", "runtime-link", "--confirmed-intake")
+    runtime_change = active_change(runtime_project, "runtime-link")
+
+    sdc_project = root / "sdc-project"
+    sdc_project.mkdir()
+
+    with tempfile.TemporaryDirectory(prefix="sdc-outside-active-", dir=root.parent) as outside_active_value, tempfile.TemporaryDirectory(
+        prefix="sdc-outside-runtime-", dir=root.parent
+    ) as outside_runtime_value, tempfile.TemporaryDirectory(prefix="sdc-outside-workspace-", dir=root.parent) as outside_workspace_value:
+        outside_active = Path(outside_active_value)
+        outside_active.joinpath("escape").mkdir()
+        outside_active.joinpath("escape", "discovery.md").write_text("# Discovery\n")
+        active.rmdir()
+        active.symlink_to(outside_active, target_is_directory=True)
+
+        active_code, active_output = run_runtime(active_project, "resolve", "--change", "escape")
+
+        outside_runtime = Path(outside_runtime_value)
+        runtime_path = runtime_project / ".sdc" / "runtime"
+        runtime_path.rmdir()
+        runtime_path.symlink_to(outside_runtime, target_is_directory=True)
+        select_code, select_output = run_runtime(
+            runtime_project,
+            "select",
+            "--change",
+            runtime_change.name,
+            "--session-id",
+            "unsafe-session",
+        )
+        research_code, research_output = run_runtime(
+            runtime_project,
+            "research",
+            "route",
+            "--change",
+            runtime_change.name,
+            "--stage",
+            "apply",
+            "--title",
+            "unsafe research",
+        )
+        evidence_code, evidence_output = run_runtime(
+            runtime_project,
+            "evidence",
+            "append",
+            "--change",
+            runtime_change.name,
+            "--stage",
+            "apply",
+            "--command",
+            "pytest",
+            "--status",
+            "passed",
+        )
+
+        outside_workspace = Path(outside_workspace_value)
+        run_sdc(outside_workspace, "init")
+        run_sdc(outside_workspace, "change", "outside", "--confirmed-intake")
+        sdc_project.joinpath(".sdc").symlink_to(outside_workspace / ".sdc", target_is_directory=True)
+        sdc_code, sdc_output = run_runtime(sdc_project, "resolve")
+
+        checks = [
+            "symlinked active root rejected: yes" if active_code != 0 and "unsafe" in active_output.lower() else "symlinked active root rejected: no",
+            "symlinked runtime select rejected: yes" if select_code != 0 and "unsafe" in select_output.lower() else "symlinked runtime select rejected: no",
+            "symlinked runtime research rejected: yes" if research_code != 0 and "unsafe" in research_output.lower() else "symlinked runtime research rejected: no",
+            "symlinked runtime evidence rejected: yes" if evidence_code != 0 and "unsafe" in evidence_output.lower() else "symlinked runtime evidence rejected: no",
+            "outside runtime untouched: yes" if not any(outside_runtime.rglob("*")) else "outside runtime untouched: no",
+            "symlinked workspace rejected: yes" if sdc_code != 0 and "unsafe" in sdc_output.lower() else "symlinked workspace rejected: no",
+        ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        active_output,
+        select_output,
+        research_output,
+        evidence_output,
+        sdc_output,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def explicit_empty_selector_AC_02(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "only", "--confirmed-intake")
+    code, output = run_runtime(root, "resolve", "--change", "", env={"SDC_ACTIVE_CHANGE": ""})
+    expected = code != 0 and "invalid" in output.lower() and "change id" in output.lower()
+    return "\n".join([
+        output,
+        "explicit empty rejected: yes" if expected else "explicit empty rejected: no",
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def lifecycle_evidence_gate_AC_01(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "evidence-gate", "--confirmed-intake")
+    change = active_change(root, "evidence-gate")
+    write_confirmed_change(change)
+    state_file = change / "state.json"
+    original = state_file.read_bytes()
+
+    no_evidence_code, no_evidence_output = run_runtime(
+        root, "state", "set", "--change", change.name, "--state", "confirmed", "--source", "spec-stage"
+    )
+    wrong_source_code, wrong_source_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "confirmed",
+        "--source",
+        "manual",
+        "--evidence",
+        "spec.md",
+    )
+    missing_code, missing_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "confirmed",
+        "--source",
+        "spec-stage",
+        "--evidence",
+        "missing.md",
+    )
+    escaping_code, escaping_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "confirmed",
+        "--source",
+        "spec-stage",
+        "--evidence",
+        "../../outside.md",
+    )
+    unchanged = state_file.read_bytes() == original
+    valid_code, valid_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "confirmed",
+        "--source",
+        "spec-stage",
+        "--evidence",
+        "spec.md",
+    )
+    state_file.write_text(
+        json.dumps(
+            {
+                "schema": "sdc.change-state/v1",
+                "change_id": change.name,
+                "state": "confirmed",
+                "updated_at": "not-a-timestamp",
+                "source": {"kind": "spec-stage"},
+            }
+        )
+    )
+    malformed_code, malformed_output = run_runtime(root, "state", "get", "--change", change.name)
+    checks = [
+        "empty evidence rejected: yes" if no_evidence_code != 0 else "empty evidence rejected: no",
+        "wrong source rejected: yes" if wrong_source_code != 0 else "wrong source rejected: no",
+        "missing evidence rejected: yes" if missing_code != 0 else "missing evidence rejected: no",
+        "escaping evidence rejected: yes" if escaping_code != 0 else "escaping evidence rejected: no",
+        "rejected transitions unchanged: yes" if unchanged else "rejected transitions unchanged: no",
+        "valid evidence accepted: yes" if valid_code == 0 else "valid evidence accepted: no",
+        "malformed state rejected: yes" if malformed_code != 0 and "invalid-state" in malformed_output else "malformed state rejected: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        no_evidence_output,
+        wrong_source_output,
+        missing_output,
+        escaping_output,
+        valid_output,
+        malformed_output,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def archive_requires_archivable_state_AC_01(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "archive-state", "--confirmed-intake")
+    change = active_change(root, "archive-state")
+    write_confirmed_change(change, completed=True)
+    code, output = run_sdc(root, "archive", change.name)
+    stable_spec = root / ".sdc" / "specs" / f"{change.name}.md"
+    checks = [
+        "non-archivable rejected: yes" if code != 0 and "archivable" in output else "non-archivable rejected: no",
+        "active change preserved: yes" if change.exists() else "active change preserved: no",
+        "stable spec untouched: yes" if not stable_spec.exists() else "stable spec untouched: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def runtime_contract_templates_AC_07(root: Path) -> str:
+    init_code, init_output = run_sdc(root, "init")
+    run_sdc(root, "change", "runtime-contract", "--confirmed-intake")
+    change = active_change(root, "runtime-contract")
+    initial_state_path = change / "state.json"
+    initial_state = json.loads(initial_state_path.read_text()) if initial_state_path.exists() else {}
+    initial_state_path.unlink(missing_ok=True)
+    state_code, state_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "discovery",
+        "--source",
+        "change-stage",
+        "--evidence",
+        "discovery.md",
+    )
+
+    contract = root / ".sdc" / "templates" / "runtime-context.md"
+    contract_text = contract.read_text() if contract.exists() else ""
+    existing_file = change / "user-owned.md"
+    existing_file.write_text("user-owned active artifact\n")
+    before_active = tree_digest(root, f".sdc/changes/active/{change.name}")
+    rerun_code, rerun_output = run_sdc(root, "init")
+    after_active = tree_digest(root, f".sdc/changes/active/{change.name}")
+
+    custom_root = root / "custom"
+    custom_contract = custom_root / ".sdc" / "templates" / "runtime-context.md"
+    custom_contract.parent.mkdir(parents=True)
+    custom_bytes = b"# Team Runtime Contract\n\nKeep this custom content.\n"
+    custom_contract.write_bytes(custom_bytes)
+    custom_code, custom_output = run_sdc(custom_root, "init")
+
+    schemas = (REPO_ROOT / "sdc-references" / "artifact-schemas.md").read_text()
+    workflow = (REPO_ROOT / "sdc-references" / "workflow-manifest.yaml").read_text()
+    command_text = "\n".join(
+        (REPO_ROOT / "commands" / name).read_text()
+        for name in ("change.md", "plan.md", "apply.md", "check.md")
+    )
+    schema_markers = (
+        "sdc.change-state/v1",
+        "sdc.session-pointer/v1",
+        "sdc.context-manifest-record/v1",
+        "sdc.recall-result/v1",
+        "sdc.research-route/v1",
+        "sdc.session-context/v1",
+        "sdc.evidence-record/v1",
+    )
+    checks = [
+        "runtime template created: yes" if contract.exists() else "runtime template created: no",
+        "runtime template managed: yes" if contract_text.startswith("<!-- SDC-MANAGED path=templates/runtime-context.md;") else "runtime template managed: no",
+        "runtime template schemas: yes" if all(marker in contract_text for marker in schema_markers) else "runtime template schemas: no",
+        "cli discovery state: yes" if initial_state.get("schema") == "sdc.change-state/v1" and initial_state.get("state") == "discovery" else "cli discovery state: no",
+        "state materialized: yes" if state_code == 0 and (change / "state.json").exists() else "state materialized: no",
+        "active artifacts preserved: yes" if before_active == after_active else "active artifacts preserved: no",
+        "custom template preserved: yes" if custom_contract.read_bytes() == custom_bytes else "custom template preserved: no",
+        "reference schemas complete: yes" if all(marker in schemas for marker in schema_markers) else "reference schemas complete: no",
+        "workflow runtime mapping: yes" if "runtime_contract:" in workflow and "state_transition:" in workflow else "workflow runtime mapping: no",
+        "stage commands mapped: yes" if all(marker in command_text for marker in ("--state discovery", "--state planned", "--state applying", "--state checking", "--state archivable")) else "stage commands mapped: no",
+    ]
+    expected = init_code == 0 and rerun_code == 0 and custom_code == 0 and all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        init_output,
+        state_output,
+        rerun_output,
+        custom_output,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def role_context_manifests_AC_03(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "manifest", "--confirmed-intake")
+    change = active_change(root, "manifest")
+    write_confirmed_change(change)
+
+    apply_first_code, apply_first_output = run_runtime(root, "manifest", "generate", "--change", change.name, "--role", "apply")
+    apply_path = change / "apply-context.jsonl"
+    apply_first = apply_path.read_bytes() if apply_path.exists() else b""
+    apply_second_code, apply_second_output = run_runtime(root, "manifest", "generate", "--change", change.name, "--role", "apply")
+    apply_second = apply_path.read_bytes() if apply_path.exists() else b""
+
+    check_first_code, check_first_output = run_runtime(root, "manifest", "generate", "--change", change.name, "--role", "check")
+    check_path = change / "check-context.jsonl"
+    check_first = check_path.read_bytes() if check_path.exists() else b""
+    check_second_code, check_second_output = run_runtime(root, "manifest", "generate", "--change", change.name, "--role", "check")
+    check_second = check_path.read_bytes() if check_path.exists() else b""
+
+    required_order = [
+        "schema",
+        "manifest",
+        "change_id",
+        "role",
+        "order",
+        "path",
+        "section",
+        "purpose",
+        "required",
+        "source_type",
+        "sha256",
+    ]
+    records = [json.loads(line) for line in apply_second.decode().splitlines() if line.strip()]
+    first_record_keys = list(records[0].keys()) if records else []
+    root_resolved = root.resolve()
+    path_safe = all(
+        not Path(record["path"]).is_absolute()
+        and ".." not in Path(record["path"]).parts
+        and (root_resolved / record["path"]).resolve().is_relative_to(root_resolved)
+        for record in records
+    )
+    hashes_current = all(
+        hashlib.sha256((root / record["path"]).read_bytes()).hexdigest() == record["sha256"]
+        for record in records
+    )
+    roles = {record["role"] for record in records}
+
+    spec = change / "spec.md"
+    saved_spec = spec.read_text()
+    spec.unlink()
+    before_missing = apply_path.read_bytes() if apply_path.exists() else b""
+    missing_code, missing_output = run_runtime(root, "manifest", "generate", "--change", change.name, "--role", "apply")
+    after_missing = apply_path.read_bytes() if apply_path.exists() else b""
+    spec.write_text(saved_spec)
+
+    checks = [
+        "apply command: yes" if apply_first_code == 0 and apply_second_code == 0 else "apply command: no",
+        "check command: yes" if check_first_code == 0 and check_second_code == 0 else "check command: no",
+        "apply stable bytes: yes" if apply_first == apply_second and apply_second else "apply stable bytes: no",
+        "check stable bytes: yes" if check_first == check_second and check_second else "check stable bytes: no",
+        "field order: yes" if first_record_keys == required_order else "field order: no",
+        "role specific: yes" if roles == {"apply"} and apply_second != check_second else "role specific: no",
+        "path safe: yes" if path_safe else "path safe: no",
+        "hashes current: yes" if hashes_current else "hashes current: no",
+        "missing required rejected: yes" if missing_code != 0 and "spec.md" in missing_output else "missing required rejected: no",
+        "failed write unchanged: yes" if before_missing == after_missing else "failed write unchanged: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        apply_first_output,
+        apply_second_output,
+        check_first_output,
+        check_second_output,
+        missing_output,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def memory_recall_candidate_AC_04(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "recall", "--confirmed-intake")
+    change = active_change(root, "recall")
+    write_confirmed_change(change)
+    root.joinpath(".sdc/memory/candidates.md").write_text(
+        "# Memory Candidates\n\nDeterministic recall alpha alpha belongs to memory only.\n"
+    )
+    root.joinpath(".sdc/knowledge/product/rules.md").write_text(
+        "# Business Rules\n\nAlpha booking rule is still a candidate until archive.\n"
+    )
+    root.joinpath(".sdc/memory/token-notes.md").write_text(
+        "# Token Notes\n\nalpha secret-token-value must not be recalled.\n"
+    )
+    runtime_secret = root / ".sdc/runtime/secret.md"
+    runtime_secret.parent.mkdir(parents=True, exist_ok=True)
+    runtime_secret.write_text("alpha secret token should not be recalled\n")
+
+    before_digest = tree_digest(root, ".sdc")
+    first_code, first_output = run_runtime(root, "recall", "--change", change.name, "--query", "alpha", "--limit", "5")
+    after_first_digest = tree_digest(root, ".sdc")
+    second_code, second_output = run_runtime(root, "recall", "--change", change.name, "--query", "alpha", "--limit", "5")
+    limited_code, limited_output = run_runtime(root, "recall", "--change", change.name, "--query", "alpha", "--limit", "1")
+    after_second_digest = tree_digest(root, ".sdc")
+
+    records = [json.loads(line) for line in first_output.splitlines() if line.strip().startswith("{")]
+    limited_records = [json.loads(line) for line in limited_output.splitlines() if line.strip().startswith("{")]
+    checks = [
+        "recall command: yes" if first_code == 0 and second_code == 0 and limited_code == 0 else "recall command: no",
+        "deterministic: yes" if first_output == second_output else "deterministic: no",
+        "candidate only: yes" if records and all(record.get("status") == "Candidate" for record in records) else "candidate only: no",
+        "bounded: yes" if len(limited_records) == 1 else "bounded: no",
+        "runtime excluded: yes" if ".sdc/runtime" not in first_output and "secret token" not in first_output else "runtime excluded: no",
+        "secret excluded: yes" if "secret-token-value" not in first_output and "token-notes.md" not in first_output else "secret excluded: no",
+        "read only: yes" if before_digest == after_first_digest == after_second_digest else "read only: no",
+        "local paths: yes" if records and all(record.get("path", "").startswith(".sdc/") for record in records) else "local paths: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([first_output, second_output, limited_output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def recall_redacts_adjacent_sensitive_lines_AC_04(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "recall-redaction", "--confirmed-intake")
+    change = active_change(root, "recall-redaction")
+    memory = root / ".sdc" / "memory" / "adjacent-lines.md"
+    memory.write_text(
+        "# Adjacent Lines\n\nBooking workflow evidence is still a Candidate.\npassword=LEAK-ME-NOW\n"
+    )
+    code, output = run_runtime(
+        root, "recall", "--change", change.name, "--query", "booking", "--limit", "5"
+    )
+    checks = [
+        "matching candidate retained: yes" if code == 0 and "Booking workflow" in output and "Candidate" in output else "matching candidate retained: no",
+        "adjacent secret redacted: yes" if "LEAK-ME-NOW" not in output and "password=" not in output else "adjacent secret redacted: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def research_routing_no_public_command_AC_05(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "research", "--confirmed-intake")
+    change = active_change(root, "research")
+    write_confirmed_change(change)
+
+    route_code, route_output = run_runtime(root, "research", "route", "--change", change.name, "--stage", "plan", "--title", "trellis-public-summary")
+    route = json.loads(route_output) if route_code == 0 else {}
+    command_files = sorted(path.name for path in (REPO_ROOT / "commands").glob("*.md"))
+    reference = (REPO_ROOT / "sdc-references" / "runtime-context.md").read_text() if (REPO_ROOT / "sdc-references" / "runtime-context.md").exists() else ""
+    role_contracts = (REPO_ROOT / "sdc-references" / "role-contracts.md").read_text()
+    workflow = (REPO_ROOT / "sdc-references" / "workflow-standards.md").read_text()
+    expert = (REPO_ROOT / "sdc-references" / "expert-routing.md").read_text()
+    apply_command = (REPO_ROOT / "commands" / "apply.md").read_text()
+    checks = [
+        "route command: yes" if route_code == 0 else "route command: no",
+        "scratch boundary: yes" if route.get("scratch", "").endswith("/research/trellis-public-summary.md") else "scratch boundary: no",
+        "citation boundary: yes" if route.get("citation") in {"discovery.md", "notes.md"} else "citation boundary: no",
+        "candidate boundary: yes" if route.get("durable_candidate") == "knowledge-candidates.md" else "candidate boundary: no",
+        "scratch file exists: yes" if route.get("scratch") and (root / route["scratch"]).exists() else "scratch file exists: no",
+        "no public command: yes" if "research.md" not in command_files else "no public command: no",
+        "reference documents route: yes" if all("research" in text.lower() and "knowledge-candidates" in text for text in [reference, role_contracts, workflow, expert]) else "reference documents route: no",
+        "apply routes candidates: yes" if "Candidate" in apply_command and ".sdc/runtime/<change-id>/research/" in apply_command and "knowledge-candidates.md" in apply_command else "apply routes candidates: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([route_output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def session_context_adapter_and_evidence_AC_06(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "session-context", "--confirmed-intake")
+    change = active_change(root, "session-context")
+    write_confirmed_change(change)
+    root.joinpath(".sdc/memory/candidates.md").write_text(
+        "# Memory Candidates\n\nAlpha session context reminder remains Candidate until archive.\n"
+    )
+    run_runtime(root, "manifest", "generate", "--change", change.name, "--role", "apply")
+    run_runtime(root, "manifest", "generate", "--change", change.name, "--role", "check")
+
+    codex_code, codex_output = run_runtime(
+        root,
+        "session-context",
+        "--client",
+        "codex",
+        "--session-id",
+        "eval-session",
+        "--change",
+        change.name,
+        "--query",
+        "alpha",
+    )
+    claude_code, claude_output = run_runtime(
+        root,
+        "session-context",
+        "--client",
+        "claude",
+        "--session-id",
+        "eval-session",
+        "--change",
+        change.name,
+        "--query",
+        "alpha",
+    )
+    run_sdc(root, "change", "ambiguous-context", "--confirmed-intake")
+    ambiguous_code, ambiguous_output = run_runtime(root, "session-context", "--client", "codex", "--session-id", "eval-session-2")
+
+    before_evidence = tree_digest(root, ".sdc/runtime")
+    evidence_code, evidence_output = run_runtime(
+        root,
+        "evidence",
+        "append",
+        "--change",
+        change.name,
+        "--session-id",
+        "eval-session",
+        "--stage",
+        "apply",
+        "--command",
+        "npm run eval:sdc",
+        "--status",
+        "passed",
+        "--path",
+        f".sdc/changes/active/{change.name}/notes.md",
+    )
+    evidence_path = root / ".sdc" / "runtime" / change.name / "evidence.jsonl"
+    evidence_records = [json.loads(line) for line in evidence_path.read_text().splitlines()] if evidence_path.exists() else []
+    evidence_after_valid = evidence_path.read_bytes() if evidence_path.exists() else b""
+    invalid_evidence_code, invalid_evidence_output = run_runtime(
+        root,
+        "evidence",
+        "append",
+        "--change",
+        change.name,
+        "--session-id",
+        "eval-session",
+        "--stage",
+        "invalid",
+        "--command",
+        "npm run eval:sdc",
+        "--status",
+        "passed",
+    )
+    evidence_after_invalid = evidence_path.read_bytes() if evidence_path.exists() else b""
+
+    codex = json.loads(codex_output) if codex_code == 0 else {}
+    claude = json.loads(claude_output) if claude_code == 0 else {}
+    claude_hook = claude.get("hookSpecificOutput", {})
+    codex_context = codex.get("additionalContext", "")
+    claude_context = claude_hook.get("additionalContext", "")
+    latest_evidence = evidence_records[-1] if evidence_records else {}
+    checks = [
+        "codex adapter command: yes" if codex_code == 0 else "codex adapter command: no",
+        "codex adapter shape: yes" if codex.get("schema") == "sdc.session-context/v1" and "hookSpecificOutput" not in codex else "codex adapter shape: no",
+        "codex context bounded: yes" if change.name in codex_context and "Candidate" in codex_context and "apply-context.jsonl" in codex_context else "codex context bounded: no",
+        "claude hook command: yes" if claude_code == 0 else "claude hook command: no",
+        "claude hook shape: yes" if claude_hook.get("hookEventName") == "SessionStart" and "additionalContext" not in claude else "claude hook shape: no",
+        "claude context bounded: yes" if change.name in claude_context and "Candidate" in claude_context else "claude context bounded: no",
+        "ambiguous adapter rejected: yes" if ambiguous_code != 0 and "ambiguous-active-change" in ambiguous_output else "ambiguous adapter rejected: no",
+        "evidence append command: yes" if evidence_code == 0 and evidence_path.exists() else "evidence append command: no",
+        "evidence runtime scoped: yes" if latest_evidence.get("path", "").startswith(".sdc/changes/active/") and str(evidence_path.relative_to(root)).startswith(".sdc/runtime/") else "evidence runtime scoped: no",
+        "evidence schema: yes" if latest_evidence.get("schema") == "sdc.evidence-record/v1" and latest_evidence.get("stage") == "apply" else "evidence schema: no",
+        "invalid evidence rejected: yes" if invalid_evidence_code != 0 and evidence_after_valid == evidence_after_invalid else "invalid evidence rejected: no",
+        "runtime changed only on evidence: yes" if before_evidence != tree_digest(root, ".sdc/runtime") else "runtime changed only on evidence: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        codex_output,
+        claude_output,
+        ambiguous_output,
+        evidence_output,
+        invalid_evidence_output,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def hook_files_and_installer_boundaries_AC_07(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "hook-context", "--confirmed-intake")
+    change = active_change(root, "hook-context")
+    write_confirmed_change(change)
+
+    hooks_json = REPO_ROOT / "hooks" / "hooks.json"
+    hook_script = REPO_ROOT / "hooks" / "session-start"
+    hooks_payload = json.loads(hooks_json.read_text()) if hooks_json.exists() else {}
+    hook_entries = hooks_payload.get("hooks", {}).get("SessionStart", [])
+
+    hook_env = {
+        "PATH": os.environ.get("PATH", ""),
+        "HOME": str(root / "home"),
+        "CLAUDE_PLUGIN_ROOT": str(REPO_ROOT),
+        "SDC_ACTIVE_CHANGE": change.name,
+    }
+    hook_result = subprocess.run(
+        [str(hook_script)],
+        cwd=root,
+        env=hook_env,
+        input=json.dumps({"session_id": "stdin-hook-session", "hook_event_name": "SessionStart"}),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    ) if hook_script.exists() else subprocess.CompletedProcess([str(hook_script)], 127, "", "missing hook script")
+    malformed_result = subprocess.run(
+        [str(hook_script)],
+        cwd=root,
+        env=hook_env,
+        input="{",
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    ) if hook_script.exists() else subprocess.CompletedProcess([str(hook_script)], 127, "", "missing hook script")
+    empty_result = subprocess.run(
+        [str(hook_script)],
+        cwd=root,
+        env=hook_env,
+        input="",
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    ) if hook_script.exists() else subprocess.CompletedProcess([str(hook_script)], 127, "", "missing hook script")
+    forced_env = {**hook_env, "SDC_RUNTIME_FORCE_HOOK_FAILURE": "1"}
+    forced_result = subprocess.run(
+        [str(hook_script)],
+        cwd=root,
+        env=forced_env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    ) if hook_script.exists() else subprocess.CompletedProcess([str(hook_script)], 127, "", "missing hook script")
+
+    hook_payload = json.loads(hook_result.stdout) if hook_result.returncode == 0 else {}
+    malformed_payload = json.loads(malformed_result.stdout) if malformed_result.returncode == 0 else {}
+    empty_payload = json.loads(empty_result.stdout) if empty_result.returncode == 0 else {}
+    forced_payload = json.loads(forced_result.stdout) if forced_result.returncode == 0 else {}
+    hook_context = hook_payload.get("hookSpecificOutput", {}).get("additionalContext", "")
+    forced_context = forced_payload.get("hookSpecificOutput", {}).get("additionalContext", "")
+
+    install_home = root / "install-home"
+    install_home.joinpath(".claude", "plugins").mkdir(parents=True)
+    install_home.joinpath(".codex", "plugins").mkdir(parents=True)
+    install_env = {**os.environ, "HOME": str(install_home), "USERPROFILE": str(install_home), "PATH": os.environ.get("PATH", "")}
+    install_result = subprocess.run(
+        ["node", str(INSTALLER)],
+        cwd=REPO_ROOT,
+        env=install_env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    claude_marketplace = install_home / ".claude" / "plugins" / "marketplaces" / "sdc-local"
+    codex_marketplace = install_home / ".codex" / "local-marketplaces" / "sdc-local" / "plugins" / "sdc"
+    codex_cache = install_home / ".codex" / "plugins" / "cache" / "sdc-local" / "sdc" / json.loads((REPO_ROOT / "package.json").read_text())["version"]
+    codex_manifest = json.loads((codex_marketplace / ".codex-plugin" / "plugin.json").read_text()) if (codex_marketplace / ".codex-plugin" / "plugin.json").exists() else {}
+    checks = [
+        "hooks file exists: yes" if hooks_json.exists() and hook_script.exists() else "hooks file exists: no",
+        "hooks sessionstart command: yes" if hook_entries and "session-start" in json.dumps(hook_entries) else "hooks sessionstart command: no",
+        "hook executable: yes" if hook_script.exists() and os.access(hook_script, os.X_OK) else "hook executable: no",
+        "hook output shape: yes" if hook_payload.get("hookSpecificOutput", {}).get("hookEventName") == "SessionStart" and change.name in hook_context else "hook output shape: no",
+        "stdin session id: yes" if "Session id: stdin-hook-session" in hook_context else "stdin session id: no",
+        "malformed stdin safe: yes" if malformed_result.returncode == 0 and malformed_payload.get("hookSpecificOutput", {}).get("hookEventName") == "SessionStart" else "malformed stdin safe: no",
+        "empty stdin safe: yes" if empty_result.returncode == 0 and empty_payload.get("hookSpecificOutput", {}).get("hookEventName") == "SessionStart" else "empty stdin safe: no",
+        "forced hook fallback: yes" if forced_result.returncode == 0 and "manual" in forced_context.lower() else "forced hook fallback: no",
+        "installer command: yes" if install_result.returncode == 0 else "installer command: no",
+        "claude hooks installed: yes" if (claude_marketplace / "hooks" / "hooks.json").exists() and (claude_marketplace / "hooks" / "session-start").exists() else "claude hooks installed: no",
+        "claude source skills installed: yes" if (claude_marketplace / "skills" / "sdc-spec" / "SKILL.md").exists() else "claude source skills installed: no",
+        "claude generated skills omitted: yes" if not (claude_marketplace / ".claude" / "skills").exists() else "claude generated skills omitted: no",
+        "codex hooks omitted: yes" if not (codex_marketplace / "hooks").exists() and not (codex_cache / "hooks").exists() else "codex hooks omitted: no",
+        "codex manifest omits hooks: yes" if "hooks" not in codex_manifest else "codex manifest omits hooks: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        hook_result.stdout,
+        malformed_result.stdout,
+        empty_result.stdout,
+        forced_result.stdout,
+        install_result.stdout,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def hook_requires_trustworthy_session_id_AC_06(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "hook-alpha", "--confirmed-intake")
+    run_sdc(root, "change", "hook-beta", "--confirmed-intake")
+    alpha = active_change(root, "hook-alpha")
+    select_code, select_output = run_runtime(
+        root, "select", "--change", alpha.name, "--session-id", "claude-session"
+    )
+    hook_script = REPO_ROOT / "hooks" / "session-start"
+    hook_env = {
+        "PATH": os.environ.get("PATH", ""),
+        "HOME": str(root / "home"),
+        "CLAUDE_PLUGIN_ROOT": str(REPO_ROOT),
+    }
+    result = subprocess.run(
+        [str(hook_script)],
+        cwd=root,
+        env=hook_env,
+        input="{}",
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    payload = json.loads(result.stdout) if result.returncode == 0 else {}
+    context = payload.get("hookSpecificOutput", {}).get("additionalContext", "")
+    checks = [
+        "stale default pointer prepared: yes" if select_code == 0 and "active-change.json" in select_output else "stale default pointer prepared: no",
+        "missing session id falls back: yes" if result.returncode == 0 and "runtime context unavailable" in context.lower() else "missing session id falls back: no",
+        "stale pointer not reused: yes" if alpha.name not in context else "stale pointer not reused: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([select_output, result.stdout, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
 def standards_pack_import(root: Path) -> str:
     source = root / "spec-rules"
     source.mkdir()
+    source.joinpath("README.md").write_text("# Source Pack Readme\n\nThis source README should not become an imported rule file.\n")
     source.joinpath("code-generation.md").write_text(
         """# Code Generation
 
@@ -1650,20 +2639,381 @@ Behavior tests should prove acceptance criteria before implementation details.
         marker(root, ".sdc/standards/company/code-generation.md"),
         marker(root, ".sdc/standards/company/testing.md"),
         marker(root, ".sdc/standards/company/.DS_Store"),
+        marker(root, ".sdc/standards/company/README.import-ignored.md"),
         "routing index: yes" if "Agents must read this index first" in index_text else "routing index: no",
         "code hint: yes" if "Read when creating new code scaffolds" in index_text else "code hint: no",
+        "source readme skipped: yes" if "Source Pack Readme" not in index_text else "source readme skipped: no",
         "path leak: no" if str(source) not in index_text else "path leak: yes",
     ]
+    import_readmes = list(target.glob("README.import-*.md"))
     expected = (
         code == 0
         and any(check.endswith("code-generation.md: exists") for check in checks)
         and any(check.endswith("testing.md: exists") for check in checks)
         and any(check.endswith(".DS_Store: absent") for check in checks)
+        and not import_readmes
         and "routing index: yes" in checks
         and "code hint: yes" in checks
+        and "source readme skipped: yes" in checks
         and "path leak: no" in checks
     )
     return "\n".join([output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def lifecycle_content_gates_AC_01(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "content-gates", "--confirmed-intake")
+    change = active_change(root, "content-gates")
+    write_confirmed_change(change)
+
+    confirmed_code, confirmed_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "confirmed",
+        "--source",
+        "spec-stage",
+        "--evidence",
+        "spec.md",
+    )
+    for role in ("apply", "check"):
+        run_runtime(root, "manifest", "generate", "--change", change.name, "--role", role)
+    for state, source, evidence in (
+        ("planned", "plan-stage", ("design.md", "tasks.md", "context-pack.md")),
+        ("applying", "apply-stage", ("tasks.md", "context-pack.md")),
+    ):
+        args = ["state", "set", "--change", change.name, "--state", state, "--source", source]
+        for filename in evidence:
+            args.extend(["--evidence", filename])
+        code, output = run_runtime(root, *args)
+        if code != 0:
+            raise AssertionError(output)
+
+    state_file = change / "state.json"
+    applying_state = state_file.read_bytes()
+    pending_code, pending_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "checking",
+        "--source",
+        "apply-stage",
+        "--evidence",
+        "tasks.md",
+        "--evidence",
+        "notes.md",
+    )
+    pending_unchanged = state_file.read_bytes() == applying_state
+    if not pending_unchanged:
+        state_file.write_bytes(applying_state)
+
+    write_confirmed_change(change, completed=True)
+    checking_code, checking_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "checking",
+        "--source",
+        "apply-stage",
+        "--evidence",
+        "tasks.md",
+        "--evidence",
+        "notes.md",
+    )
+    notes = change / "notes.md"
+    approved_notes = notes.read_bytes()
+    notes.write_text(notes.read_text().replace("- Status: Approved", "- Status: Pending", 1))
+    checking_state = state_file.read_bytes()
+    unapproved_code, unapproved_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "archivable",
+        "--source",
+        "check-stage",
+        "--evidence",
+        "tasks.md",
+        "--evidence",
+        "notes.md",
+    )
+    unapproved_unchanged = state_file.read_bytes() == checking_state
+    if not unapproved_unchanged:
+        state_file.write_bytes(checking_state)
+    notes.write_bytes(approved_notes)
+    archivable_code, archivable_output = run_runtime(
+        root,
+        "state",
+        "set",
+        "--change",
+        change.name,
+        "--state",
+        "archivable",
+        "--source",
+        "check-stage",
+        "--evidence",
+        "tasks.md",
+        "--evidence",
+        "notes.md",
+    )
+    checks = [
+        "confirmed accepted: yes" if confirmed_code == 0 else "confirmed accepted: no",
+        "pending tasks rejected: yes" if pending_code != 0 else "pending tasks rejected: no",
+        "pending rejection unchanged: yes" if pending_unchanged else "pending rejection unchanged: no",
+        "completed tasks enter checking: yes" if checking_code == 0 else "completed tasks enter checking: no",
+        "unapproved final review rejected: yes" if unapproved_code != 0 else "unapproved final review rejected: no",
+        "review rejection unchanged: yes" if unapproved_unchanged else "review rejection unchanged: no",
+        "approved delivery archivable: yes" if archivable_code == 0 else "approved delivery archivable: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        confirmed_output,
+        pending_output,
+        checking_output,
+        unapproved_output,
+        archivable_output,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def archive_rejects_forged_state_AC_01(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "forged-state", "--confirmed-intake")
+    change = active_change(root, "forged-state")
+    write_confirmed_change(change)
+    state_file = change / "state.json"
+    state_file.write_text(
+        json.dumps(
+            {
+                "schema": "sdc.change-state/v1",
+                "change_id": change.name,
+                "state": "archivable",
+                "updated_at": "2026-08-26T00:00:00Z",
+                "source": {"kind": "check-stage", "paths": ["tasks.md", "notes.md"]},
+            }
+        )
+    )
+    state_code, state_output = run_runtime(root, "state", "get", "--change", change.name)
+    code, output = run_sdc(root, "archive", change.name)
+    checks = [
+        "forged state read rejected: yes" if state_code != 0 else "forged state read rejected: no",
+        "forged state rejected: yes" if code != 0 else "forged state rejected: no",
+        "active change preserved: yes" if change.exists() else "active change preserved: no",
+        "stable spec untouched: yes" if not (root / ".sdc/specs" / f"{change.name}.md").exists() else "stable spec untouched: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([state_output, output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def public_cli_symlink_boundaries_AC_02(root: Path) -> str:
+    active_case = root / "active-case"
+    archive_case = root / "archive-case"
+    active_case.mkdir()
+    archive_case.mkdir()
+
+    run_sdc(active_case, "init")
+    active_root = active_case / ".sdc/changes/active"
+    outside_active = root / "outside-active"
+    outside_active.mkdir()
+    outside_change = outside_active / "linked-change"
+    outside_change.mkdir()
+    write_confirmed_change(outside_change, completed=True)
+    outside_change.joinpath("state.json").write_text(
+        json.dumps(
+            {
+                "schema": "sdc.change-state/v1",
+                "change_id": "linked-change",
+                "state": "archivable",
+                "updated_at": "2026-08-26T00:00:00Z",
+                "source": {"kind": "check-stage", "paths": ["tasks.md", "notes.md"]},
+            }
+        )
+    )
+    (active_root / "linked-change").symlink_to(outside_change, target_is_directory=True)
+    active_code, active_output = run_sdc(active_case, "archive", "linked-change")
+
+    run_sdc(archive_case, "init")
+    run_sdc(archive_case, "change", "archive-link", "--confirmed-intake")
+    change = active_change(archive_case, "archive-link")
+    write_confirmed_change(change, completed=True)
+    advance_change_to_archivable(archive_case, change)
+    archive_root = archive_case / ".sdc/changes/archive"
+    archive_root.rmdir()
+    outside_archive = root / "outside-archive"
+    outside_archive.mkdir()
+    archive_root.symlink_to(outside_archive, target_is_directory=True)
+    archive_code, archive_output = run_sdc(archive_case, "archive", change.name)
+
+    checks = [
+        "active symlink rejected: yes" if active_code != 0 else "active symlink rejected: no",
+        "outside active untouched: yes" if not (outside_change / "archive.md").exists() else "outside active untouched: no",
+        "archive root symlink rejected: yes" if archive_code != 0 else "archive root symlink rejected: no",
+        "outside archive untouched: yes" if not any(outside_archive.iterdir()) else "outside archive untouched: no",
+        "archive source preserved: yes" if change.exists() else "archive source preserved: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([active_output, archive_output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def recall_root_containment_AC_04(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "recall-containment", "--confirmed-intake")
+    change = active_change(root, "recall-containment")
+    write_confirmed_change(change)
+    root.joinpath(".sdc/knowledge/product/safe.md").write_text(
+        "# Safe Candidate\n\nneedle-safe legitimate Candidate evidence.\n"
+    )
+    private_root = root / ".sdc/private"
+    private_root.mkdir()
+    private_root.joinpath("private.md").write_text(
+        "# Private\n\nneedle-safe INTERNAL-PRIVATE-VALUE must not be recalled.\n"
+    )
+    memory_root = root / ".sdc/memory"
+    shutil.rmtree(memory_root)
+    memory_root.symlink_to(private_root, target_is_directory=True)
+    with tempfile.TemporaryDirectory(prefix="sdc-external-recall-") as external_value:
+        external = Path(external_value) / "external.md"
+        external.write_text("needle-safe EXTERNAL-PRIVATE-VALUE must not be recalled.\n")
+        root.joinpath(".sdc/knowledge/product/external.md").symlink_to(external)
+        code, output = run_runtime(
+            root, "recall", "--change", change.name, "--query", "needle-safe", "--limit", "10"
+        )
+    checks = [
+        "safe recall retained: yes" if code == 0 and "legitimate Candidate" in output else "safe recall retained: no",
+        "internal symlink excluded: yes" if "INTERNAL-PRIVATE-VALUE" not in output else "internal symlink excluded: no",
+        "external symlink excluded: yes" if "EXTERNAL-PRIVATE-VALUE" not in output else "external symlink excluded: no",
+        "resolved private path excluded: yes" if ".sdc/private" not in output else "resolved private path excluded: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
+
+
+def sensitive_runtime_values_AC_04(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "sensitive-values", "--confirmed-intake")
+    change = active_change(root, "sensitive-values")
+    write_confirmed_change(change)
+    raw_token = "sk-live-A1b2C3d4E5f6G7h8"
+    high_entropy = "aB3dE6fG8hJ1kL3mN5pQ7rS9tV2xY4z6"
+    lowercase_entropy = "qjvowmxncbalksdfueirhtgypzqwmncvbalskdfu"
+    numeric_entropy = "907314628509173462850917346285091734"
+    hex_entropy = "9f3a7c1e5b8d2a6f0c4e9b7d1a5f8c2e6b0d4a9f3c7e1b5d8a2f6c0e4b9d7a1f"
+    safe_long_text = "meetingroomreservationworkflowdocumentation"
+    root.joinpath(".sdc/memory/candidates.md").write_text(
+        f"# Candidates\n\nentropyprobe candidate {raw_token}\nentropyprobe mixed {high_entropy}\n"
+    )
+    root.joinpath(".sdc/memory/candidate-a.md").write_text(f"entropyprobe lowercase {lowercase_entropy}\n")
+    root.joinpath(".sdc/memory/candidate-b.md").write_text(f"entropyprobe numeric {numeric_entropy}\n")
+    root.joinpath(".sdc/memory/candidate-c.md").write_text(f"entropyprobe hex {hex_entropy}\n")
+    recall_code, recall_output = run_runtime(
+        root, "recall", "--change", change.name, "--query", "entropyprobe", "--limit", "10"
+    )
+    evidence_path = root / ".sdc/runtime" / change.name / "evidence.jsonl"
+    command_code, command_output = run_runtime(
+        root,
+        "evidence",
+        "append",
+        "--change",
+        change.name,
+        "--stage",
+        "apply",
+        "--command",
+        f"curl -H 'Authorization: Bearer {raw_token}' https://example.invalid",
+        "--status",
+        "failed",
+    )
+    command_unchanged = not evidence_path.exists()
+    summary_code, summary_output = run_runtime(
+        root,
+        "evidence",
+        "append",
+        "--change",
+        change.name,
+        "--stage",
+        "apply",
+        "--command",
+        "npm run eval:sdc",
+        "--status",
+        "passed",
+        "--summary",
+        f"Observed {raw_token} {high_entropy} {lowercase_entropy} {numeric_entropy} {hex_entropy}; safe {safe_long_text}",
+    )
+    persisted = evidence_path.read_text() if evidence_path.exists() else ""
+    checks = [
+        "sensitive recall redacted: yes" if recall_code == 0 and all(value not in recall_output for value in (raw_token, high_entropy, lowercase_entropy, numeric_entropy, hex_entropy)) else "sensitive recall redacted: no",
+        "authorization command rejected: yes" if command_code != 0 else "authorization command rejected: no",
+        "rejected command unchanged: yes" if command_unchanged else "rejected command unchanged: no",
+        "summary accepted redacted: yes" if summary_code == 0 and "[REDACTED]" in persisted else "summary accepted redacted: no",
+        "raw summary not persisted: yes" if all(value not in persisted for value in (raw_token, high_entropy, lowercase_entropy, numeric_entropy, hex_entropy)) else "raw summary not persisted: no",
+        "ordinary long text preserved: yes" if safe_long_text in persisted else "ordinary long text preserved: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([
+        recall_output,
+        command_output,
+        summary_output,
+        *checks,
+        "RESULT: PASS" if expected else "RESULT: FAIL",
+    ])
+
+
+def session_pointer_and_hook_identity_AC_06(root: Path) -> str:
+    run_sdc(root, "init")
+    run_sdc(root, "change", "payload-selected", "--confirmed-intake")
+    payload_change = active_change(root, "payload-selected")
+    run_sdc(root, "change", "environment-stale", "--confirmed-intake")
+    stale_change = active_change(root, "environment-stale")
+    run_runtime(root, "select", "--change", payload_change.name, "--session-id", "payload-session")
+    run_runtime(root, "select", "--change", stale_change.name, "--session-id", "stale-session")
+
+    pointer = root / ".sdc/runtime/sessions/payload-session/active-change.json"
+    valid_pointer = pointer.read_bytes()
+    malformed = json.loads(pointer.read_text())
+    malformed.pop("selected_at")
+    malformed.pop("source")
+    pointer.write_text(json.dumps(malformed))
+    malformed_code, malformed_output = run_runtime(
+        root, "resolve", "--session-id", "payload-session", env={"SDC_ACTIVE_CHANGE": ""}
+    )
+    pointer.write_bytes(valid_pointer)
+
+    hook_script = REPO_ROOT / "hooks/session-start"
+    hook_env = {
+        "PATH": os.environ.get("PATH", ""),
+        "HOME": str(root / "home"),
+        "CLAUDE_PLUGIN_ROOT": str(REPO_ROOT),
+        "SDC_SESSION_ID": "stale-session",
+        "SDC_ACTIVE_CHANGE": "",
+    }
+    hook_result = subprocess.run(
+        [str(hook_script)],
+        cwd=root,
+        env=hook_env,
+        input=json.dumps({"session_id": "payload-session", "hook_event_name": "SessionStart"}),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    hook_output = hook_result.stdout
+    checks = [
+        "incomplete pointer rejected: yes" if malformed_code != 0 and "invalid-session-pointer" in malformed_output else "incomplete pointer rejected: no",
+        "payload session preferred: yes" if hook_result.returncode == 0 and payload_change.name in hook_output else "payload session preferred: no",
+        "stale environment ignored: yes" if stale_change.name not in hook_output else "stale environment ignored: no",
+    ]
+    expected = all(check.endswith("yes") for check in checks)
+    return "\n".join([malformed_output, hook_output, *checks, "RESULT: PASS" if expected else "RESULT: FAIL"])
 
 
 SCENARIOS = {
@@ -1715,6 +3065,29 @@ SCENARIOS = {
     "execution_helpers_create_file_handoffs": execution_helpers_create_file_handoffs,
     "review_package_blocks_untracked_worktree": review_package_blocks_untracked_worktree,
     "execution_contract_serializes_tasks": execution_contract_serializes_tasks,
+    "lifecycle_state_machine_AC_01": lifecycle_state_machine_AC_01,
+    "lifecycle_evidence_gate_AC_01": lifecycle_evidence_gate_AC_01,
+    "lifecycle_content_gates_AC_01": lifecycle_content_gates_AC_01,
+    "archive_requires_archivable_state_AC_01": archive_requires_archivable_state_AC_01,
+    "archive_rejects_forged_state_AC_01": archive_rejects_forged_state_AC_01,
+    "active_change_resolver_AC_02": active_change_resolver_AC_02,
+    "unsafe_active_change_symlink_AC_02": unsafe_active_change_symlink_AC_02,
+    "unsafe_runtime_ancestor_symlinks_AC_02": unsafe_runtime_ancestor_symlinks_AC_02,
+    "explicit_empty_selector_AC_02": explicit_empty_selector_AC_02,
+    "public_cli_symlink_boundaries_AC_02": public_cli_symlink_boundaries_AC_02,
+    "role_context_manifests_AC_03": role_context_manifests_AC_03,
+    "memory_recall_candidate_AC_04": memory_recall_candidate_AC_04,
+    "recall_redacts_adjacent_sensitive_lines_AC_04": recall_redacts_adjacent_sensitive_lines_AC_04,
+    "recall_root_containment_AC_04": recall_root_containment_AC_04,
+    "sensitive_runtime_values_AC_04": sensitive_runtime_values_AC_04,
+    "research_routing_no_public_command_AC_05": research_routing_no_public_command_AC_05,
+    "session_context_adapter_and_evidence_AC_06": session_context_adapter_and_evidence_AC_06,
+    "hook_requires_trustworthy_session_id_AC_06": hook_requires_trustworthy_session_id_AC_06,
+    "session_pointer_and_hook_identity_AC_06": session_pointer_and_hook_identity_AC_06,
+    "hook_files_and_installer_boundaries_AC_07": hook_files_and_installer_boundaries_AC_07,
+    "runtime_contract_templates_AC_07": runtime_contract_templates_AC_07,
+    "runtime_distribution_inventory_AC_07": runtime_distribution_inventory_AC_07,
+    "source_marketplace_layout_AC_07": source_marketplace_layout_AC_07,
     "codex_install_removes_stale_layout": codex_install_removes_stale_layout,
     "codex_install_recovers_interrupted_swap": codex_install_recovers_interrupted_swap,
     "codex_package_is_rootless_and_deterministic": codex_package_is_rootless_and_deterministic,

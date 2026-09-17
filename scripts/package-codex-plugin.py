@@ -18,6 +18,8 @@ PAYLOAD_ENTRIES = (
     ".codex-plugin",
     "skills",
     "sdc-references",
+    "scripts/sdc-runtime-context.py",
+    "scripts/sdc_evidence.py",
     "scripts/sdc-task-brief.py",
     "scripts/sdc-review-package.py",
     "sdc-cli.py",
@@ -27,6 +29,7 @@ PAYLOAD_ENTRIES = (
     "PRIVACY.md",
     "LICENSE",
 )
+CODEX_HOOK_ENTRIES = ("hooks/codex.json", "hooks/codex-session-start.py")
 
 
 def run(args, *, cwd=ROOT, env=None):
@@ -51,8 +54,9 @@ def ensure_clean(allow_dirty):
         raise SystemExit("Refusing to package a dirty worktree. Commit/stash changes or pass --allow-dirty for local verification.")
 
 
-def stage_payload(plugin_root, stage):
-    for relative_value in PAYLOAD_ENTRIES:
+def stage_payload(plugin_root, stage, native_hooks=False):
+    entries = PAYLOAD_ENTRIES + (CODEX_HOOK_ENTRIES if native_hooks else ())
+    for relative_value in entries:
         relative = Path(relative_value)
         source = plugin_root / relative
         target = stage / relative
@@ -69,11 +73,18 @@ def stage_payload(plugin_root, stage):
             shutil.copy2(source, target)
 
 
-def verify_payload(stage):
+def verify_payload(stage, native_hooks=False):
     if not (stage / ".codex-plugin" / "plugin.json").exists():
         raise SystemExit("Codex portal payload is missing .codex-plugin/plugin.json")
     if not (stage / "skills" / "sdc-core" / "SKILL.md").exists():
         raise SystemExit("Codex portal payload is missing public workflow skills")
+    manifest = json.loads((stage / ".codex-plugin/plugin.json").read_text())
+    hook_files = {p.relative_to(stage).as_posix() for p in (stage / "hooks").rglob("*") if p.is_file()}
+    if native_hooks:
+        if manifest.get("hooks") != "./hooks/codex.json" or hook_files != set(CODEX_HOOK_ENTRIES):
+            raise SystemExit("Codex native payload must contain only the explicit Codex hook adapter")
+    elif manifest.get("hooks") or (stage / "hooks").exists():
+        raise SystemExit("Codex portable payload must not enable native hooks without SDC_CODEX_HOOKS=1")
 
     skill_dirs = [path for path in (stage / "skills").iterdir() if path.is_dir()]
     missing_skills = [path.name for path in skill_dirs if not (path / "SKILL.md").exists()]
@@ -114,10 +125,12 @@ def main():
     parser.add_argument("--output", type=Path, help="Archive output path")
     parser.add_argument("--allow-dirty", action="store_true", help="Allow local verification from a dirty worktree")
     args = parser.parse_args()
+    native_hooks = os.environ.get("SDC_CODEX_HOOKS") == "1"
 
     package = json.loads((ROOT / "package.json").read_text())
     version = package["version"]
-    output = args.output or ROOT / "dist" / f"sdc-codex-plugin-{version}.zip"
+    variant = "-native-hooks" if native_hooks else ""
+    output = args.output or ROOT / "dist" / f"sdc-codex-plugin-{version}{variant}.zip"
     output = output.resolve()
 
     ensure_clean(args.allow_dirty)
@@ -128,6 +141,8 @@ def main():
         env = os.environ.copy()
         env["HOME"] = str(temp)
         env["USERPROFILE"] = str(temp)
+        env["CODEX_HOME"] = str(temp / ".codex")
+        env["CLAUDE_CONFIG_DIR"] = str(temp / ".claude")
         run(["node", "bin/install.js"], env=env)
         plugin_root = temp / ".codex" / "local-marketplaces" / "sdc-local" / "plugins" / "sdc"
         if not (plugin_root / ".codex-plugin" / "plugin.json").exists():
@@ -136,8 +151,8 @@ def main():
             raise SystemExit("Generated Codex plugin is missing public workflow skills")
         stage = temp / "payload"
         stage.mkdir()
-        stage_payload(plugin_root, stage)
-        verify_payload(stage)
+        stage_payload(plugin_root, stage, native_hooks=native_hooks)
+        verify_payload(stage, native_hooks=native_hooks)
         zip_tree(stage, output)
 
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
@@ -145,6 +160,9 @@ def main():
     checksum.write_text(f"{digest}  {output.name}\n")
     print(output)
     print(checksum)
+    if native_hooks:
+        print("Native hooks are opt-in and require a supporting client, Python 3, and user review/trust via /hooks.")
+        print("The portable session-context skill adapter remains available; no hook trust is granted by this package.")
 
 
 if __name__ == "__main__":

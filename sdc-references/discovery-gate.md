@@ -1,20 +1,20 @@
 # Discovery Gate
 
-Discovery Gate is the SDC replacement for broad brainstorming. It borrows divergent thinking, but it must converge into a small, verifiable change.
+Discovery converges uncertain requirements into a small, verifiable change. Load this reference for intake, unresolved business requirements, or a return to discovery, not to repeat an interview the user has already completed.
 
-## Mandatory Change Intake Gate
+## Evidence-Backed Change Intake Gate
 
-Before creating or updating any `.sdc/changes/active/*` files, ALWAYS run Change Intake Gate. Do not let the agent decide silently whether the requirement is "clear enough".
+Before change-file writes, cover four categories and establish authorization. Coverage is mandatory; asking four new questions is not.
 
-The first response to a new `/sdc:change ...` request must:
+For a new `/sdc:change ...` request:
 
-1. Restate only what the user has said.
-2. If `.sdc/common-ground.md` exists, read it first. Use `ESTABLISHED` items to avoid repeated questions, treat `WORKING` items as candidates, and convert relevant `OPEN` items into intake questions.
-3. If `.sdc/expert-routing.md` exists, use the `product-discovery` profile and any relevant domain/security/data profile to shape questions, not to create facts.
-4. If `.sdc/knowledge/index.md` exists, use it to prefill known context and reduce repetitive questioning, but mark unconfirmed or memory-derived content as `Candidate`.
-5. Ask 4 intake questions, one for each required category below.
-6. Wait for explicit user confirmation before writing files.
-7. Avoid assuming tech stack, timeline, scope, database, framework, deployment, integrations, roles, permissions, or success criteria.
+1. Summarize the requested scope and cite current or still-valid prior user/project confirmation.
+2. Start with the knowledge index and relevant Common Ground/routing entries. Use current `ESTABLISHED` sources; `WORKING`, personal/native/project memory, and model inference remain Candidate or Proposed.
+3. Use `product-discovery` and relevant domain/security/data lenses to identify gaps, not create facts.
+4. Cover each category below with a cited source and scope, an evidence-based non-applicability reason, or a missing blocking question. Code can establish current technical behavior, not authorize new business policy.
+5. Ask only missing blocking questions. Do not ask about irrelevant deadlines, databases, or deployment preferences for a bounded wording change.
+6. Cite explicit authorization before writes; existing valid approval satisfies this gate. If authority is missing, ask and wait. An explicit request to persist discovery permits only minimal discovery artifacts while business requirements remain open.
+7. Make risk and authorization visible; consult `workflow-standards.md` for internal `light` / `standard` / `strict` triggers, delegation, and freshness. Risk level never converts uncertainty into consent.
 
 Required intake categories:
 
@@ -23,17 +23,19 @@ Required intake categories:
 - Technical preferences: language, framework, database, platform, deployment.
 - Constraints and acceptance: deadline, budget, integrations, compliance/security, how done will be proven.
 
-The agent may propose options, but every option is `Proposed` until the user confirms it. No change files, confirmed spec, final plan, or implementation tasks may be written before intake confirmation.
+Options remain `Proposed` until authoritative confirmation or selection within bounded explicit delegation. Delegation must name the decision area, allowed choices/constraints, impact limits, and stopping boundary; record the selected option and approving source. Generic "use your judgment" cannot supply unknown business requirements or grant blanket consent.
 
 ## Artifact Budget While Discovery Is Open
 
 When any blocking Open Question remains, keep artifacts minimal:
 
-- Default: ask the next 3-5 highest-value questions in chat and do not write files.
-- If persistence is useful after intake confirmation, create or update only `discovery.md`, plus an optional Draft `proposal.md` and brief `notes.md`.
-- Do not create or update `spec.md`, `design.md`, `tasks.md`, or `impact.md` while Discovery Gate is open.
+- Default: ask only missing blocking questions in chat, without a fixed count.
+- With persistence authorization, create or update only `discovery.md`, plus an optional Draft `proposal.md` and brief `notes.md`. The internal lifecycle record may track discovery but cannot declare its own confirmation.
+- Do not create or update `spec.md`, `design.md`, `tasks.md`, `impact.md`, `context-pack.md`, or `knowledge-candidates.md` while Discovery Gate is open, including speculative drafts.
 - Do not output a large task list, API design, database schema, or implementation plan while Discovery Gate is open.
 - Do not ask every possible question. Ask only the questions required to close the next decision gate.
+- Keep research scratch in `.sdc/runtime/<change-id>/research/` and citations in discovery/notes; candidate files are available only after discovery closes.
+- Unknown business requirements belong only in discovery, not in spec/design/tasks or tasks disguised as investigations.
 
 ## When To Continue Discovery
 
@@ -51,7 +53,7 @@ After intake confirmation, continue Discovery Gate when any of these remain unre
 
 Do not produce a `Confirmed` spec, final plan, or implementation tasks while Discovery Gate is open.
 
-Open Questions are blockers unless they are explicitly deferred outside the current MVP. A Draft artifact may mention them, but they must not become final REQ/AC, design decisions, or tasks.
+Questions needed for current scope or acceptance are blockers unless explicitly deferred outside the current MVP without weakening acceptance. Unrelated open questions do not block this change. Draft discovery may mention gaps, but they must not become REQ/AC, design decisions, or tasks.
 
 ## Explicit Confirmation Gate
 
@@ -64,12 +66,14 @@ Forbidden write-ahead patterns:
 - "如有偏差请告知，我先按这个更新。"
 - "如果不对告诉我，我先改。"
 
-Required pattern:
+When existing explicit authorization does not cover the action:
 
 1. State the interpretation as `Proposed`.
 2. Ask a yes/no or option-selection confirmation question.
 3. Wait for the user's answer.
 4. Write durable artifacts only after confirmation.
+
+When authorization already covers a bounded reversible action, cite it and proceed within its boundaries. Scope, data, permissions, public contracts, architecture, and other high-impact decisions still require authoritative confirmation or bounded explicit delegation; a stage/session change alone does not require asking again.
 
 ## Discovery Method
 
@@ -79,7 +83,7 @@ Use a lightweight sequence:
 2. Identify missing facts and high-impact decisions.
 3. If the user has not selected a direction, offer 2-3 candidate directions and mark them `Proposed`.
 4. Recommend a smallest viable change slice.
-5. Ask 3-5 key questions when more discovery is still required after intake.
+5. Ask only missing blocking questions when more discovery is required.
 6. Record decisions in `discovery.md`.
 7. Exit only when the MVP and blockers are confirmed or explicitly deferred.
 
@@ -89,6 +93,18 @@ Use a lightweight sequence:
 # Discovery
 
 ## Current Understanding
+
+## Intake Coverage
+| Category | Confirmed Understanding / Gap | Source And Scope | Blocking? |
+| --- | --- | --- | --- |
+| Project context | | | |
+| Core scope | | | |
+| Technical preferences | | | |
+| Constraints and acceptance | | | |
+
+## Authorization And Risk
+- Approving source, authorized action, constraints, and stopping boundary:
+- Risk level, triggers, evidence, and rationale:
 
 ## Candidate Directions
 | Option | Description | Pros | Cons | Status |
@@ -103,8 +119,8 @@ Use a lightweight sequence:
 | --- | --- | --- | --- | --- | --- |
 
 ## Knowledge Sources Used
-| Source | Status | Why It Matters |
-| --- | --- | --- |
+| Source | Status | Verified Against | Scope | Why It Matters |
+| --- | --- | --- | --- | --- |
 
 ## Open Questions
 | ID | Question | Why It Matters | Options | Required Before |
@@ -114,6 +130,7 @@ Use a lightweight sequence:
 - [ ] MVP scope confirmed
 - [ ] High-impact decisions confirmed or explicitly deferred
 - [ ] Acceptance direction is clear
+- [ ] Authorization to produce the spec is cited
 ```
 
 ## Exit Criteria
@@ -123,7 +140,9 @@ Discovery Gate can exit only when:
 - The recommended MVP or current change scope is confirmed.
 - Blocking open questions are resolved.
 - High-impact decisions are `Confirmed` or `Deferred` outside the current MVP.
-- The user agrees the discovery can be turned into a spec.
+- Explicit authorization to turn discovery into a spec is cited; prior approval is reusable when still valid.
+
+If later evidence changes business requirements or their authority, stop dependent execution and explicitly reopen to discovery with a reason. Preserve old artifacts and approvals as history, not execution inputs. For planning-only revisions with requirements still confirmed, use the confirmed-state reopen path. See `runtime-context.md` for mechanics; editing a state label cannot close discovery.
 
 ## Intake Output
 
@@ -132,18 +151,16 @@ Before writing files, present an intake summary:
 ```text
 ## Change Intake
 - Current understanding:
-- Missing / unconfirmed facts:
+- Four-category coverage with cited confirmation or non-applicability:
+- Missing blocking questions (omit if none):
 - Proposed MVP direction:
 - Recommended change id:
 
-## Required Questions
-1. Project context:
-2. Core scope:
-3. Technical preferences:
-4. Constraints and acceptance:
+- Authorization source and boundaries:
+- Risk level, triggers, and evidence plan:
 
 ## Next Step
-Please confirm or correct the answers. I will create SDC change files only after confirmation.
+State the next authorized step, or the specific confirmation needed before writing.
 ```
 
-If the user says "use your judgment", record the proposed path as `Proposed` or `Assumed`. Do not treat it as confirmed.
+Cite an identifiable user statement or authoritative project section/revision, not "already discussed". Keep the summary proportional to the request and act on valid prior approval without repeating answered questions.

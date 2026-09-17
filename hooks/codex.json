@@ -1,0 +1,18 @@
+{
+  "description": "Optional SDC Codex SessionStart context. Requires review and trust; portable skills remain available.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume|clear|compact)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${PLUGIN_ROOT}/hooks/codex-session-start.py\"",
+            "timeout": 5,
+            "additionalContextLimit": 4000
+          }
+        ]
+      }
+    ]
+  }
+}

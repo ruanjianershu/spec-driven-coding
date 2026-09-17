@@ -29,6 +29,7 @@ Load only what is needed:
 - Expert routing: `../../sdc-references/expert-routing.md`.
 - Brownfield boundary: `../../sdc-references/legacy-impact-gate.md`.
 - Execution orchestration: `../../sdc-references/execution-orchestration.md`.
+- State recovery, revisions, and measured delivery evidence: `../../sdc-references/runtime-context.md`.
 
 ## 执行规则
 
@@ -39,6 +40,7 @@ Load only what is needed:
 5. 实现前读取 `.sdc/common-ground.md`、`.sdc/expert-routing.md`、`.sdc/knowledge/index.md`、相关知识文件和 `context-pack.md`。
 6. 每个任务完成实现报告后，执行一次 Spec Compliance + Code Quality 双判定审查；通过后再更新任务状态、notes、验证证据和必要的 `knowledge-candidates.md`。
 7. 所有任务完成后执行最终整体审查；遇到范围、契约、数据、安全、架构、知识冲突或影响边界问题，输出 Stop-Line Report。
+8. 遵循 apply 的状态和快照门禁；实际验证使用内部 evidence runner，最终评审后绑定当前快照。过期、失败或仅口头声称通过的记录不能用于交付。按已确认风险缩放执行范围，不重复读取未变化资料或重问已有授权。
 
 ## 输出格式
 

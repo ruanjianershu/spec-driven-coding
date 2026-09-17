@@ -2,6 +2,8 @@
 
 This reference defines how SDC executes a confirmed implementation plan without adding public commands.
 
+Use the risk policy in `workflow-standards.md` when choosing execution breadth. The same acceptance, consent, and independent review gates apply at every level; task count, context size, and repeated runs are not proxies for quality.
+
 ```text
 plan preflight -> task brief -> implement -> evidence -> task review -> ledger -> next task -> whole-change review
 ```
@@ -15,7 +17,7 @@ init -> change -> plan -> apply -> check -> archive
 ## Core Principles
 
 - A fresh execution context should receive one task, its interfaces, and the binding global constraints, not the full conversation history.
-- Every task must pass one review that returns two independent verdicts: specification compliance and implementation quality.
+- Every completed task must have read-only review evidence with separate specification compliance and implementation quality verdicts.
 - A final whole-change review checks cross-task behavior, integration, regressions, and Artifact Output Contract drift.
 - Conversation memory is not a progress database. Persist execution progress in a project-local ledger.
 - Review is read-only. A reviewer must not mutate the working tree, index, HEAD, branch, plan, or evidence package.
@@ -29,7 +31,7 @@ Before Task 1, inspect the complete plan once for:
 - contradictions between tasks;
 - contradictions with Global Constraints, confirmed spec, impact analysis, standards, or Artifact Output Contract;
 - placeholders, undefined interfaces, missing exact values, or unverifiable commands;
-- tasks that are too large to own one test cycle and one review gate;
+- tasks that are too large for focused verification or artificially split one acceptance boundary into redundant test/edit/review loops;
 - plan-mandated behavior that the review rubric would reject as a defect.
 
 Record one of:
@@ -63,13 +65,13 @@ Each `T###` task must contain:
 - `Files`: exact files or focused areas expected to change;
 - `Consumes`: exact interfaces, types, data, decisions, or outputs used from prior work;
 - `Produces`: exact interfaces, types, behavior, or evidence later work relies on;
-- `Verify`: the command or manual check;
+- `Verify`: executable command argv for the required delivery receipt; manual observations may supplement it;
 - `Expected`: the observable expected result;
 - `Review`: `Pending`, `Approved`, `Needs fixes`, or `Cannot verify`;
 - `Evidence`: report, command output, commit/diff range, or `Pending`;
 - `Source`: `REQ-*` / `AC-*` source.
 
-A task is the smallest unit that earns its own test cycle and review verdict. Fold setup, configuration, generated files, and documentation into the task that needs them. Split a task only when a reviewer could reasonably approve one part and reject the other.
+A task is a coherent acceptance boundary. Fold meaningful test-first work, setup, configuration, generated files, and documentation into the task that needs them. Split a task only when a reviewer could reasonably approve one part and reject the other. A tiny behavior-neutral change may use one task with focused validation rather than a manufactured failing test or multiple review loops.
 
 ## Runtime Workspace
 
@@ -86,7 +88,7 @@ Use project-local ignored scratch space:
 
 The runtime workspace is not durable project truth and must be git-ignored. Durable outcomes still belong in `tasks.md`, `notes.md`, `knowledge-candidates.md`, review/test reports, and archive evidence.
 
-Before dispatching or starting a task, check `progress.md`. A task marked complete there must not be re-executed merely because conversation context was compacted or lost. Reconcile the ledger against git history and the working tree when evidence conflicts.
+Before dispatching or starting a task, check `progress.md` when present. A task marked complete there must not be re-executed merely because conversation context was compacted or lost. Reconcile the ledger against durable review evidence, source snapshots, git history, and the working tree; an ignored ledger never authorizes stale work. Verify required manifests and refresh only affected sources. Changed governing inputs require explicit reasoned reopen and invalidation of affected approvals, not a fabricated resume point.
 
 ## File Handoffs
 
@@ -104,14 +106,16 @@ It excludes unrelated tasks, prior conversation, and broad repository summaries.
 
 ### Implementer Report
 
-The implementer writes the detailed report to a file and returns only a short status:
+When handing work between contexts, the implementer writes a detailed report to a file and returns a short status:
 
 - `DONE`;
 - `DONE_WITH_CONCERNS`;
 - `NEEDS_CONTEXT`;
 - `BLOCKED`.
 
-The report records changed files, tests written first where meaningful, red/green evidence, commands and results, deviations, concerns, and the diff/commit boundary.
+The report records changed files, tests written first where meaningful, red/green evidence, commands and actual execution receipts, deviations, concerns, and the diff/commit boundary. Use `evidence run --change <id> --stage apply|check --task T001 --timeout 300 -- <exact Verify argv>` through the internal runtime helper; repeated task flags require shared exact argv, and pipelines require explicit `sh -c`.
+
+For a small inline task, a concise durable notes section may serve as brief/report without duplicated scratch files. Preserve the same interfaces, evidence, and review records.
 
 ### Review Package
 
@@ -130,6 +134,8 @@ Every finding must cite file and line evidence when available. The implementer r
 
 Critical and Important findings block task completion. Fix them together, append test evidence to the report, and re-review the task. Minor findings remain visible in the ledger for the final whole-change review.
 
+Re-review affected findings and integration risks after fixes; do not repeat unchanged review or trustworthy tests without a named risk. For a single-task light change, one independent final-snapshot pass may cover both the task and complete change. Persist both task and final verdict records pointing to that evidence; no review gate is waived.
+
 `Cannot verify` is not approval. The coordinating agent must perform the focused check, cite evidence, and either approve the item or return it for implementation.
 
 When a finding conflicts with an explicit plan requirement, report it as plan-mandated and ask the user which source governs. Do not silently dismiss the finding or fix against the confirmed plan.
@@ -147,13 +153,13 @@ The reviewer is read-only and skeptical of rationales. It may inspect unchanged 
 
 ## Harness And Model Adaptation
 
-When the client supports subagents:
+When supported and authorized, use a separate read-only reviewer context. Fresh implementer contexts are useful for substantive handoffs, not mandatory for every tiny edit:
 
-- use one fresh implementer context for one task at a time;
+- use a task-scoped implementer context and only the relevant sources;
 - use a separate read-only reviewer context;
 - do not dispatch multiple implementation tasks in parallel. Complete implementation, review, durable evidence, and ledger update for the current task before starting the next task.
 
-When the client does not support subagents, execute inline but reset the role boundary explicitly: finish implementation, write the report, then perform a separate skeptical review pass from the brief and diff package.
+When separate contexts are unavailable or not authorized, execute inline but reset the role boundary explicitly: finish implementation, write the report, then perform a separate skeptical review pass from the brief and actual diff. Disclose the isolation limitation; do not call self-review an external review. Expert profiles are lenses, not a mandate to build a multi-agent swarm.
 
 When the harness exposes model selection, choose an explicit capability tier appropriate to task risk and record it in the report. Do not invent model identifiers when selection is unavailable; record `Auto` or `N/A` instead.
 
@@ -171,7 +177,7 @@ Never use the runtime ledger as the only delivery evidence.
 
 ## Final Whole-Change Review
 
-After all tasks are complete, perform one broad review over the complete change range. It must cover:
+After all implementation is complete, require one final review over the complete change range, with depth proportional to risk. A single-task light change may share this pass with its task review only when both cover the same final snapshot. It must cover:
 
 - cross-task integration and interface consistency;
 - confirmed spec and AC coverage;
@@ -182,6 +188,10 @@ After all tasks are complete, perform one broad review over the complete change 
 - final test and release evidence.
 
 Record the final verdict and evidence in `notes.md` or a linked review report. `sdc-check` and `sdc-archive` must block completed delivery when this evidence is missing or not approved.
+
+Check may reuse approved final-review evidence when the reviewed inputs and scope are unchanged. A changed diff, governing source, or unresolved acceptance risk invalidates the affected approval; review that change before delivery. Run executable validation through the bounded evidence runner and retain actual outcomes/snapshots, never self-declared success.
+
+Persist last-task progress and final approved review notes before capturing a review receipt with the internal helper's `evidence review --change <id> --reviewer "<attribution>"`. Refresh/verify role manifests after progress at safe checkpoints, without blessing changed requirements. The review command binds existing approved notes/tasks and source snapshots; it neither performs review nor authenticates the attribution. `evidence verify --change <id>` checks that receipt and the latest fresh passed run per completed task with exact Verify argv. Later source edits or reopen invalidate affected receipts. See `runtime-context.md` for full commands.
 
 ## Stop Conditions
 

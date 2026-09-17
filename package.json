@@ -9,6 +9,8 @@
   "scripts": {
     "audit": "node scripts/audit-release.mjs",
     "eval:sdc": "python3 evals/sdc-flow/run_sdc_flow.py",
+    "eval:agents": "python3 evals/sdc-agent/run_agent_evals.py",
+    "test": "python3 -m unittest discover -s evals -p 'test_*.py'",
     "package:codex": "python3 scripts/package-codex-plugin.py",
     "sync:skills": "node bin/install.js sync-public-skills"
   },
@@ -24,9 +26,13 @@
     "evals/sdc-flow/promptfooconfig.yaml",
     "evals/sdc-flow/run_sdc_flow.py",
     "evals/sdc-flow/sdc_flow_provider.py",
+    "evals/sdc-agent/",
+    "hooks/",
     "scripts/audit-release.mjs",
     "scripts/package-codex-plugin.py",
     "scripts/sdc-review-package.py",
+    "scripts/sdc-runtime-context.py",
+    "scripts/sdc_evidence.py",
     "scripts/sdc-task-brief.py",
     "skills/",
     "sdc-references/",

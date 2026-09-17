@@ -4,6 +4,24 @@ All notable changes to SDC are documented here.
 
 ## Unreleased
 
+- Fixed interrupted-validation recovery while preserving prior receipts; reject unsupported Git submodules instead of silently omitting source evidence.
+- Fixed installed workflow helper paths and bundled runtime dependencies for direct-skill layouts; added isolated installation and retry regressions.
+- Guarded public packages against private workspace/standards payloads and internal bootstrap links while retaining the installed `sdc validate` dispatcher.
+- Added content gates for confirmation/planning, input/source snapshots, fresh manifest verification, idempotent state retries, and explicit revision/replanning with preserved history. Legacy unbound approvals require revalidation.
+- Added bounded actual-command receipts and attributed review receipts tied to revision and source snapshots. Delivery checks reject stale runs, later failures, command mismatches, and status assertions without execution evidence.
+- Replaced fixed intake question counts with evidence-backed coverage, bounded authorization, risk-proportionate effort, selective context, and incremental knowledge refresh without new public commands.
+- Added explicit opt-in Codex native hook packaging (`SDC_CODEX_HOOKS=1`) while retaining portable default behavior and user-controlled hook trust.
+- Added isolated real-agent evaluation tooling alongside deterministic regression tests; real trials and mock harness tests are reported separately.
+- Added a Trellis-inspired local runtime with the evidence-gated lifecycle `intake -> discovery -> confirmed -> planned -> applying -> checking -> archivable`.
+- Added exact-one active-change resolution using explicit argument, `SDC_ACTIVE_CHANGE`, local session pointer, then sole active directory; invalid, missing, or ambiguous targets stop without recency-based guessing.
+- Added deterministic plan-generated `apply-context.jsonl` and `check-context.jsonl` manifests while retaining the human-readable `context-pack.md`.
+- Added bounded local read-only memory recall whose results are always `Candidate`, plus internal research routing through runtime scratch, cited notes, and archive-gated knowledge candidates without a new public command.
+- Added an optional Claude `SessionStart` adapter with safe manual fallback and a portable-by-default Codex skill adapter.
+- Made the repository root a strict-valid Claude marketplace by explicitly selecting the existing advanced `skills/sdc-*` paths; local installs no longer require a generated `.claude/skills/` compatibility tree.
+- Hardened lifecycle and archive gates so completed tasks, task reviews, final review evidence, full state provenance, and safe non-symlink workspace paths are revalidated before mutation.
+- Restricted recall to each allowlisted root, added credential-shaped and high-entropy rejection/redaction for recall and runtime evidence, and made Claude hook payload identity authoritative over opt-in environment fallback.
+- Updated privacy, security, release validation, and Trellis design-provenance documentation to match the local runtime behavior.
+
 ## 1.3.0 - 2026-07-11
 
 - Added an internal Execution Orchestration Contract without adding public commands: exact Global Constraints, Plan Preflight, task interface contracts, file-based handoffs, project-local runtime ledger, per-task Spec Compliance + Code Quality review, and final whole-change review.
@@ -32,6 +50,7 @@ All notable changes to SDC are documented here.
 - Added deterministic eval scenarios for task-interface enforcement, review-gated completion, runtime-ledger portability/consistency, execution handoff helpers, existing-workspace runtime migration, and Codex portal packaging.
 - Added Artifact Output Contracts so change/plan/check/validate can require triggered enterprise delivery outputs such as diagrams, API/data contracts, test matrices, release checklists, and AI involvement notes without adding public commands.
 - Fixed Common Ground validation so `OPEN` and final-execution `WORKING` Common Ground rows now block validate/apply/archive readiness instead of passing as documentation-only warnings.
+
 ## 1.2.1 - 2026-06-15
 
 - Added SDC Common Ground: projects now initialize `.sdc/common-ground.md` to keep `ESTABLISHED / WORKING / OPEN` assumptions visible and block OPEN/high-impact WORKING assumptions from final execution.

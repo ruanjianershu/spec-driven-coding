@@ -17,13 +17,19 @@ SDC 在真实项目共建中持续接受检验。以下仅展示部分公开项�
 ## 核心能力
 
 - 标准 `.sdc/` 工作区：记录需求、规范、任务、决策、知识库和交付证据。
-- Mandatory Change Intake Gate：创建 change 前必须先问清项目背景、范围、技术偏好和验收约束。
+- Change Intake Gate：覆盖项目背景、范围、技术偏好和验收约束；引用已确认信息，只询问缺失的阻塞项。
 - Discovery Gate：需求没确认时只保留轻量草稿，不生成完整 spec/design/tasks。
 - Common Ground：把 AI 的共同认知拆成 `ESTABLISHED / WORKING / OPEN`，OPEN 不能驱动最终方案。
 - Expert Routing：吸收专家库思路，但不增加公开命令，由 AI 在 plan/check/archive 内部选择产品、架构、数据、测试、安全等专家视角。
 - 知识库与 memory：区分产品知识、技术知识、候选知识和过程记忆。
 - Artifact Output Contract：按触发条件强制标准产物，比如流程图、API/数据契约、测试矩阵和上线清单。
 - Execution Orchestration：Plan Preflight、任务接口、文件化交接、执行账本、任务级双判定审查和最终整体审查。
+- Runtime lifecycle：用 `intake -> discovery -> confirmed -> planned -> applying -> checking -> archivable` 记录状态；支持保留历史的返工和断点恢复，旧审批不能沿用到新版本。
+- Active change resolution：按显式参数、`SDC_ACTIVE_CHANGE`、session pointer、唯一 active 目录的顺序解析；零个、多个或无效目标都会停线，不按目录时间猜测。
+- Context runtime：`plan` 生成确定性的 `apply-context.jsonl` 和 `check-context.jsonl`；memory recall 只读、本地且全部标记为 `Candidate`，research 继续由现有阶段内部路由。
+- Client adapters：Claude 支持 `SessionStart`；Codex 默认通过 skill 恢复上下文，支持的客户端可显式启用原生 hook，失败时回退。
+- 风险分级：内部按 light / standard / strict 调整阅读、任务与检查范围；高影响决策仍需确认，不增加公开命令。
+- 可验证交付：实际测试结果和独立评审绑定需求、代码快照与变更版本，失败或过期证据不能用于归档。
 - Brownfield impact gate：存量项目在需求确认后做当前变更影响面分析。
 - 追溯链：`SCN-* -> REQ-* -> AC-* -> T### -> validation evidence`。
 - 反乱猜门禁：`No Evidence, No Fact; No Confirmation, No Execution; No Impact, No Brownfield Change`。
@@ -42,6 +48,13 @@ npx --yes sdc-spec@latest
 
 ```bash
 npx --yes --package github:ruanjianershu/spec-driven-coding#main sdc-spec
+```
+
+Claude Code 也可以直接把 GitHub 仓库作为 marketplace（无需先运行安装器）：
+
+```text
+/plugin marketplace add ruanjianershu/spec-driven-coding
+/plugin install sdc@sdc-local
 ```
 
 首次从源码安装：
@@ -69,7 +82,7 @@ npx --yes sdc-spec@latest uninstall
 
 ### 源码安装的版本
 
-如果源码目录跟踪 GitHub 或其他 Git 远程，进入当初 clone 的目录更新。若 `git status --short` 有本地改动，请先自行提交或处理：
+进入当初 clone 的公开源码目录更新。若 `git status --short` 有本地改动，请先自行提交或处理：
 
 ```bash
 cd /path/to/spec-driven-coding
@@ -78,8 +91,6 @@ git pull --ff-only
 node bin/install.js
 ```
 
-不同 Git 远程的源码 clone 都使用这组命令，区别只是该目录配置的远程仓库地址。
-
 如果安装来源是正在修改的本地开发分支，不要执行 `git pull`；每次源码变化后重新安装即可：
 
 ```bash
@@ -87,7 +98,7 @@ cd /path/to/spec-driven-coding
 node bin/install.js
 ```
 
-安装器会替换旧插件 cache、清理旧版重复 skills，并重新生成 Claude Code 与 Codex 各自需要的目录结构；正常更新不需要先卸载。
+安装器会替换旧插件 cache、清理旧版重复 skills，并生成 Claude Code 与 Codex 各自需要的目录结构；正常更新不需要先卸载。
 
 ### 更新客户端和已有项目
 
@@ -106,10 +117,10 @@ Codex：
 选择 sdc:sdc-init，或输入“使用 SDC 升级当前项目”
 ```
 
-终端或其他客户端：
+终端或其他客户端（在目标项目目录中，将脚本路径替换为实际安装的 SDC 插件根目录或公开源码目录）：
 
 ```bash
-sdc-init
+python3 /path/to/installed/sdc/sdc-cli.py init
 ```
 
 只更新插件不会自动升级已有项目中的 `.sdc`。再次 init 是幂等操作：只升级未被用户修改的 SDC 托管模板，检测到项目自定义内容时会保留原文件。
@@ -130,11 +141,15 @@ Claude Code 使用 slash commands：
 /sdc:harness
 ```
 
+Claude 包可选安装本地 `SessionStart` adapter；hook 缺失或执行失败不会阻断任何 SDC 命令，现有 skill 流程仍可直接恢复上下文。
+
 Claude 插件只把公共工作流暴露为 slash commands；高级能力如 `sdc-spec`、`sdc-review`、`sdc-test`、`sdc-quality`、`sdc-validate` 仍作为 skills 存在，避免重复入口。
 
 ### Codex
 
-Codex 当前应把 SDC 当作 skill plugin 使用，不依赖 `/sdc:*` slash commands。
+Codex 把 SDC 当作 skill plugin 使用，不依赖 `/sdc:*` slash commands。默认由 skills 调用本地 session adapter。
+
+支持插件 hooks 的 Codex 可选用 `SDC_CODEX_HOOKS=1 node bin/install.js` 安装原生上下文适配，然后在客户端审阅并信任 hook。不确定客户端是否支持时，沿用默认安装即可；开启 hook 不会跳过确认或验收。
 
 安装后重启 Codex CLI / Codex App，可通过自然语言触发：
 
@@ -176,13 +191,13 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 ```text
 1. init
    创建 .sdc/ 工作区、constitution、common-ground、expert-routing、standards、knowledge、memory、templates。
-   如已有团队规范，可同时导入：`sdc init --standards /path/to/spec-rules`。
+   仅当用户提供团队规范路径时，可同时导入：`python3 /path/to/installed/sdc/sdc-cli.py init --standards /path/to/spec-rules`。
 
 2. change
    先读 common-ground 和 knowledge，再完成 intake 问题并等待确认；同时识别输入证据和可能需要的标准产物。未确认时只保留 discovery/proposal/notes 草稿。
 
 3. plan
-   基于 confirmed spec、必要的 impact.md、相关知识库、expert-routing 和 Artifact Output Contract 生成 design/tasks/context-pack；记录 Global Constraints 并通过 Plan Preflight。
+   基于 confirmed spec、必要的 impact.md、相关知识库、expert-routing 和 Artifact Output Contract 生成 design/tasks/context-pack，以及确定性的 apply/check JSONL context manifests；记录 Global Constraints 并通过 Plan Preflight。
 
 4. apply
    按 T### 薄切片执行。每个任务使用独立 brief、实现报告和 Spec Compliance + Code Quality 审查，并用 runtime 账本支持中断恢复。
@@ -233,7 +248,8 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 - `common-ground.md` 是共同认知层：`ESTABLISHED` 可作为依据，`WORKING` 只能辅助探索，`OPEN` 必须先问。
 - `expert-routing.md` 是内部专家路由：用户不需要选择专家命令，SDC 会按任务选择产品、领域、架构、API、数据、测试、安全、运维等视角。
 - `knowledge/` 是 confirmed 项目事实，分为产品知识和技术知识。
-- `memory/` 是候选知识、经验和过程记忆，不能直接覆盖 confirmed knowledge。
+- `memory/` 是候选知识、经验和过程记忆；recall 只读取本地允许范围并始终返回 `Candidate`，不能直接覆盖 confirmed knowledge。
+- research 不新增公开命令：临时材料留在 `.sdc/runtime/<change-id>/research/`，引用进入 discovery/notes，可复用结论先进入 `knowledge-candidates.md` 等待 archive 确认。
 - 常用入口是 `.sdc/knowledge/product/`、`.sdc/knowledge/technical/` 和每次 plan 生成的 `context-pack.md`。
 - 每条长期知识应记录 `Status / Source / Verified At / Verified Against / Scope`。
 - 缺证据时写 Knowledge Gap，不允许把推断写成事实。
@@ -260,13 +276,13 @@ SDC 1.3 不增加命令，但强化 plan 之后的执行纪律：
 
 ### Company Standards Pack
 
-SDC 不内置任何公司私有规范。已有团队规范建议放进业务项目的 `.sdc/standards/company/`，由索引按需读取：
+SDC 不内置任何公司私有规范，也不会从主目录或公司仓库自动获取规范。仅在用户明确提供私有规范路径时，在目标项目目录中导入到 `.sdc/standards/company/`：
 
 ```bash
-sdc standards import /path/to/spec-rules
+python3 /path/to/installed/sdc/sdc-cli.py standards import /path/to/spec-rules
 ```
 
-AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关规则文件，避免一次性吞掉整包规范。
+AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关规则文件，避免一次性吞掉整包规范。规范包是可选项，未导入时不会产生缺失警告；生成的空索引不代表已经导入团队规范。私有规范保留在业务项目内，不随 SDC 发布。
 
 ## 关键规则
 

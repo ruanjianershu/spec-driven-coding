@@ -26,6 +26,7 @@ SDC CLI - 规范驱动开发 薄运行层
 """
 
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -34,7 +35,11 @@ import subprocess
 from datetime import date, datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
+from sdc_evidence import change_lock
+
 SDC_DIR = Path(".sdc")
+SAFE_CHANGE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 FILES = {
     "discovery": "current/discovery.md",
     "spec": "current/spec.md",
@@ -106,6 +111,7 @@ MANAGED_TEMPLATE_PATHS = {
     "templates/design.md",
     "templates/spec.md",
     "templates/context-pack.md",
+    "templates/runtime-context.md",
     "templates/common-ground.md",
     "templates/expert-routing.md",
     "templates/knowledge-candidates.md",
@@ -214,15 +220,15 @@ INIT_FILES = {
 - `knowledge/` - 项目确认知识库，分为产品知识和技术知识
 - `memory/` - 项目记忆与候选知识，默认不高于 confirmed knowledge
 - `current/` - 当前正在推进的一次需求迭代，包含 discovery/spec/plan/tasks/apply
-- `changes/active/` - 正在推进的需求变更，每个变更一个子目录
+- `changes/active/` - 正在推进的需求变更，每个变更一个子目录；可包含 state.json 和 apply/check context manifests
 - `changes/archive/` - 已完成归档的需求变更
 - `specs/` - 已稳定的业务规范和能力说明
 - `standards/` - 项目长期开发规范，约束人和 AI 怎么写代码
 - `decisions/` - 架构决策记录
 - `reviews/` - 代码审查记录
 - `reports/` - 测试、质量、bug、impact、repo-analysis 和交付报告
-- `runtime/` - 本地忽略的任务 brief、实现报告、diff 包和执行账本，不作为长期事实
-- `templates/` - discovery、需求迭代、项目认知、影响面、停线和分析模板
+- `runtime/` - 本地忽略的 session pointer、research、evidence、任务 brief、diff 包和执行账本，不作为长期事实
+- `templates/` - discovery、需求迭代、项目认知、影响面、停线、runtime contract 和分析模板
 
 ## 推荐流程
 
@@ -235,6 +241,8 @@ INIT_FILES = {
 7. `/sdc:apply` 按任务 brief、双判定审查和 runtime 账本执行，记录验证证据和 `knowledge-candidates.md`
 8. `/sdc:check` 综合校验、审查、测试、质量和知识漂移
 9. `/sdc:archive <name>` 归档到 `changes/archive/`，并运行 Knowledge Compact Gate 判断长期知识沉淀
+
+阶段会维护 `intake -> discovery -> confirmed -> planned -> applying -> checking -> archivable` 状态。活动变更必须由显式参数、环境变量、有效 session pointer 或唯一 active 目录确定；有歧义时停止，不能按目录新旧猜测。
 
 ## 三类核心资产
 
@@ -261,6 +269,7 @@ INIT_FILES = {
 专家路由门禁：用户只选 SDC 阶段，AI 内部选择专家视角并在 context-pack/check/archive 中披露
 输出契约门禁：触发流程/API/数据/UX/测试/部署/AI 参与风险时，必须有对应产物或 N/A 证据
 执行编排门禁：Plan Preflight 通过后才能 apply；完成任务必须有 Spec Compliance + Code Quality 审查和证据
+运行时门禁：唯一 active change + 七阶段 state + apply/check JSONL manifests；runtime memory 永远是 Candidate
 ```
 """,
     "constitution.md": """# SDC Project Constitution
@@ -305,6 +314,10 @@ For Brownfield/Legacy technical knowledge, code/config/test/build/runtime eviden
 
 Before non-trivial change, spec, plan, apply, check, or archive work, read `common-ground.md` and the relevant routing entries in `expert-routing.md`.
 
+Intake requires coverage of project context, scope, technical preferences, and constraints/acceptance, not a fixed number of new questions. Cite still-valid user/project confirmation and ask only missing blocking questions. Explicit bounded authorization may be reused across stages; it never permits unrelated scope or external actions.
+
+Record an evidence-backed light/standard/strict risk level in the existing context pack. Light work has no behavior/data/security/public-contract/architecture/deployment impact; any such high-impact trigger requires strict treatment. Scale context and verification breadth, not consent or acceptance. Never silently downgrade risk.
+
 ## 5. Artifact Output Contract Discipline
 
 Every confirmed change must record an Artifact Output Contract before final plan/apply/check.
@@ -327,6 +340,8 @@ Final plan artifacts must include exact Global Constraints and a passed Plan Pre
 Use `.sdc/runtime/<change-id>/` for git-ignored task briefs, implementer reports, review packages, and progress ledger. Runtime files are execution scratch; durable outcomes must be recorded in tasks, notes, reports, and archive evidence.
 
 Completed tasks require separate Spec Compliance and Code Quality approval. Review is read-only and cannot be coached to suppress findings. After all tasks, one final whole-change review is required before check/archive.
+
+For a single-task light change, a current final-snapshot review can cover both task and whole-change verdicts. Reuse current evidence instead of repeating identical checks. Durable execution and review receipts bind evidence to the change revision and source snapshot; changed inputs invalidate approval. Agent-written status claims alone are not measured evidence.
 
 ## 7. Core Chain
 
@@ -619,6 +634,10 @@ Then ...
 > 需求不确定时先在这里探索。Discovery 不是正式 spec，只有 Confirmed 决策才能进入 REQ/AC。
 > Open Questions 未闭合时，只维护 discovery、可选 Draft proposal 和简短 notes，不生成完整 spec/design/tasks。
 
+## Intake Coverage And Authorization
+
+Cover project context, scope, technical preferences, and constraints/acceptance with cited user or project confirmation. Ask only missing blocking questions; do not repeat known answers. Record bounded authorization, risk level/triggers, and which evidence remains relevant. A non-applicable preference needs a reason, not an invented choice.
+
 ## Knowledge Sources Used
 
 | Source | Status | Evidence | Why It Matters |
@@ -810,7 +829,10 @@ Then ...
 ## Execution Orchestration
 
 - Plan Preflight: Pending
-- Mode: Auto - subagent when supported, inline fallback otherwise
+- Mode: Proportionate - independent reviewer when supported and authorized, separate review pass otherwise
+- Risk Level And Triggers:
+- Authorization Source And Boundaries:
+- Context And Verification Scope:
 - Runtime Workspace: .sdc/runtime/<change-id>/
 - Task Review: Spec Compliance + Code Quality
 - Final Whole-Change Review: Required
@@ -1361,6 +1383,10 @@ YYYY-MM-DD-short-title.md
 > 需求不确定时先使用本文件。Discovery 用于发散和收敛，不是 Confirmed spec。
 > Open Questions 未闭合时，只维护 discovery、可选 Draft proposal 和简短 notes，不生成完整 spec/design/tasks。
 
+## Intake Coverage And Authorization
+
+Cover project context, scope, technical preferences, and constraints/acceptance with cited user or project confirmation. Ask only missing blocking questions; do not repeat known answers. Record bounded authorization, risk level/triggers, and which evidence remains relevant. A non-applicable preference needs a reason, not an invented choice.
+
 ## Knowledge Sources Used
 
 | Source | Status | Evidence | Why It Matters |
@@ -1771,7 +1797,10 @@ Then ...
 ## Execution Orchestration
 
 - Plan Preflight: Pending
-- Mode: Auto - subagent when supported, inline fallback otherwise
+- Mode: Proportionate - independent reviewer when supported and authorized, separate review pass otherwise
+- Risk Level And Triggers:
+- Authorization Source And Boundaries:
+- Context And Verification Scope:
 - Runtime Workspace: .sdc/runtime/<change-id>/
 - Task Review: Spec Compliance + Code Quality
 - Final Whole-Change Review: Required
@@ -1795,6 +1824,50 @@ Then ...
 - Product knowledge candidates:
 - Technical knowledge candidates:
 - Memory/procedure candidates:
+""",
+    "templates/runtime-context.md": """# Runtime Context Contract
+
+> Internal machine-readable runtime contract. This does not add a public SDC command.
+
+## Lifecycle State
+
+- Durable file: `.sdc/changes/active/<change-id>/state.json`
+- Schema: `sdc.change-state/v1`
+- States: `intake -> discovery -> confirmed -> planned -> applying -> checking -> archivable`
+- Advance only one legal boundary at a time and include source evidence. Valid fresh same-state retries are idempotent.
+- File presence never implies confirmation. Confirmed-and-later states bind governing input snapshots; missing legacy snapshots require explicit revalidation.
+- Use internal state reopen to discovery for changed scope, or confirmed for replanning unchanged requirements. Retain revision history and invalidate downstream artifacts/receipts without adding a public command.
+- `checking` requires completed tasks and approved task reviews; `archivable` also requires the approved final whole-change review. Existing terminal states are revalidated when read.
+
+## Active Change Resolution
+
+- Resolution schema: `sdc.active-change-resolution/v1`
+- Session pointer schema: `sdc.session-pointer/v1`
+- Precedence: explicit change, `SDC_ACTIVE_CHANGE`, valid session pointer, sole active directory.
+- Stop on zero, multiple, missing, invalid, or unsafe change directories. Never select by recency.
+
+## Role Context Manifests
+
+- Record schema: `sdc.context-manifest-record/v1`
+- Durable files: `apply-context.jsonl` and `check-context.jsonl`
+- Records reference repository-relative files and current SHA-256 values; they do not copy source content.
+- Verify schema, source set, and hashes before use. Refresh progress-only manifests at a safe checkpoint; changed governing inputs require a revision first.
+
+## Candidate Recall And Research
+
+- Recall schema: `sdc.recall-result/v1`; every result has `status: Candidate`.
+- Research route schema: `sdc.research-route/v1`.
+- Scratch stays under `.sdc/runtime/<change-id>/research/`; durable findings stay Candidate until archive confirmation.
+
+## Session And Evidence
+
+- Session context schema: `sdc.session-context/v1`.
+- Evidence schema: `sdc.evidence-record/v1`.
+- Session pointers, scratch, and asserted evidence stay under git-ignored `.sdc/runtime/` and never outrank confirmed artifacts.
+- Durable `sdc.delivery-receipt/v1` execution/review receipts live under the change's `evidence/` directory. Completed tasks require current successful runs matching their Verify argv and a final approved review bound to the same inputs. Failed, timed-out, stale, or asserted-only evidence cannot pass.
+- Codex defaults to the portable skill adapter; supported clients may explicitly opt into native hook packaging and separately trust it. Hooks only supply context, never bypass gates.
+- Session pointers require complete provenance and RFC3339 timestamps. Claude hook payload identity takes precedence; environment fallback requires explicit `SDC_ALLOW_ENV_SESSION_ID=1` opt-in.
+- Recall remains under each allowlisted root. Credential-shaped values are rejected or redacted, but this best-effort filter is not a dedicated secret scanner.
 """,
     "templates/knowledge-candidates.md": """# Knowledge Candidates
 
@@ -1937,6 +2010,32 @@ def print_color(color, text):
     print(f"{color}{text}{ENDC}")
 
 
+def validate_sdc_workspace_boundary():
+    """Reject symbolic links anywhere inside the writable SDC workspace."""
+    project_root = Path.cwd().resolve()
+    workspace = Path(os.path.abspath(SDC_DIR))
+    try:
+        workspace.relative_to(project_root)
+    except ValueError as exc:
+        raise ValueError(f"Unsafe SDC workspace outside repository: {workspace}") from exc
+    if workspace.is_symlink():
+        raise ValueError(f"Unsafe SDC workspace symbolic link: {workspace}")
+    if not workspace.exists():
+        return
+    for directory, dirnames, filenames in os.walk(workspace, followlinks=False):
+        base = Path(directory)
+        for name in [*dirnames, *filenames]:
+            candidate = base / name
+            if candidate.is_symlink():
+                raise ValueError(f"Unsafe symbolic link inside SDC workspace: {candidate}")
+
+
+def validate_change_id(change_id):
+    if not isinstance(change_id, str) or not SAFE_CHANGE_ID_RE.fullmatch(change_id):
+        raise ValueError(f"Invalid change id: {change_id!r}")
+    return change_id
+
+
 def slugify(value):
     """Convert a change name into a filesystem-friendly slug."""
     slug = re.sub(r"[^a-zA-Z0-9\u4e00-\u9fff]+", "-", value.strip().lower())
@@ -1945,6 +2044,7 @@ def slugify(value):
 
 
 def change_path(change_id):
+    validate_change_id(change_id)
     active = SDC_DIR / "changes" / "active" / change_id
     if active.exists():
         return active
@@ -1957,6 +2057,7 @@ def change_path(change_id):
 
 
 def archive_change_path(change_id):
+    validate_change_id(change_id)
     return SDC_DIR / "changes" / "archive" / change_id
 
 
@@ -2113,7 +2214,7 @@ def task_review_blocks(section, task_id):
     ]
 
 
-def validate_dual_review_evidence(errors, evidence_file, completed):
+def validate_task_review_evidence(errors, evidence_file, completed):
     text = read_text(evidence_file)
     task_sections = markdown_sections(text, "Task Review Evidence")
     if len(task_sections) > 1:
@@ -2138,6 +2239,10 @@ def validate_dual_review_evidence(errors, evidence_file, completed):
         if not evidence_reference_exists(evidence, evidence_file):
             errors.append(f"{evidence_file} {task_id} Evidence 引用不存在或锚点无效: {evidence or '(empty)'}")
 
+
+def validate_final_review_evidence(errors, evidence_file):
+    text = read_text(evidence_file)
+
     final_sections = markdown_sections(text, "Final Whole-Change Review")
     if len(final_sections) > 1:
         errors.append(f"{evidence_file} Final Whole-Change Review 章节重复")
@@ -2154,6 +2259,11 @@ def validate_dual_review_evidence(errors, evidence_file, completed):
     final_evidence = review_field(final_block, "Evidence")
     if not evidence_reference_exists(final_evidence, evidence_file):
         errors.append(f"{evidence_file} Final Whole-Change Review Evidence 引用不存在或锚点无效: {final_evidence or '(empty)'}")
+
+
+def validate_dual_review_evidence(errors, evidence_file, completed):
+    validate_task_review_evidence(errors, evidence_file, completed)
+    validate_final_review_evidence(errors, evidence_file)
 
 
 def parse_global_constraints(filepath):
@@ -2473,6 +2583,13 @@ def validate_delivery_completion(errors, warnings, base, current=False):
             errors.append(f"{evidence_file} 缺少交付审查章节: {heading}")
     validate_dual_review_evidence(errors, evidence_file, completed)
 
+    if not current:
+        helper = Path(__file__).resolve().parent / "scripts" / "sdc-runtime-context.py"
+        result = subprocess.run([sys.executable, str(helper), "evidence", "verify", "--change", base.name],
+                                cwd=Path.cwd(), text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if result.returncode:
+            errors.append("Delivery receipts are missing, failed, or stale: " + result.stdout.strip())
+
     runtime_id = "current" if current else base.name
     ledger = SDC_DIR / "runtime" / runtime_id / "progress.md"
     if not ledger.exists():
@@ -2500,6 +2617,18 @@ def validate_delivery_completion(errors, warnings, base, current=False):
         row = ledger_rows.get(task_id)
         if row and row["status"].strip().lower() in complete_statuses:
             errors.append(f"{ledger} 与 tasks.md 冲突：{task_id} 在账本中完成但任务仍未勾选")
+
+
+def validate_checking_gate(errors, base):
+    tasks = base / "tasks.md"
+    notes = base / "notes.md"
+    completed, pending = task_completion_states(tasks)
+    if pending:
+        errors.append(f"{tasks} 仍有未完成任务: {', '.join(sorted(pending))}")
+    if not completed:
+        errors.append(f"{tasks} 没有已完成任务，不能进入 checking")
+    validate_task_trace(errors, tasks)
+    validate_task_review_evidence(errors, notes, completed)
 
 
 def validate_no_unconfirmed_execution_inputs(errors, filepath):
@@ -2648,6 +2777,36 @@ def validate_spec_trace(errors, filepath):
         errors.append(f"{filepath} 缺少 Decision Ledger / 决策台账")
 
 
+def status_table_is_open(body, closed_statuses, empty_values):
+    """Only an explicit Status column can close a row, never an option or ID."""
+    status_index = None
+    for line in body.splitlines():
+        value = line.strip()
+        if not value or value.startswith("#") or re.fullmatch(r"\|[\s:|\-]+\|", value):
+            continue
+        if value.startswith("|"):
+            cells = [cell.strip().lower() for cell in value.strip("|").split("|")]
+            if cells[0] in {"id", "question", "decision", "问题", "决策"}:
+                indices = [index for index, cell in enumerate(cells) if cell in {"status", "状态"}]
+                status_index = indices[0] if len(indices) == 1 else None
+                continue
+            if status_index is None or len(cells) <= status_index or cells[status_index] not in closed_statuses:
+                return True
+        elif value.lower().rstrip(".!。") not in empty_values:
+            return True
+    return False
+
+
+def decision_ledger_open(text):
+    sections = [match.group("body") for match in re.finditer(
+        r"^##[ \t]+(?:\d+[.)][ \t]*)?(?:Decision Ledger(?:[ \t]*/[ \t]*决策台账)?|决策台账)[ \t]*$"
+        r"(?P<body>[\s\S]*?)(?=^##[ \t]+|\Z)", text, re.IGNORECASE | re.MULTILINE,
+    )]
+    return len(sections) != 1 or status_table_is_open(
+        sections[0], {"confirmed", "deferred", "rejected"}, {"none", "no decisions", "n/a", "无"},
+    )
+
+
 def discovery_gate_open(base):
     """Return True when discovery still contains unresolved exit criteria or blocking states."""
     text = read_text(base / "discovery.md")
@@ -2660,7 +2819,14 @@ def discovery_gate_open(base):
         re.IGNORECASE,
     )
     blocking_state = re.search(r"\b(Proposed|Assumed|TBD|Conflict)\b", text)
-    return bool(unchecked_exit or blocking_state)
+    questions_sections = markdown_sections(text, "Open Questions")
+    if decision_ledger_open(text) or len(questions_sections) != 1:
+        return True
+    open_question = status_table_is_open(
+        questions_sections[0], {"closed", "resolved", "deferred", "已解决", "已关闭"},
+        {"none", "no open questions", "n/a", "无", "无未解决问题"},
+    )
+    return bool(unchecked_exit or blocking_state or open_question)
 
 
 def validate_no_write_ahead(errors, filepath):
@@ -2968,6 +3134,9 @@ def is_standard_pack_source_file(path, source_root):
     if any(part.startswith(".") or part in STANDARD_PACK_IGNORED_NAMES for part in relative_parts):
         return False
 
+    if len(relative_parts) == 1 and relative_parts[0].lower() == "readme.md":
+        return False
+
     return path.suffix.lower() in STANDARD_PACK_DOC_SUFFIXES
 
 
@@ -3257,14 +3426,14 @@ def print_change_intake(name):
     print_color(YELLOW, "⚠️  Change Intake Gate：尚未创建任何 change 文件")
     print()
     print("在 SDC 中，创建 `.sdc/changes/active/*` 前必须先确认 4 类 intake 信息。")
-    print("请先回答并确认下面问题；确认后再运行：")
+    print("已有明确授权或已确认项目依据可直接引用；只询问缺失的阻塞项，不重复问已回答的问题。覆盖完成后运行：")
     print(f"  {BLUE}sdc change {name} --confirmed-intake{ENDC}")
     print()
     print("## Change Intake")
     print(f"- Current request: {name}")
     print(f"- Recommended change id: {change_id}")
     print()
-    print("## Required Questions")
+    print("## Required Intake Coverage")
     print("1. Project context: 这是新项目还是存量项目？目标用户是谁？个人还是团队使用？")
     print("2. Core scope: 当前 MVP 必须包含什么？哪些明确不做？")
     print("3. Technical preferences: 语言、框架、数据库、部署方式或集成偏好是什么？")
@@ -3311,6 +3480,22 @@ def cmd_change(name, confirmed_intake=False):
 
     for filename, content in files.items():
         (directory / filename).write_text(content)
+
+    (directory / "state.json").write_text(
+        json.dumps(
+            {
+                "schema": "sdc.change-state/v1",
+                "change_id": change_id,
+                "state": "discovery",
+                "updated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+                "source": {"kind": "change-stage", "paths": ["discovery.md", "proposal.md", "notes.md"]},
+            },
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    )
 
     print_color(GREEN, "✅ SDC 需求迭代草稿已创建")
     print(f"   ID: {change_id}")
@@ -3381,8 +3566,11 @@ def validate_spec_file(errors, warnings, filepath):
     if not filepath.exists():
         return
     text = read_text(filepath)
-    if re.search(r"Status:\s*Draft", text, re.IGNORECASE):
-        errors.append(f"{filepath} 仍是 Draft，进入 plan/apply 前必须明确 Confirmed")
+    statuses = re.findall(r"(?mi)^\s*-?\s*Status:\s*([^\n]+)", text)
+    if not statuses or any(value.strip().lower() != "confirmed" for value in statuses):
+        errors.append(f"{filepath} 状态必须明确为 Confirmed，Draft 或缺少确认不能进入 plan/apply")
+    if decision_ledger_open(text):
+        errors.append(f"{filepath} 的 Decision Ledger 缺失、重复或仍有未闭合决策")
     validate_no_unconfirmed_execution_inputs(errors, filepath)
     validate_artifact_output_contract(errors, warnings, filepath)
     validate_spec_trace(errors, filepath)
@@ -3590,6 +3778,42 @@ def cmd_validate(target="current", require_delivery_evidence=False):
     return not errors
 
 
+def cmd_lifecycle_gate(change_id, state):
+    """Internal content gate used by the shared lifecycle state helper."""
+    if state not in {"confirmed", "planned", "applying", "checking", "archivable", "reviewed"}:
+        print_color(RED, f"❌ 不支持的 lifecycle gate: {state}")
+        return False
+    base = change_path(change_id)
+    if not base.is_dir():
+        print_color(RED, f"❌ 需求迭代不存在: {base}")
+        return False
+    errors = []
+    warnings = []
+    validate_file(errors, warnings, base / "discovery.md", ["Current Understanding", "Decision Ledger", "Open Questions", "Exit Criteria"])
+    if discovery_gate_open(base):
+        errors.append("Discovery Gate is open; confirmation and execution are blocked")
+    exit_section = markdown_section(read_text(base / "discovery.md"), "Exit Criteria")
+    if not re.search(r"(?m)^\s*- \[[xX]\]", exit_section):
+        errors.append("Discovery Exit Criteria require explicit completed confirmation records")
+    validate_spec_file(errors, warnings, base / "spec.md")
+    if errors:
+        for item in errors:
+            print(f"  - {item}")
+        return False
+    if state in {"planned", "applying", "archivable"}:
+        return cmd_validate(change_id, require_delivery_evidence=state == "archivable")
+    if state == "confirmed":
+        return True
+    validate_checking_gate(errors, base)
+    if state == "reviewed":
+        validate_final_review_evidence(errors, base / "notes.md")
+    if errors:
+        for item in errors:
+            print(f"  - {item}")
+        return False
+    return True
+
+
 def collect_change_text(source):
     """Collect change artifact text for lightweight archive heuristics."""
     parts = []
@@ -3751,6 +3975,16 @@ def format_knowledge_compact_table(rows):
 
 
 def cmd_archive(change_id):
+    try:
+        change_path(change_id)
+        with change_lock(Path.cwd().resolve(), change_id):
+            return archive_change_locked(change_id)
+    except (ValueError, OSError) as exc:
+        print_color(RED, f"Archive blocked: {exc}")
+        return False
+
+
+def archive_change_locked(change_id):
     """归档完成的需求迭代"""
     if not SDC_DIR.exists():
         print_color(RED, "❌ 请先运行: sdc init")
@@ -3759,6 +3993,26 @@ def cmd_archive(change_id):
     source = change_path(change_id)
     if not source.exists():
         print_color(RED, f"❌ 需求迭代不存在: {source}")
+        return False
+
+    state_file = source / "state.json"
+    runtime_helper = Path(__file__).resolve().parent / "scripts" / "sdc-runtime-context.py"
+    try:
+        result = subprocess.run(
+            [sys.executable, str(runtime_helper), "state", "get", "--change", change_id],
+            cwd=Path.cwd(),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        state = json.loads(result.stdout) if result.returncode == 0 else None
+    except (FileNotFoundError, json.JSONDecodeError):
+        state = None
+    if not isinstance(state, dict):
+        print_color(RED, f"❌ 归档要求有效的 archivable 生命周期状态: {state_file}")
+        return False
+    if state.get("state") != "archivable":
+        print_color(RED, "❌ 只有 lifecycle state 为 archivable 的变更才能归档")
         return False
 
     if not cmd_validate(change_id, require_delivery_evidence=True):
@@ -3860,6 +4114,7 @@ def cmd_archive(change_id):
     final_archive_file = archive_file
     moved_to = None
     if source != archived_dir and source.exists() and not archived_dir.exists():
+        validate_sdc_workspace_boundary()
         archived_dir.parent.mkdir(parents=True, exist_ok=True)
         source.rename(archived_dir)
         final_archive_file = archived_dir / "archive.md"
@@ -3957,6 +4212,12 @@ def main():
 
     cmd = sys.argv[1]
 
+    try:
+        validate_sdc_workspace_boundary()
+    except ValueError as exc:
+        print_color(RED, f"❌ {exc}")
+        sys.exit(1)
+
     if cmd == "init":
         args = sys.argv[2:]
         standards_source = option_value(args, "--standards")
@@ -3985,6 +4246,9 @@ def main():
             print_color(RED, "❌ 用法: sdc archive <change-id>")
             return
         if not cmd_archive(sys.argv[2]):
+            sys.exit(1)
+    elif cmd == "__lifecycle-gate":
+        if len(sys.argv) != 4 or not cmd_lifecycle_gate(sys.argv[2], sys.argv[3]):
             sys.exit(1)
     elif cmd == "apply":
         cmd_edit("apply")

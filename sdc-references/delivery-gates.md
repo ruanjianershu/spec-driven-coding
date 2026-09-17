@@ -2,6 +2,8 @@
 
 This reference contains the shared validation, review, test, quality, check, and archive rules.
 
+Load only the gate needed for the current stage. Use `workflow-standards.md` when judging risk level, authorization, or evidence freshness. All `light` / `standard` / `strict` changes meet the same semantic acceptance; validation breadth follows affected sources and named risks, not fixed full-repository loops.
+
 ## Validate Gate
 
 Validate artifacts for the target stage, not only file existence.
@@ -17,13 +19,15 @@ Check:
 - Triggered output artifacts exist or are explicitly `N/A` with evidence: process/state diagram, sequence/integration diagram, API/contract specification, data/migration contract, UX flow/states, test matrix, deploy/release checklist, AI involvement note.
 - Final spec/design/context-pack/tasks/impact do not contain `Assumed`, `Proposed`, `TBD`, `Conflict`, `Stale`, or open Knowledge Gaps.
 - Knowledge rows include evidence identity: Status, Source, Verified At, Verified Against, and Scope where applicable.
+- Source identity and authorization scope are current. Required manifests and approval snapshots verify; missing, malformed, or stale evidence blocks reuse. Same-state retries do not reapprove changed inputs; revisions use explicit reasoned reopen.
+- Four intake categories are covered by cited user/project confirmation or evidence-based non-applicability; missing business requirements remain in discovery. Risk level, triggers, and rationale are visible, and any downgrade has new evidence and explicit user approval.
 - Candidate rows include Source, Evidence Needed, Target, and Promotion Gate.
 - Specs contain Glossary, invariants, SCN/REQ/AC, acceptance criteria, validation strategy, and traceability.
 - Tasks use `T### [REQ-*] [AC-*] [Phase] [Size]`.
 - Task sizes are only `S` or `M`.
 - Final plan includes exact Global Constraints and `Plan Preflight: Passed`.
 - Every task declares Files, Consumes, Produces, Verify, Expected, Review, Evidence, and Source.
-- Tests precede the implementation work they verify.
+- Meaningful behavior tests precede the implementation they verify; behavior-neutral edits have a justified focused validation path instead of artificial failing tests.
 - Decision Ledger exists for high-impact decisions.
 - `Proposed`, `Assumed`, `TBD`, and `Conflict` items do not enter final REQ/AC/design/tasks/apply.
 - Brownfield changes have a current `impact.md` with no blocking open questions.
@@ -57,6 +61,8 @@ Every finding needs a file/line reference, consequence, and actionable fix. If n
 
 Task-scoped review must return separate Spec Compliance and Code Quality verdicts. Review is read-only. Use `Cannot verify from diff` for requirements that need focused controller evidence; do not silently approve them.
 
+Preserve independent reviewer judgment and final whole-change review. For a single-task light change, one pass over the final snapshot may supply both task and final records. Check can assess that evidence without rerunning an unchanged review. Use a separate reviewer context when supported and authorized; disclose limitations of an inline role-separated pass.
+
 ## Test Gate
 
 Test against acceptance criteria, not only implementation details.
@@ -70,8 +76,11 @@ Report:
 - Flaky or skipped tests.
 - Failure details sufficient to reproduce.
 - Risk caused by tests that could not run.
+- Actual exit status, source snapshot, and execution receipt for commanded validation; appended assertions are not receipts.
 
 Coverage percentage is useful but not proof of requirement validation.
+
+Select the smallest set of checks that proves affected ACs and regression boundaries. Reuse trustworthy current receipts; rerun for changed inputs, missing coverage, or a named unresolved risk, not merely a new stage. Failed, timed-out, missing, stale, or skipped required checks cannot count as passing. Manual evidence must name the observable result and scope; it cannot silently replace a required executable check.
 
 ## Quality Gate
 
@@ -138,7 +147,7 @@ Block archive when:
 - `spec.md` is still a template or draft without confirmation.
 - Key tasks are unfinished.
 - Traceability chain is broken.
-- Check or equivalent review/test/security/quality evidence is missing.
+- Current review/test/security/quality evidence is missing, or a narrative assertion substitutes for a required execution receipt.
 - Plan Preflight, per-task approved review evidence, or final whole-change review evidence is missing.
 - `.sdc/specs/<change-id>.md` already exists and overwrite is not explicitly allowed.
 - Residual work is hidden instead of recorded as deferred scope or a new change.
@@ -152,6 +161,8 @@ Required archive outputs:
 - `archive.md` with conclusion, evidence, residual risks, coverage summary, and Knowledge Compact Gate summary.
 
 Knowledge Compact Gate must evaluate:
+
+Use candidates and affected-source links to select destinations below; do not reread or update every asset by habit. Proposals identify exact target, evidence, freshness, and the incremental change. Unaffected destinations may be `N/A` with a short reason.
 
 - `.sdc/specs/` promotion.
 - `.sdc/changes/archive/` preservation.
@@ -169,5 +180,7 @@ Knowledge Compact Gate must evaluate:
 - `.sdc/project-cognition.md` only when repo-level cognition is stale, incomplete, or structurally affected.
 
 Optional durable memory updates may be deferred, but the archive output must say why. They must not be written without explicit human confirmation.
+
+This includes personal/native memory and research recall: all remain Candidate until verified and explicitly approved for the specific destination. Cross-device memory writes need the user's explicit request, not implicit archive consent.
 
 Do not add or require a separate public compact command. Knowledge compaction is an internal archive gate.

@@ -21,6 +21,7 @@ const PLUGIN_ENTRIES = [
   'skills',
   'sdc-references',
   'commands',
+  'hooks',
   '.claude-plugin',
   '.codex-plugin',
   '.agents',
@@ -42,6 +43,8 @@ const PLUGIN_ENTRIES = [
 const SDC_MARKETPLACE_NAME = 'sdc-local';
 const SDC_PLUGIN_ID = 'sdc@sdc-local';
 const SDC_CLAUDE_PLUGIN_ID = 'sdc@sdc-local';
+// This is a packaging choice, not client capability detection or hook trust.
+const CODEX_NATIVE_HOOKS = process.env.SDC_CODEX_HOOKS === '1';
 
 const ADVANCED_SKILL_NAMES = [
   'sdc-spec',
@@ -120,6 +123,7 @@ function copyPlugin(dest, options = {}) {
   const includeClaudeSkillLayout = options.includeClaudeSkillLayout !== false;
   const claudeSkillSourceRoot = options.claudeSkillSourceRoot || path.join(dest, 'skills');
   const includePublicWorkflowSkills = options.includePublicWorkflowSkills === true;
+  const includeHooks = options.includeHooks !== false;
 
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
@@ -127,6 +131,9 @@ function copyPlugin(dest, options = {}) {
 
   for (const entry of PLUGIN_ENTRIES) {
     if (entry === 'skills' && !includeRootSkills) {
+      continue;
+    }
+    if (entry === 'hooks' && !includeHooks) {
       continue;
     }
     copyIfExists(path.join(projectRoot, entry), path.join(dest, entry));
@@ -145,6 +152,25 @@ function copyPlugin(dest, options = {}) {
   if (!includeRootSkills) {
     fs.rmSync(path.join(dest, 'skills'), { recursive: true, force: true });
   }
+  if (options.codexAdapter) {
+    configureCodexAdapter(dest);
+  }
+}
+
+function configureCodexAdapter(pluginRoot) {
+  const manifestPath = path.join(pluginRoot, '.codex-plugin', 'plugin.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  fs.rmSync(path.join(pluginRoot, 'hooks'), { recursive: true, force: true });
+  delete manifest.hooks;
+  if (CODEX_NATIVE_HOOKS) {
+    for (const name of ['codex.json', 'codex-session-start.py']) {
+      const target = path.join(pluginRoot, 'hooks', name);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.copyFileSync(path.join(projectRoot, 'hooks', name), target);
+    }
+    manifest.hooks = './hooks/codex.json';
+  }
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 }
 
 function replacePluginTransactionally(dest, options = {}) {
@@ -260,6 +286,16 @@ function writeCompleteAgentSkillLayout(targetRoot) {
   if (fs.existsSync(references)) {
     copyDir(references, path.join(path.dirname(targetRoot), 'sdc-references'));
   }
+  const runtimeRoot = path.join(path.dirname(targetRoot), 'sdc-runtime');
+  fs.rmSync(runtimeRoot, { recursive: true, force: true });
+  for (const entry of [
+    'sdc-cli.py', 'scripts/sdc-runtime-context.py', 'scripts/sdc_evidence.py',
+    'scripts/sdc-task-brief.py', 'scripts/sdc-review-package.py'
+  ]) {
+    const target = path.join(runtimeRoot, entry);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(projectRoot, entry), target);
+  }
   ensurePublicWorkflowSkills(targetRoot);
 }
 
@@ -275,7 +311,9 @@ function writeLocalCodexMarketplace(home) {
 
   replacePluginTransactionally(pluginRoot, {
     includePublicWorkflowSkills: true,
-    includeClaudeSkillLayout: false
+    includeClaudeSkillLayout: false,
+    includeHooks: false,
+    codexAdapter: true
   });
   fs.mkdirSync(path.dirname(marketplaceFile), { recursive: true });
   fs.writeFileSync(marketplaceFile, JSON.stringify({
@@ -346,7 +384,9 @@ function writeCodexPluginCache(home) {
   fs.mkdirSync(cachePluginRoot, { recursive: true });
   replacePluginTransactionally(versionedPluginRoot, {
     includePublicWorkflowSkills: true,
-    includeClaudeSkillLayout: false
+    includeClaudeSkillLayout: false,
+    includeHooks: false,
+    codexAdapter: true
   });
   for (const entry of fs.readdirSync(cachePluginRoot, { withFileTypes: true })) {
     if (entry.name !== packageVersion()) {
@@ -370,8 +410,9 @@ function writeLocalClaudeMarketplace(home) {
   const marketplaceRoot = path.join(home, '.claude', 'plugins', 'marketplaces', SDC_MARKETPLACE_NAME);
   fs.rmSync(marketplaceRoot, { recursive: true, force: true });
   copyPlugin(marketplaceRoot, {
-    includeRootSkills: false,
-    claudeSkillSourceRoot: path.join(projectRoot, 'skills')
+    includeRootSkills: true,
+    includeClaudeSkillLayout: false,
+    includePublicWorkflowSkills: true
   });
   return marketplaceRoot;
 }
@@ -465,6 +506,8 @@ function removeCodexDirectSkills(home) {
   }
   fs.rmSync(path.join(home, '.agents', 'sdc-references'), { recursive: true, force: true });
   fs.rmSync(path.join(home, '.codex', 'sdc-references'), { recursive: true, force: true });
+  fs.rmSync(path.join(home, '.agents', 'sdc-runtime'), { recursive: true, force: true });
+  fs.rmSync(path.join(home, '.codex', 'sdc-runtime'), { recursive: true, force: true });
 
   return removedPaths;
 }
@@ -530,6 +573,8 @@ function uninstallCodex(home) {
   }
   fs.rmSync(path.join(home, '.agents', 'sdc-references'), { recursive: true, force: true });
   fs.rmSync(path.join(home, '.codex', 'sdc-references'), { recursive: true, force: true });
+  fs.rmSync(path.join(home, '.agents', 'sdc-runtime'), { recursive: true, force: true });
+  fs.rmSync(path.join(home, '.codex', 'sdc-runtime'), { recursive: true, force: true });
 
   log(GREEN, '✅ Codex SDC 已卸载');
 }
@@ -539,6 +584,7 @@ function uninstallHermes(home) {
   fs.rmSync(path.join(home, '.hermes', 'skills', 'sdc'), { recursive: true, force: true });
   fs.rmSync(path.join(home, '.hermes', 'skills', 'sdc-spec'), { recursive: true, force: true });
   fs.rmSync(path.join(home, '.hermes', 'skills', 'sdc-references'), { recursive: true, force: true });
+  fs.rmSync(path.join(home, '.hermes', 'skills', 'sdc-runtime'), { recursive: true, force: true });
   log(GREEN, '✅ Hermes Agent SDC 已卸载');
 }
 
@@ -607,7 +653,7 @@ function installToPlatform(platform) {
   let installedPath = destPath;
   
   if (platform.type === 'hermes') {
-    // Hermes 只需要 skills 目录
+    // Hermes uses direct skills with sibling references and runtime helpers.
     writeCompleteAgentSkillLayout(destPath);
   } else if (platform.type === 'codex') {
     // Codex uses the local marketplace/cache flow below. Remove the old direct
@@ -742,7 +788,14 @@ if (installedTypes.has('claude')) {
 
 if (installedTypes.has('codex')) {
   console.log('\nCodex skill plugin：');
-  console.log('  Codex 当前版本不支持插件自定义 /sdc:* slash commands。');
+  if (CODEX_NATIVE_HOOKS) {
+    console.log('  Native SessionStart adapter packaged (SDC_CODEX_HOOKS=1). Requires a client with plugin hooks support and Python 3.');
+    console.log('  Review and trust the hook using /hooks in a supporting Codex CLI. Installation does not grant trust or override hook policy.');
+    console.log('  If hooks are unavailable, disabled, or untrusted, use the portable SDC skills/session-context adapter.');
+  } else {
+    console.log('  Portable session-context adapter retained. Native hooks are optional: SDC_CODEX_HOOKS=1 (requires supported client and hook trust).');
+  }
+  console.log('  Codex 通过 SDC skills 调用工作流；本安装器不注册 /sdc:* slash commands。');
   console.log('  请通过 /skills 查看 sdc:sdc-init / sdc:sdc-change / sdc:sdc-plan 等 skills，或用自然语言触发：使用 SDC 初始化项目、使用 SDC 创建 change。');
 }
 
@@ -752,4 +805,6 @@ if (installedTypes.has('hermes')) {
 }
 
 console.log('\n🔗 项目地址：https://github.com/ruanjianershu/spec-driven-coding');
+console.log('\n项目初始化：Claude Code 中运行 /sdc:init；Codex/Hermes 使用 SDC init skill。');
+console.log('终端中请在目标项目目录运行 python3 /path/to/installed/sdc/sdc-cli.py init。');
 console.log('\n');

@@ -18,12 +18,14 @@ stage inputs + risk triggers -> required outputs -> validation evidence
 
 Do not create large documents while Discovery Gate is open. Output contracts become final only after intake, MVP scope, acceptance direction, and high-impact decisions are confirmed or explicitly deferred.
 
+Apply `workflow-standards.md` when selecting risk level or evidence breadth. Outputs follow actual triggers at every level; light work may use concise sections and shared evidence, never weaker acceptance or invented requirements.
+
 ## Stage Contracts
 
 | Stage | Required Inputs | Required Outputs |
 | --- | --- | --- |
 | change | User request, source PRD/notes if provided, `.sdc/common-ground.md`, `.sdc/knowledge/index.md`, `.sdc/expert-routing.md` | Input evidence summary, functional decomposition, business rules, scenarios, open questions, Decision Ledger, proposed output artifact contract |
-| spec | Confirmed discovery, established Common Ground, confirmed knowledge, Decision Ledger | Confirmed or Draft spec with SCN/REQ/AC, invariants, validation strategy, traceability, and accepted output artifact contract |
+| spec | Closed discovery, established Common Ground, confirmed knowledge, Decision Ledger | Spec with SCN/REQ/AC, invariants, validation strategy, traceability, and accepted output artifact contract; no speculative spec while business requirements remain unknown |
 | plan | Confirmed spec, impact when required, relevant knowledge and standards, expert routing | Detailed technical design, required diagrams/checklists/contracts, tasks, context-pack, validation strategy |
 | apply | Context-pack, tasks, design, relevant standards and knowledge | Code changes, task evidence, notes, validation output, knowledge candidates |
 | check | Final artifacts, actual diff, tests/build/manual evidence | Validate/review/test/quality report, AC coverage, missing artifact findings, deploy/release readiness, knowledge compact recommendations |
@@ -77,14 +79,14 @@ Rules:
 
 During `sdc-change`, collect only enough information to decide which outputs are likely required.
 
-Ask within the normal intake categories:
+Cover within the four intake categories using cited current/prior confirmation; ask only missing blocking questions:
 
 - Input sources: PRD link, meeting notes, issue, logs, screenshots, code evidence, or direct user request.
 - Product output triggers: workflow, roles, permission, approval, state, user journey, business rules.
 - Technical output triggers: API, data, integration, async/job, UI, deployment, config, migration, security, rollback.
 - Acceptance output triggers: tests, manual verification, deploy checklist, AI involvement note.
 
-All output requirements are `Proposed` until the user confirms scope. While Discovery Gate is open, keep the output contract as a draft in `discovery.md` or `proposal.md`.
+Unconfirmed output requirements remain `Proposed`; reuse still-valid confirmed scope and applicable project standards without asking again. While Discovery Gate is open, keep the output contract as a draft in `discovery.md` or `proposal.md`.
 
 ## Plan Use
 
@@ -92,7 +94,7 @@ During `sdc-plan`, turn the confirmed artifact contract into concrete sections:
 
 - Add diagrams only when triggered; use Mermaid unless a project standard says otherwise.
 - Add API/data/deploy/test contracts when triggered.
-- Put small tasks in `tasks.md` for producing or validating required outputs before implementation tasks.
+- Include production/validation of triggered outputs in the coherent task that needs them; split only when independently verifiable. Do not add artificial artifact-only tasks to a tiny change.
 - Put the final contract summary in `context-pack.md` so implementation agents know what must remain true.
 
 ## Check Use

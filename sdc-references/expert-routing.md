@@ -23,6 +23,7 @@ workflow stage + project evidence + change scope -> expert profiles -> relevant 
 - Do not add public slash commands for every expert.
 - Do not expose technology-specific command sprawl.
 - Expert profiles are internal lenses that guide reading, questioning, planning, review, and testing.
+- Profiles do not imply separate agents, mandatory full-repository reads, or repeated review/test loops. Use `workflow-standards.md` when risk classification or context breadth is unclear.
 - The agent must disclose which expert profiles were used in `context-pack.md`, review/check reports, or archive summaries when those profiles materially affected decisions.
 
 ## Expert Profile Registry
@@ -43,6 +44,7 @@ Use these generic profiles first. Projects may extend them in `.sdc/expert-routi
 | security | Auth, permissions, secrets, input/output safety, compliance, destructive operations. | security standards, roles, APIs, config, dependency evidence. | Threat-focused questions and blockers. |
 | operations | Deployment, config, observability, rollback, runtime behavior, performance baseline. | operations knowledge, scripts, CI/CD, logs, config. | Release readiness, rollback, diagnostics. |
 | documentation | Public docs, README, onboarding, developer handoff, changelog. | project docs, specs, archive evidence. | Concise, durable docs with traceability. |
+| research | External or prior evidence is needed before change, plan, apply, check, or archive. | public sources, local knowledge, `.sdc/runtime/<change-id>/research/`, citations, `knowledge-candidates.md`. | Scratch evidence stays runtime-local; durable findings remain Candidate until archive confirmation. |
 
 ## Routing File Shape
 
@@ -87,7 +89,7 @@ Use these generic profiles first. Projects may extend them in `.sdc/expert-routi
 
 ### plan
 
-- Select 2-5 relevant profiles.
+- Select the smallest relevant profile set with no numeric quota; one lens may suffice for a narrow change.
 - Read required knowledge/standards for those profiles.
 - Write the selected profiles into `context-pack.md`.
 - If no profile fits, state `Profiles Used: baseline-sdc` and continue with core SDC rules.
@@ -101,15 +103,18 @@ Use these generic profiles first. Projects may extend them in `.sdc/expert-routi
 
 - Validate that selected expert profiles match the actual diff and risk.
 - Add missing profile findings when the implementation touched a risk area not covered by the plan.
+- Validate research routing when research influenced the change: scratch in runtime, citations in discovery/notes, durable findings in `knowledge-candidates.md`.
 
 ### archive
 
 - Record profiles that were useful and whether `.sdc/expert-routing.md`, standards, or knowledge should be updated.
 - Updating routing rules is a conditional durable update requiring human confirmation.
+- Evaluate research candidates without promoting them automatically.
 
 ## Anti-Guess Rules
 
 - Expert profiles may suggest questions, checks, and investigation tasks.
+- Investigations remain within confirmed scope; unknown business requirements belong in discovery, not spec/design/tasks. Personal/native/project memory and research results are Candidate until verified and confirmed.
 - Expert profiles may not create unconfirmed product facts, architecture choices, data models, permissions, or rollout policies.
 - A profile recommendation that affects scope, data, security, public contracts, or compatibility must enter the Decision Ledger as `Proposed` until confirmed.
 - Imported company/team standards outrank generic expert guidance when they are relevant and do not conflict with confirmed project facts.

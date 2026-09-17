@@ -3,6 +3,7 @@
 
 import sys
 import tempfile
+import traceback
 from pathlib import Path
 
 from sdc_flow_provider import SCENARIOS
@@ -16,7 +17,10 @@ def main() -> int:
 
     for name, scenario in SCENARIOS.items():
         with tempfile.TemporaryDirectory(prefix="sdc-flow-eval-") as tmp:
-            output = scenario(Path(tmp))
+            try:
+                output = scenario(Path(tmp))
+            except Exception:
+                output = traceback.format_exc() + "\nRESULT: FAIL"
 
         passed = "RESULT: PASS" in output and "RESULT: FAIL" not in output
         status = "PASS" if passed else "FAIL"
