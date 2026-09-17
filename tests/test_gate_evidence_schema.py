@@ -33,7 +33,7 @@ def gate_evidence_sections(markdown):
     """Return peer-level Gate Evidence section bodies without touching sources."""
 
     return re.findall(
-        r"(?ms)^## Gate Evidence[ \t]*$\n(.*?)(?=^## |\Z)",
+        r"(?ms)^## Gate Evidence[ \t]*(?:\n|\Z)(.*?)(?=^## |\Z)",
         markdown,
     )
 
@@ -168,6 +168,18 @@ class GateEvidenceSchemaTests(unittest.TestCase):
     def test_duplicate_gate_evidence_sections_are_rejected(self):
         with self.assertRaises(AssertionError):
             parse_record(VALID_RECORD + VALID_RECORD)
+
+    def test_eof_duplicate_gate_evidence_titles_are_rejected(self):
+        cases = {
+            "eof": "## Gate Evidence",
+            "eof-space": "## Gate Evidence ",
+            "eof-tab": "## Gate Evidence\t",
+            "newline": "## Gate Evidence\n",
+        }
+        for boundary, duplicate_title in cases.items():
+            with self.subTest(boundary=boundary):
+                with self.assertRaisesRegex(AssertionError, r"^section-count$"):
+                    parse_record(VALID_RECORD + duplicate_title)
 
     def test_failures_do_not_echo_opaque_source_values(self):
         invalid_record = VALID_RECORD.replace(
