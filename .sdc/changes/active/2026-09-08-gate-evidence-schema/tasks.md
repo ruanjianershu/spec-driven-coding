@@ -108,3 +108,13 @@
 | T003 | Separate reviewer approves exact candidate snapshot, test matrix, Base/PR equality, and allowlist. | Mark T003 complete; record Candidate Snapshot Ledger and review reference. |
 | T004 | Fresh reviewer approves the exact recorded `Base..C3` review. | Mark T004 complete; record `Evidence: git:C3` and review reference. |
 | T900 | Whole-change reviewer approves exact final range, all AC evidence, and matching PR head. | Mark T900 complete; record Final Whole-Change Review and `Evidence: git:C900`. |
+
+## Post-T900 Repair Addendum — ANDY-231 Stage 1
+
+- Scope: repair the same `REQ-GE-02` / `AC-GE-02` title-cardinality check only.  No runtime, profile, default-command, public-contract, package, JSONL-manifest, lifecycle-state, or standard-document change is introduced.
+- Candidate: `7d6a9e1dd83fd5d71f5eb8649eb14092c1504b16..09d08806bd27e2e417cfe2d288acf980d2002b54`; only `tests/test_gate_evidence_schema.py` changes.
+- Root cause: the title terminator `(?:\n|\Z)` recognized LF and EOF but not CR or CRLF, so a duplicate `## Gate Evidence` title at the end of an otherwise valid LF record was omitted from the section count.
+- Test-first evidence: after adding CR/CRLF cases, the focused suite ran 9 tests with 4 expected failures (`AssertionError not raised`) for `\r`, `\r\n`, space+CRLF, and tab+CRLF title endings.
+- Repair and verification: the title terminator now accepts `\r?\n`, `\r`, or EOF; the focused schema suite is green (9/9), the installed validate suite is green (4/4), audit and 51 SDC evals pass, the exact-Base validator passes under `set -o pipefail`, Python/Node syntax checks pass, both repair-range and Base-range `git diff --check` pass, and the existing allowlist accepts the Base range.
+- Independent assessment: read-only review of the exact repair range returned Spec Compliance **Approved** and Code Quality **Approved**, with no Critical, Important, Minor, or acceptance-affecting Cannot verify finding.
+- Gate status: this addendum supersedes use of the historic T900/C900 conclusion as a claim about the repaired candidate.  Formal Stage 2 independent review remains required on the new remote PR head; Stage 3 evidence reconstruction remains blocked until that review completes.
