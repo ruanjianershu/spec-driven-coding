@@ -24,6 +24,10 @@ Brownfield/Legacy 项目还必须复核实际改动是否符合当前 change 的
 
 Load only what is needed:
 
+- Compact artifact review: `../../sdc-references/compact-workflow.md`; use its scope/impact/acceptance and both review verdicts rather than demanding standard Markdown artifacts.
+- Stable finding identity and bounded repair: `../../sdc-references/review-findings.md` when findings exist. The read-only reviewer reports IDs/evidence; the coordinator records them without suppressing or renumbering findings.
+- Test effectiveness: `../../sdc-references/test-quality.md` when evaluating tests or regression coverage.
+
 - Role contract: `../../sdc-references/role-contracts.md`, section `sdc-review`.
 - Review gate: `../../sdc-references/delivery-gates.md`.
 - Shared evidence and stop-line rules: `../../sdc-references/workflow-standards.md`.

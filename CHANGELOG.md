@@ -4,6 +4,16 @@ All notable changes to SDC are documented here.
 
 ## Unreleased
 
+- Added an opt-in compact artifact format for new confirmed behavior-neutral prose changes: one canonical record, no mandatory full workspace initialization, preserved traceability, real command receipts, independent review, and history-preserving escalation to standard discovery.
+- Added read-only installation checks behind the existing check entry, comparing actual client payload fingerprints and duplicate registrations rather than relying on version labels alone.
+- Refined dependency-frontier discovery, contextual domain vocabulary, coherent behavior slices, and independent test expectations through focused English references.
+- Added stable review finding IDs, deduplicated failure evidence, bounded repair attempts, and human adjudication without treating accepted risk as approval.
+- Kept existing standard changes and public command names compatible; no automatic downgrade, knowledge promotion, client reinstallation, or release.
+- Fixed full-verification findings: tracked source and directory-link coverage, unchanged legacy approval compatibility, real-agent snapshot dependencies, effective Claude skill registration diagnostics, installed finding-helper paths, and false positives for descriptive dated reviewer labels.
+- Added regression coverage for these integration and upgrade boundaries, plus a standard SDC change record for the compact workflow upgrade and its corrective verification.
+- Hardened independent-review boundaries: required public command coverage, fail-closed unsupported hook and quoted registration forms, and source identity across linked ancestors of tracked files.
+- Preserved the bundled optional company-standard routing condition in source snapshots while retaining required-citation precedence and freshness on optional-source appearance.
+
 - Fixed interrupted-validation recovery while preserving prior receipts; reject unsupported Git submodules instead of silently omitting source evidence.
 - Fixed installed workflow helper paths and bundled runtime dependencies for direct-skill layouts; added isolated installation and retry regressions.
 - Guarded public packages against private workspace/standards payloads and internal bootstrap links while retaining the installed `sdc validate` dispatcher.

@@ -14,6 +14,10 @@ Use "$ARGUMENTS" to identify the target change or task. Implement the planned wo
 
 Run the SDC apply workflow:
 
+For `compact.json`, follow `../../sdc-references/compact-workflow.md` instead of generating the standard documents/briefs below; preserve the same permission, freshness, execution-receipt, and independent-review gates. For behavior or bugfix tests load `../../sdc-references/test-quality.md`. Track recurring review findings using `../../sdc-references/review-findings.md`, not a fresh ID on every retry.
+
+When `findings.json` exists, inspect it before another repair attempt. `adjudication-required` or `accepted-risk` stops automatic implementation until a cited human retry decision; replan/reopen must not erase that history.
+
 - Load binding governance, the active `context-pack.md`, current task and relevant spec/design/notes sections, plus sources selected by the verified apply manifest. Follow knowledge/routing indexes only for affected areas; do not reread unrelated files or the whole repository.
 - Follow the recorded internal risk level and authorization. Consult `../../sdc-references/workflow-standards.md` if either needs reassessment; disclose new triggers and stop affected work for unconfirmed high-impact decisions. A bounded authorized reversible action needs no redundant confirmation.
 - Stop if final artifacts contain open Knowledge Gaps or `Assumed` / `Proposed` / `TBD` / `Conflict` / `Stale` execution inputs.

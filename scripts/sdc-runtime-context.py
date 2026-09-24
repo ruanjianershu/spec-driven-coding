@@ -22,9 +22,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from sdc_evidence import (
-    UnsupportedSubmoduleError, change_lock, execute, input_snapshot, review_snapshot, source_snapshot,
+    UnsupportedSubmoduleError, change_lock, change_source_snapshot, execute, input_snapshot, review_snapshot, source_snapshot,
     task_verifications, verification_snapshot,
 )
+import sdc_compact
+from sdc_findings import assert_clear, list_findings
 
 
 STATE_SCHEMA = "sdc.change-state/v1"
@@ -127,6 +129,13 @@ def utc_now():
 
 
 def emit_json(value):
+    # Compact callers need the outcome and digest, not a repository-sized hash map.
+    if isinstance(value, dict) and "snapshot" in value:
+        snapshot = value["snapshot"]
+        compact = value.get("artifact_format") == "compact" or "compact-contract" in snapshot.get("inputs", {})
+        if compact:
+            value = {key: item for key, item in value.items() if key != "snapshot"}
+            value["snapshot_sha256"] = hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest()
     print(json.dumps(value, ensure_ascii=False, sort_keys=True))
 
 
@@ -295,13 +304,13 @@ def resolved_payload(root, change_id, directory, source, *, validate_state=True)
 
 
 def existing_artifact_paths(directory):
-    names = ("state.json", "discovery.md", "proposal.md", "spec.md", "impact.md", "design.md", "tasks.md", "context-pack.md", "notes.md")
+    names = ("state.json", "compact.json", "discovery.md", "proposal.md", "spec.md", "impact.md", "design.md", "tasks.md", "context-pack.md", "notes.md")
     return [name for name in names if (directory / name).exists()]
 
 
 def derive_state(directory):
     # Files are recoverable context, never evidence of approval by themselves.
-    if (directory / "discovery.md").exists() or (directory / "proposal.md").exists():
+    if sdc_compact.is_compact(directory) or (directory / "discovery.md").exists() or (directory / "proposal.md").exists():
         return "discovery"
     return "intake"
 
@@ -351,6 +360,8 @@ def validate_state_evidence(root, change_id, state, source_kind, evidence):
     if not requirement:
         return []
     expected_source, required_paths = requirement
+    if sdc_compact.is_compact(change_dir(root, change_id)):
+        required_paths = ("compact.json",)
     if source_kind != expected_source:
         raise RuntimeErrorWithCode(
             "invalid-evidence",
@@ -470,7 +481,14 @@ def manifest_records(root, change_id, role):
     change_relative = Path(resolved["path"]).as_posix()
     records = []
     missing = []
-    for index, (template, section, purpose, required, source_type) in enumerate(MANIFEST_SOURCES[role], start=1):
+    sources = MANIFEST_SOURCES[role]
+    directory = root / change_relative
+    if sdc_compact.is_compact(directory):
+        data = sdc_compact.load(root, directory)
+        sources = [("{change}/compact.json", "full", "Canonical confirmed compact contract, task, and review.", True, "change-artifact")]
+        sources += [(name, "full", "Apply existing governance; compact does not override project rules.", required, "governance")
+                    for name, required in sdc_compact.governing_sources(root, data).items()]
+    for index, (template, section, purpose, required, source_type) in enumerate(sources, start=1):
         relative_value = template.format(change=change_relative)
         relative = safe_repo_relative(root, relative_value)
         filepath = root / relative
@@ -552,6 +570,17 @@ def redact_sensitive_text(value):
 
 def contains_sensitive_value(value):
     return redact_sensitive_text(value) != value
+
+
+def contains_sensitive_reviewer(value):
+    if any(pattern.search(value) for pattern in SENSITIVE_VALUE_PATTERNS):
+        return True
+    # A bounded, dated review label is prose, not one opaque credential token.
+    dated_label = re.fullmatch(
+        r"(?:[a-z]{2,16}-){2,}20\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])(?:-[a-z]{2,16}){0,4}", value)
+    if len(value) <= 128 and dated_label and {"review", "reviewer"}.intersection(value.split("-")):
+        return contains_sensitive_value(value.replace("-", " "))
+    return contains_sensitive_value(value)
 
 
 def iter_recall_files(root, change_id):
@@ -825,6 +854,8 @@ def set_state_locked(args):
         "revision": current.get("revision", "initial"),
         "history": current.get("history", []),
     }
+    if sdc_compact.is_compact(change_dir(root, change_id)):
+        payload["artifact_format"] = "compact"
     if args.state in STATES[2:]:
         payload["snapshot"] = lifecycle_snapshot(root, change_id, args.state)
     filepath = state_path(root, change_id)
@@ -893,7 +924,7 @@ def lifecycle_snapshot(root, change_id, state):
     if state in {"planned", "applying", "checking", "archivable"}:
         result["plan"] = input_snapshot(root, directory, plan=True)
     if state in {"checking", "archivable"}:
-        result["sources"] = source_snapshot(root)
+        result["sources"] = change_source_snapshot(root, directory)
     if state == "archivable":
         result["review"] = review_snapshot(root, directory)
     return result
@@ -943,6 +974,8 @@ def reopen_state_locked(args):
     if not reason or contains_sensitive_value(reason):
         raise RuntimeErrorWithCode("invalid-reason", "Reopening requires a non-sensitive reason.")
     current = read_raw_state(root, change_id)
+    if args.to_standard and (args.state != "discovery" or not sdc_compact.is_compact(directory)):
+        raise RuntimeErrorWithCode("invalid-escalation", "Only compact changes can explicitly escalate to standard discovery.")
     if args.state == "confirmed":
         previous = current.get("snapshot", {}).get("requirements")
         if previous != input_snapshot(root, directory):
@@ -950,6 +983,52 @@ def reopen_state_locked(args):
         validate_lifecycle_content_gate(root, change_id, "confirmed")
     revision = uuid.uuid4().hex
     backup = safe_workspace_path(root, directory / "revisions" / revision, "revision archive")
+    if sdc_compact.is_compact(directory):
+        data = sdc_compact.load(root, directory)
+        backup.mkdir(parents=True)
+        for name in ("compact.json", "state.json", "apply-context.jsonl", "check-context.jsonl", "findings.json", "notes.md"):
+            path = safe_workspace_path(root, directory / name, "compact revision source")
+            if path.is_file():
+                shutil.copyfile(path, backup / name)
+        baseline = safe_workspace_path(root, directory / "evidence/baseline/source.json", "compact source baseline", must_exist=True)
+        (backup / "evidence/baseline").mkdir(parents=True)
+        shutil.copyfile(baseline, backup / "evidence/baseline/source.json")
+        data["task"]["complete"] = False
+        data["review"] = {"spec": "pending", "quality": "pending"}
+        if args.state == "discovery":
+            data["intake"]["authorization"] = ""
+            data["intake"]["open_questions"] = ["Reconfirm changed scope: " + reason]
+        if not args.to_standard:
+            atomic_write_json(directory / "compact.json", data)
+        history = list(current.get("history", []))
+        history.append({"from": current["state"], "to": args.state, "reason": reason, "revision": revision})
+        payload = {"schema": STATE_SCHEMA, "change_id": change_id, "state": args.state,
+                   "artifact_format": "compact", "revision": revision, "history": history, "updated_at": utc_now(),
+                   "source": {"kind": "change-stage" if args.state == "discovery" else "spec-stage", "paths": ["compact.json"]}}
+        if args.to_standard:
+            # Keep only a minimal draft until the broader requirement is confirmed.
+            discovery = ("# Discovery\n\n## Current Understanding\n"
+                         "Previous compact scope is historical, not approval for the expanded request.\n\n"
+                         "## Decision Ledger\n| ID | Decision | Status | Source | Impact | Next Step |\n"
+                         "| --- | --- | --- | --- | --- | --- |\n\n"
+                         "## Open Questions\n- Confirm the revised scope, acceptance, and authority: " + reason +
+                         "\n\n## Exit Criteria\n- [ ] Revised scope and authority confirmed\n")
+            for name, text in {"discovery.md": discovery,
+                               "proposal.md": "# Change Proposal\n\nStatus: Draft\n\n## 背景\n" + reason + "\n\n## 目标\nPending confirmation.\n",
+                               "notes.md": "# Notes\n\n## Revision\nEscalated from compact; preserved in revisions/" + revision + "/.\n"}.items():
+                atomic_write_text(directory / name, text)
+            (directory / "compact.json").unlink()
+            payload["artifact_format"] = "standard"
+            payload["source"]["paths"] = ["discovery.md", "proposal.md", "notes.md"]
+        if args.state == "confirmed":
+            payload["snapshot"] = lifecycle_snapshot(root, change_id, "confirmed")
+        atomic_write_json(state_path(root, change_id), payload)
+        for role in MANIFEST_SOURCES:
+            path = manifest_path(root, change_id, role)
+            if path.exists():
+                path.unlink()
+        emit_json(payload)
+        return
     names = ["design.md", "tasks.md", "context-pack.md", "notes.md", "apply-context.jsonl", "check-context.jsonl", "state.json"]
     if args.state == "discovery":
         names += ["spec.md", "impact.md", "proposal.md", "knowledge-candidates.md"]
@@ -1010,6 +1089,11 @@ def run_evidence_locked(args):
     resolved = resolve_change(root, explicit=args.change, session_id=args.session_id, validate_state=False)
     change_id = resolved["change_id"]
     directory = require_active_change(root, change_id, "validation run")
+    paused = [f["id"] for f in list_findings(root, change_id) if f["status"] in {"adjudication-required", "accepted-risk"}]
+    if paused:
+        raise RuntimeErrorWithCode("repair-adjudication-required", "Human adjudication required before another automatic run: " + ", ".join(paused))
+    if sdc_compact.is_compact(directory):
+        sdc_compact.validate(root, directory)
     argv = args.argv[1:] if args.argv[:1] == ["--"] else args.argv
     if not argv or not 0 < args.timeout <= 3600 or not math.isfinite(args.timeout):
         raise RuntimeErrorWithCode("invalid-command", "Supply argv after -- and a finite timeout from 0 to 3600 seconds.")
@@ -1057,9 +1141,11 @@ def review_evidence_locked(args):
     resolved = resolve_change(root, explicit=args.change, session_id=args.session_id, validate_state=False)
     change_id = resolved["change_id"]
     reviewer = args.reviewer.strip()
-    if not reviewer or contains_sensitive_value(reviewer):
+    if not reviewer or contains_sensitive_reviewer(reviewer):
         raise RuntimeErrorWithCode("invalid-reviewer", "A non-sensitive reviewer attribution is required.")
     directory = require_active_change(root, change_id, "review receipt")
+    if sdc_compact.is_compact(directory) and sdc_compact.load(root, directory).get("review", {}).get("reviewer") != reviewer:
+        raise RuntimeErrorWithCode("invalid-reviewer", "Review receipt attribution must match the compact review record.")
     cli = Path(__file__).resolve().parents[1] / "sdc-cli.py"
     result = subprocess.run([sys.executable, str(cli), "__lifecycle-gate", change_id, "reviewed"],
                             cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -1074,6 +1160,9 @@ def review_evidence_locked(args):
 
 def validate_delivery_receipts(root, change_id):
     directory = require_active_change(root, change_id, "delivery receipts")
+    assert_clear(root, change_id)
+    for role in MANIFEST_SOURCES:
+        verify_manifest(root, change_id, role)
     receipts = receipt_directory(root, change_id)
     revision = read_raw_state(root, change_id).get("revision", "initial")
     records = []
@@ -1151,6 +1240,7 @@ def build_parser():
     state_reopen.add_argument("--session-id")
     state_reopen.add_argument("--state", required=True, choices=("discovery", "confirmed"))
     state_reopen.add_argument("--reason", required=True)
+    state_reopen.add_argument("--to-standard", action="store_true", help="Escalate compact to standard discovery without deleting history.")
     state_reopen.set_defaults(func=cmd_state_reopen)
 
     manifest_parser = subparsers.add_parser("manifest", help="Generate role-specific context manifests.")

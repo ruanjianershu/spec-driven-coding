@@ -22,6 +22,9 @@ description: "Use when an SDC change needs test execution, failure analysis, or 
 
 Load only what is needed:
 
+- Test effectiveness and diagnostic loops: `../../sdc-references/test-quality.md`.
+- For `compact.json`, use `../../sdc-references/compact-workflow.md`; its task maps SCN/REQ/AC to exact Verify argv and independent expected results instead of a separate Test Matrix document.
+
 - Role contract: `../../sdc-references/role-contracts.md`, section `sdc-test`.
 - Test gate: `../../sdc-references/delivery-gates.md`.
 - Traceability and evidence rules: `../../sdc-references/workflow-standards.md`.

@@ -199,5 +199,84 @@ class ParsingDeliveryTests(unittest.TestCase):
         case.state("archivable")
 
 
+class OptionalKnowledgeDependencyTests(unittest.TestCase):
+    company = ".sdc/standards/company/README.md"
+
+    def bundled_policy(self):
+        return next(line for line in cli.INIT_FILES["standards/ai.md"].splitlines()
+                    if self.company in line)
+
+    def test_f011_actual_bundled_policy_classifies_only_company_index_optional(self):
+        self.assertEqual(evidence.knowledge_dependencies(cli.INIT_FILES["standards/ai.md"]), {
+            ".sdc/knowledge/index.md": True, self.company: False,
+        })
+
+    def test_f011_only_exact_legacy_line_is_optional(self):
+        line = self.bundled_policy()
+        for text in (" " + line, line + " Extra condition.", "If it exists: `" + self.company + "`",
+                     line.replace(self.company, ".sdc/standards/company/other.md")):
+            with self.subTest(text=text):
+                self.assertTrue(all(evidence.knowledge_dependencies(text).values()))
+
+    def test_f011_required_occurrence_dominates_in_either_text_order(self):
+        for citation in ("Follow `" + self.company + "`.", "[Company](" + self.company + ")"):
+            for lines in ((self.bundled_policy(), citation), (citation, self.bundled_policy())):
+                with self.subTest(lines=lines):
+                    self.assertTrue(evidence.knowledge_dependencies("\n".join(lines))[self.company])
+
+    def test_f011_optional_policy_does_not_mask_unsafe_links(self):
+        with self.assertRaises(ValueError):
+            evidence.knowledge_dependencies(self.bundled_policy() +
+                "\n[Unsafe](.sdc/standards/company/%2e%2e/secret.md)")
+
+    def test_f011_explicit_artifact_citation_wins_in_either_traversal_order(self):
+        with tempfile.TemporaryDirectory(prefix="sdc-optional-order-") as temp:
+            root = Path(temp)
+            change = root / ".sdc/changes/active/example"
+            change.mkdir(parents=True)
+            ai = root / ".sdc/standards/ai.md"
+            ai.parent.mkdir(parents=True)
+            ai.write_text(cli.INIT_FILES["standards/ai.md"])
+            index = root / ".sdc/knowledge/index.md"
+            index.parent.mkdir(parents=True)
+            index.write_text("# Knowledge\n")
+            for optional, required in (("spec.md", "discovery.md"), ("discovery.md", "spec.md")):
+                with self.subTest(optional=optional):
+                    (change / optional).write_text("Follow `.sdc/standards/ai.md`.\n")
+                    (change / required).write_text("Follow `" + self.company + "`.\n")
+                    with self.assertRaisesRegex(ValueError, "Cited knowledge/standard source is missing: .*company/README"):
+                        evidence.input_snapshot(root, change)
+
+    def test_f011_explicit_artifact_copy_of_policy_is_still_required(self):
+        with tempfile.TemporaryDirectory(prefix="sdc-optional-artifact-") as temp:
+            root = Path(temp)
+            change = root / ".sdc/changes/active/example"
+            change.mkdir(parents=True)
+            (change / "spec.md").write_text(self.bundled_policy())
+            with self.assertRaisesRegex(ValueError, "Cited knowledge/standard source is missing"):
+                evidence.input_snapshot(root, change)
+
+    def test_f011_governing_root_requirements_agree_across_formats(self):
+        from scripts import sdc_compact
+        for governing in ("constitution.md", "common-ground.md", "expert-routing.md", "knowledge/index.md"):
+            with self.subTest(governing=governing), tempfile.TemporaryDirectory(prefix="sdc-root-citation-") as temp:
+                root = Path(temp)
+                change = root / ".sdc/changes/active/example"
+                change.mkdir(parents=True)
+                ai = root / ".sdc/standards/ai.md"
+                ai.parent.mkdir(parents=True)
+                ai.write_text(cli.INIT_FILES["standards/ai.md"])
+                index = root / ".sdc/knowledge/index.md"
+                index.parent.mkdir(parents=True)
+                index.write_text("# Knowledge\n")
+                (root / ".sdc" / governing).write_text("Required: `" + self.company + "`\n")
+                (change / "spec.md").write_text("Follow `.sdc/standards/ai.md`.\n")
+                with self.assertRaisesRegex(ValueError, "company/README.md"):
+                    evidence.input_snapshot(root, change)
+                with self.assertRaisesRegex(ValueError, "company/README.md"):
+                    sdc_compact.governing_sources(root, {"paths": ["README.md"],
+                                                        "governance": [".sdc/standards/ai.md"]})
+
+
 if __name__ == "__main__":
     unittest.main()

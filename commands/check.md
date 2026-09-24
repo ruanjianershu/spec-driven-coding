@@ -10,6 +10,8 @@ Use "$ARGUMENTS" as the target change or scope. Run the combined validation, rev
 
 Run the SDC check workflow:
 
+For `installation` scope, use `sdc-references/installation-diagnostics.md` for read-only client payload/duplicate diagnostics; do not require an active change. For `compact.json`, use `sdc-references/compact-workflow.md` for format-specific gates instead of requiring the standard document package below. For test-quality assessment load `sdc-references/test-quality.md`; when findings need tracking/retry load `sdc-references/review-findings.md`.
+
 - Read the verified check manifest, confirmed acceptance/boundaries, actual diff, and relevant evidence. Expand to surrounding sources only for a named risk. Validate the recorded risk rationale against the actual diff using `sdc-references/workflow-standards.md` when needed; no silent downgrade or reduced acceptance.
 - Validate structure, traceability, decision status, task format, evidence, and Brownfield impact gates.
 - Validate Common Ground usage and block final execution if OPEN or high-impact WORKING items were treated as facts.

@@ -1,4 +1,4 @@
-"""Harness unit tests with a fake local process, NOT real-agent behavior evidence."""
+"""Local harness tests with fake agents and real source helpers, NOT model evidence."""
 
 import importlib
 import contextlib
@@ -6,6 +6,7 @@ import io
 import json
 import os
 from pathlib import Path
+import shutil
 import sys
 import tempfile
 import time
@@ -166,10 +167,138 @@ class HarnessUnitTests(unittest.TestCase):
     def test_runtime_support_modules_are_staged(self):
         runner = self.runner()
         source = self.make_source()
-        (source / "scripts/sdc_evidence.py").write_text("# runtime dependency\n")
+        helpers = ("scripts/sdc_evidence.py", "scripts/sdc_compact.py",
+                   "scripts/sdc_findings.py", "scripts/sdc-doctor.mjs")
+        for name in helpers:
+            (source / name).write_text("# runtime dependency\n")
         target = self.root / "target"
         target.mkdir()
-        self.assertIn("scripts/sdc_evidence.py", runner.install_source(source, target)["files"])
+        manifest = runner.install_source(source, target)
+        for name in helpers:
+            with self.subTest(helper=name):
+                self.assertIn(name, manifest["files"])
+
+    def freeze_source_twice(self, source):
+        runner = self.runner()
+        frozen = self.root / "frozen"
+        project = self.root / "project"
+        frozen.mkdir()
+        project.mkdir()
+        # main freezes the source, then run_trial copies it into its fresh project.
+        first = runner.install_source(source, frozen)
+        second = runner.install_source(frozen, project)
+        self.assertEqual(first["files"], second["files"])
+        self.assertEqual(first["sha256"], second["sha256"])
+        return project
+
+    def invoke_snapshot_helper(self, project, command):
+        runner = self.runner()
+        env = runner.isolated_env(self.root, os.environ, "isolated")
+        self.assertNotIn("PYTHONPATH", env)
+        result = runner.run_process(command, project, env, "", self.root / "helper",
+                                    timeout=5, max_output_bytes=100_000)
+        stdout = (self.root / result["stdout_ref"]).read_text()
+        stderr = (self.root / result["stderr_ref"]).read_text()
+        return result, stdout, stderr
+
+    def test_current_source_helpers_survive_double_snapshot(self):
+        project = self.freeze_source_twice(HARNESS.parent.parent)
+        commands = (
+            ("sdc-cli.py",),
+            ("scripts/sdc-runtime-context.py", "--help"),
+            ("scripts/sdc-task-brief.py", "--help"),
+            ("scripts/sdc-review-package.py", "--help"),
+            ("scripts/sdc_findings.py", "--help"),
+        )
+        for command in commands:
+            with self.subTest(helper=command[0]):
+                result, stdout, stderr = self.invoke_snapshot_helper(
+                    project, [sys.executable, "-B", *command])
+                self.assertEqual(result["exit_code"], 0, stderr)
+                self.assertEqual(result["status"], "completed", stderr)
+                self.assertTrue(stdout.strip())
+                self.assertEqual(stderr, "")
+
+    @unittest.skipUnless(shutil.which("node"), "Node.js is required for the doctor sidecar")
+    def test_current_source_doctor_survives_double_snapshot(self):
+        project = self.freeze_source_twice(HARNESS.parent.parent)
+        for command in ([shutil.which("node"), "scripts/sdc-doctor.mjs"],
+                        [sys.executable, "-B", "sdc-cli.py", "check", "installation"]):
+            with self.subTest(command=command):
+                result, stdout, stderr = self.invoke_snapshot_helper(
+                    project, command + ["--json", "--home", str(self.root / "home"),
+                                        "--source", str(project)])
+                self.assertEqual(stderr, "")
+                self.assertEqual(result["exit_code"], 1)
+                self.assertEqual(result["status"], "process_failed")
+                report = json.loads(stdout)
+                self.assertEqual(report["schema"], "sdc.install-diagnostics/v1")
+                self.assertFalse(report["ok"])
+                self.assertEqual(report["installations"], [])
+                self.assertEqual([issue["code"] for issue in report["issues"]], ["NO_INSTALLATIONS"])
+
+    def test_older_source_without_new_helpers_survives_double_snapshot(self):
+        source = self.make_source()
+        for name in ("sdc-cli.py", "scripts/sdc-runtime-context.py"):
+            (source / name).write_text("print('older snapshot')\n")
+        project = self.freeze_source_twice(source)
+        for name in ("scripts/sdc_compact.py", "scripts/sdc_findings.py", "scripts/sdc-doctor.mjs"):
+            self.assertFalse((project / name).exists())
+        for name in ("sdc-cli.py", "scripts/sdc-runtime-context.py"):
+            result, stdout, stderr = self.invoke_snapshot_helper(project, [sys.executable, "-B", name])
+            self.assertEqual(result["status"], "completed", stderr)
+            self.assertEqual(stdout, "older snapshot\n")
+
+    def test_new_source_helpers_obey_byte_bound(self):
+        runner = self.runner()
+        source = self.make_source()
+        for index, name in enumerate(("scripts/sdc_compact.py", "scripts/sdc_findings.py", "scripts/sdc-doctor.mjs")):
+            with self.subTest(helper=name):
+                (source / name).write_text("x" * 1025)
+                target = self.root / str(index)
+                target.mkdir()
+                with patch.object(runner, "MAX_SOURCE_BYTES", 1024):
+                    with self.assertRaisesRegex(ValueError, "bounded file/byte limit"):
+                        runner.install_source(source, target)
+                (source / name).unlink()
+
+    def test_new_source_helpers_reject_symlinks(self):
+        runner = self.runner()
+        source = self.make_source()
+        for index, name in enumerate(("scripts/sdc_compact.py", "scripts/sdc_findings.py", "scripts/sdc-doctor.mjs")):
+            with self.subTest(helper=name):
+                (source / name).symlink_to(source / "secret.txt")
+                target = self.root / str(index)
+                target.mkdir()
+                with self.assertRaisesRegex(ValueError, "Symlinks are not allowed"):
+                    runner.install_source(source, target)
+                (source / name).unlink()
+
+    def test_source_helpers_reject_symlinked_directory(self):
+        runner = self.runner()
+        source = self.make_source()
+        outside = self.root / "outside-scripts"
+        (source / "scripts").rename(outside)
+        (source / "scripts").symlink_to(outside, target_is_directory=True)
+        target = self.root / "target"
+        target.mkdir()
+        with self.assertRaisesRegex(ValueError, "Symlinks are not allowed"):
+            runner.install_source(source, target)
+
+    def test_snapshot_excludes_installers_hooks_and_unlisted_javascript(self):
+        source = self.make_source()
+        excluded = ("bin/install.js", "hooks/hooks.json", "hooks/session-start.sh",
+                    ".codex-plugin/plugin.json", ".claude-plugin/plugin.json",
+                    "skills/sdc-core/SKILL.md", ".sdc/state.json", "scripts/unlisted.py",
+                    "scripts/unlisted.mjs", "commands/unlisted.mjs", "sdc-references/unlisted.mjs")
+        for name in excluded:
+            path = source / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("must not be copied\n")
+        project = self.freeze_source_twice(source)
+        for name in excluded:
+            with self.subTest(path=name):
+                self.assertFalse((project / name).exists())
 
     def test_grading_never_reads_symlinked_ancestors(self):
         self.runner()

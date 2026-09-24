@@ -152,6 +152,9 @@ for (const scriptFile of [
   'scripts/sdc-review-package.py',
   'scripts/sdc-runtime-context.py',
   'scripts/sdc_evidence.py',
+  'scripts/sdc_compact.py',
+  'scripts/sdc_findings.py',
+  'scripts/sdc-doctor.mjs',
   'scripts/sdc-task-brief.py',
 ]) {
   if (!packageJson.files?.includes(scriptFile)) {

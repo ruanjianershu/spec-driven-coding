@@ -2,7 +2,7 @@
 
 This reference defines how SDC executes a confirmed implementation plan without adding public commands.
 
-Use the risk policy in `workflow-standards.md` when choosing execution breadth. The same acceptance, consent, and independent review gates apply at every level; task count, context size, and repeated runs are not proxies for quality.
+Use the risk policy in [workflow standards](workflow-standards.md) when choosing execution breadth. The same acceptance, consent, and independent review gates apply at every level; task count, context size, and repeated runs are not proxies for quality.
 
 ```text
 plan preflight -> task brief -> implement -> evidence -> task review -> ledger -> next task -> whole-change review
@@ -72,6 +72,17 @@ Each `T###` task must contain:
 - `Source`: `REQ-*` / `AC-*` source.
 
 A task is a coherent acceptance boundary. Fold meaningful test-first work, setup, configuration, generated files, and documentation into the task that needs them. Split a task only when a reviewer could reasonably approve one part and reject the other. A tiny behavior-neutral change may use one task with focused validation rather than a manufactured failing test or multiple review loops.
+
+### Vertical Behavior Slices
+
+Default to a verifiable behavior slice: a confirmed input or action, its observable outcome, and the evidence that distinguishes success from failure. Include only the layers needed for that behavior. "Reject an expired invitation without creating membership" is a slice; separate "all models", "all services", and "all tests" tasks usually leave acceptance unverified until the end.
+
+- Name `Depends on` only when a task consumes an actual output, interface, prerequisite decision, or migration state from another task. Explain that connection in `Consumes` and `Produces`; do not manufacture dependencies from file order or role labels. Execution remains serial under the orchestration rules below even when tasks have no semantic dependency.
+- Verify each slice at its public boundary and include the affected failure or regression checks. If the slice cannot be meaningfully checked until unrelated future work, revise its boundary or identify the real prerequisite.
+- Do not require every slice to touch UI, API, service, database, or infrastructure. A CLI-only behavior, documentation correction, or isolated library change needs only its affected surfaces. A slice does not require one agent per layer.
+- A behavior-neutral mechanical migration may instead group files by a transformation invariant, such as preserving imports during a package rename. State the invariant, affected surface, and executable compatibility checks. This exception does not make data migration or changed business behavior low risk; the shared risk policy still applies.
+
+Load [test quality](test-quality.md) when designing or assessing behavior tests, reproducing a bug, or judging whether a passing command proves acceptance. Keep the detailed test guidance there rather than copying it into every task brief.
 
 ## Runtime Workspace
 

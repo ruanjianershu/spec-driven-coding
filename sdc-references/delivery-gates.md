@@ -2,6 +2,8 @@
 
 This reference contains the shared validation, review, test, quality, check, and archive rules.
 
+For `compact.json`, use the equivalent artifact requirements in `compact-workflow.md` instead of the standard Markdown document list. Confirmation, impact assessment, current receipts, and independent review remain mandatory. Unresolved recorded findings block approval and delivery; see `review-findings.md` for issue identity and repair limits.
+
 Load only the gate needed for the current stage. Use `workflow-standards.md` when judging risk level, authorization, or evidence freshness. All `light` / `standard` / `strict` changes meet the same semantic acceptance; validation breadth follows affected sources and named risks, not fixed full-repository loops.
 
 ## Validate Gate

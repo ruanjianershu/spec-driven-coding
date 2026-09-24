@@ -23,6 +23,8 @@ description: "Use when current or active SDC artifacts need structural and trace
 
 Load only what is needed:
 
+- For `compact.json`, use `../../sdc-references/compact-workflow.md` for artifact requirements instead of the standard document list below. It preserves confirmation, traceability, current receipts, and independent review; do not request synthetic spec/design/tasks files.
+
 - Role contract: `../../sdc-references/role-contracts.md`, section `sdc-validate`.
 - Shared validation and decision rules: `../../sdc-references/workflow-standards.md`.
 - Common Ground and expert routing: `../../sdc-references/common-ground.md`, `../../sdc-references/expert-routing.md`.
@@ -79,7 +81,7 @@ Load only what is needed:
 - 是否遵守 No Evidence, No Fact / No Confirmation, No Execution / No Impact, No Brownfield Change。
 - tasks 是否包含标准 `T### [REQ-*] [AC-*] [Phase] [Size]`。
 - 任务是否只使用 Size S/M。
-- 测试任务是否先于实现任务。
+- 行为变更是否在同一可验收任务内先验证失败再实现；不强制拆出独立测试任务。
 - Decision Ledger 是否存在且状态正确。
 - Proposed / Assumed / TBD / Conflict 是否被错误写入最终范围。
 - Discovery Gate 未退出时，是否错误生成了完整 spec/design/tasks/impact/context-pack/knowledge-candidates。

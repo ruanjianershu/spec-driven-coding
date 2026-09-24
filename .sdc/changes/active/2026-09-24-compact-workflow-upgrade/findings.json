@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "change_id": "2026-09-24-compact-workflow-upgrade",
+  "history": [
+    {
+      "kind": "record",
+      "id": "F-001",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.521004+00:00",
+      "summary": "Frozen source omitted imported helpers",
+      "source": "initial-full-verification-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-001",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "4b6578a96a349e9c652d2ae182cf6bb76235b9fb85103c4ac3783d5adecdbdbb"
+    },
+    {
+      "kind": "record",
+      "id": "F-002",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.522143+00:00",
+      "summary": "Effective Claude registration was incomplete despite equal payloads",
+      "source": "initial-full-verification-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-002",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "6c73592bf8551b37c1958caf4c084de4bf6bef3b7297daf8fcc4413b75529c28"
+    },
+    {
+      "kind": "record",
+      "id": "F-003",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.522808+00:00",
+      "summary": "Installed findings examples used the product-relative helper path",
+      "source": "initial-full-verification-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-003",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "c8259e39106c018442b59ab590b1be2d49ca8040c01981d1362c319e30f74420"
+    },
+    {
+      "kind": "record",
+      "id": "F-004",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.523312+00:00",
+      "summary": "Source filters hid tracked files and directory links",
+      "source": "initial-full-verification-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-004",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "ff58cc55efae0587f40bd9ed4918782899fcde6aa0f19b6b654a509d2b811a11"
+    },
+    {
+      "kind": "record",
+      "id": "F-005",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.523948+00:00",
+      "summary": "Absent ledger key invalidated legacy approvals",
+      "source": "initial-full-verification-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-005",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "52314e94027f42089e3e5cee299eeaf290a9b1cf6ce65d36381a0f309852263d"
+    },
+    {
+      "kind": "record",
+      "id": "F-006",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.524564+00:00",
+      "summary": "Descriptive dated reviewer label was rejected",
+      "source": "initial-full-verification-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-006",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "fab9cbe56dc4e1387760c6816b3255bfc50f52665a18d55dfa3ed71f8c892071"
+    },
+    {
+      "kind": "record",
+      "id": "F-007",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.525157+00:00",
+      "summary": "Cached source without public commands was healthy",
+      "source": "banach-independent-review-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-007",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "c2402d69a4d9fe4acaf714a60b606ceed9d49da33e4c29cd527dd8dd1574d095"
+    },
+    {
+      "kind": "record",
+      "id": "F-008",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.525715+00:00",
+      "summary": "Unsupported hook forms skipped diagnosis",
+      "source": "banach-independent-review-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-008",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "1a1346d44bb213c31033d41270d6fcb585538a0074c3956788f0e096beac7201"
+    },
+    {
+      "kind": "record",
+      "id": "F-009",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.526304+00:00",
+      "summary": "Quoted registration keys skipped diagnosis",
+      "source": "banach-independent-review-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-009",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "29d8e8c4bc64d421863b3306c5394012ae055c605196b2fddaa1a1381ea3125e"
+    },
+    {
+      "kind": "record",
+      "id": "F-010",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.527079+00:00",
+      "summary": "Linked ancestor retarget kept a constant source marker",
+      "source": "hilbert-independent-review-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-010",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "de5d8389762772a909ea566dc2b0dbc9d46125e46defab160b81a2766a241fb1"
+    },
+    {
+      "kind": "record",
+      "id": "F-011",
+      "revision": "initial",
+      "at": "2026-09-24T04:35:18.527688+00:00",
+      "summary": "Bundled optional company index blocked real planning",
+      "source": "current-plan-gate-pre-fix-observation",
+      "evidence": "notes.md#finding-reconciliation:F-011",
+      "actor": "lead-reconciliation-recorder",
+      "fingerprint": "c6a3b9e1614b6cf2b5af955bda7a38e3a2a73b51c8e0c96c32c7a037857f0e39"
+    },
+    {
+      "kind": "record",
+      "id": "F-011",
+      "revision": "initial",
+      "at": "2026-09-24T04:49:17.098403+00:00",
+      "summary": "Required governing-root citations must override bundled optional routing",
+      "source": "6f017ed50f477ddddcd9c7e434ea957f6429f5fa22549a78215a943c26280fc5",
+      "evidence": "Hilbert rereview: mandatory constitution citation remained optional and delivery passed",
+      "actor": "lead-review-recorder",
+      "fingerprint": "5c907bad7bf4f49d5b8deae097053349d1d47ee1b425c2e588b6c5631326d557"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-001",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.674586+00:00",
+      "source": "evidence/d2fc87719d6843cba62b9cafce952f79.json",
+      "evidence": "Exact final-source verification passed; independent Banach approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-002",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.675672+00:00",
+      "source": "evidence/4480e6b87336452abf0141d6655627a3.json",
+      "evidence": "Exact final-source verification passed; independent Banach approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-007",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.676377+00:00",
+      "source": "evidence/4480e6b87336452abf0141d6655627a3.json",
+      "evidence": "Exact final-source verification passed; independent Banach approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-008",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.677070+00:00",
+      "source": "evidence/4480e6b87336452abf0141d6655627a3.json",
+      "evidence": "Exact final-source verification passed; independent Banach approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-009",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.677736+00:00",
+      "source": "evidence/4480e6b87336452abf0141d6655627a3.json",
+      "evidence": "Exact final-source verification passed; independent Banach approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-003",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.678403+00:00",
+      "source": "evidence/fdbcf776e83849d6a65074dcc46c9a42.json",
+      "evidence": "Exact final-source verification passed; independent Hilbert approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-005",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.679157+00:00",
+      "source": "evidence/fdbcf776e83849d6a65074dcc46c9a42.json",
+      "evidence": "Exact final-source verification passed; independent Hilbert approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-006",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.680005+00:00",
+      "source": "evidence/fdbcf776e83849d6a65074dcc46c9a42.json",
+      "evidence": "Exact final-source verification passed; independent Hilbert approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-011",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.680835+00:00",
+      "source": "evidence/fdbcf776e83849d6a65074dcc46c9a42.json",
+      "evidence": "Exact final-source verification passed; independent Hilbert approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-004",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.681612+00:00",
+      "source": "evidence/646e2df8d20c4e08b05d6ffac9b5ca0e.json",
+      "evidence": "Exact final-source verification passed; independent Hilbert approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    },
+    {
+      "kind": "resolve",
+      "id": "F-010",
+      "revision": "initial",
+      "at": "2026-09-24T05:04:16.682363+00:00",
+      "source": "evidence/646e2df8d20c4e08b05d6ffac9b5ca0e.json",
+      "evidence": "Exact final-source verification passed; independent Hilbert approval recorded in notes.md#task-review-evidence",
+      "actor": "lead-evidence-recorder"
+    }
+  ]
+}

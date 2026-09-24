@@ -36,6 +36,11 @@ def task_contract(text):
     return re.sub(r"(?mi)^[ \t]*-[ \t]*(?:Review|Evidence):[^\n]*", "", text)
 
 
+LEGACY_OPTIONAL_COMPANY_POLICY = (
+    "- \u5982\u679c `.sdc/standards/company/README.md` \u5b58\u5728\u4e14\u5f53\u524d\u4efb\u52a1\u6d89\u53ca\u4ee3\u7801\u751f\u6210\u3001\u67b6\u6784\u3001\u63a5\u53e3\u3001\u6570\u636e\u3001\u4e8b\u52a1\u3001\u6d4b\u8bd5\u3001\u5b89\u5168\u6216\u516c\u53f8\u7ea6\u5b9a\uff0c\u5148\u8bfb\u8be5\u7d22\u5f15\uff0c\u518d\u53ea\u8bfb\u53d6\u76f8\u5173\u516c\u53f8\u89c4\u8303\u6587\u4ef6"
+)
+
+
 def knowledge_references(text):
     references = set()
     covered = []
@@ -68,6 +73,20 @@ def knowledge_references(text):
         if ".." in Path(path).parts or "\\" in path or "\0" in path:
             raise ValueError("Knowledge citations must stay inside their source root")
     return references
+
+
+def knowledge_dependencies(text):
+    """Classify only the exact bundled conditional; all other citations are required."""
+    dependencies = {}
+    required_lines = []
+    for line in text.splitlines(keepends=True):
+        if line.rstrip("\r\n") == LEGACY_OPTIONAL_COMPANY_POLICY:
+            dependencies[".sdc/standards/company/README.md"] = False
+            required_lines.append("\n")
+        else:
+            required_lines.append(line)
+    dependencies.update(dict.fromkeys(knowledge_references("".join(required_lines)), True))
+    return dependencies
 
 
 @contextmanager
@@ -113,6 +132,9 @@ def change_lock(root, change_id):
 
 
 def input_snapshot(root, directory, *, plan=False):
+    from sdc_compact import is_compact, snapshot
+    if is_compact(directory):
+        return snapshot(root, directory, plan=plan)
     names = {".sdc/constitution.md", ".sdc/common-ground.md", ".sdc/expert-routing.md", ".sdc/knowledge/index.md"}
     artifacts = ["discovery.md", "spec.md"]
     if plan:
@@ -120,10 +142,15 @@ def input_snapshot(root, directory, *, plan=False):
     for name in artifacts:
         names.add((directory / name).relative_to(root).as_posix())
     # Include only explicitly cited knowledge/standards; an index is routing, not a full corpus load.
-    pending = [(directory / name).relative_to(root).as_posix() for name in artifacts]
+    artifact_names = {(directory / name).relative_to(root).as_posix() for name in artifacts}
+    pending = sorted(names)
+    visited = set()
     required_refs = set()
     while pending:
         name = pending.pop()
+        if name in visited:
+            continue
+        visited.add(name)
         path = root / name
         current = root
         for part in Path(name).parts:
@@ -132,10 +159,14 @@ def input_snapshot(root, directory, *, plan=False):
                 raise ValueError(f"Snapshot input must not be a symlink: {name}")
         if not path.is_file() or path.is_symlink():
             continue
-        for reference in knowledge_references(path.read_text(errors="replace")):
-            if reference not in names:
-                names.add(reference)
+        text = path.read_text(errors="replace")
+        dependencies = (dict.fromkeys(knowledge_references(text), True) if name in artifact_names
+                        else knowledge_dependencies(text))
+        for reference, required in sorted(dependencies.items()):
+            names.add(reference)
+            if required:
                 required_refs.add(reference)
+            if reference not in visited:
                 pending.append(reference)
     result = {}
     for name in sorted(names):
@@ -154,8 +185,9 @@ def input_snapshot(root, directory, *, plan=False):
     return result
 
 
-def source_snapshot(root):
+def source_snapshot(root, *, extra_paths=()):
     ignored_dirs = {".sdc", ".git", "node_modules", ".venv", "venv", "__pycache__", ".pytest_cache", ".mypy_cache"}
+    tracked = set()
     git = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
                          cwd=root, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     if git.returncode == 0:
@@ -166,6 +198,8 @@ def source_snapshot(root):
         # Check index modes even when a submodule is absent or under an excluded directory.
         for entry in index.stdout.split(b"\0"):
             metadata, _, path = entry.partition(b"\t")
+            if path:
+                tracked.add(os.fsdecode(path))
             if metadata.split(b" ", 1)[0] == b"160000":
                 raise UnsupportedSubmoduleError(
                     "Source snapshots do not support Git submodules (gitlink): " + os.fsdecode(path))
@@ -173,24 +207,50 @@ def source_snapshot(root):
     else:
         names = set()
         for base, dirs, files in os.walk(root, followlinks=False):
+            for name in dirs:
+                path = Path(base) / name
+                if path.is_symlink():
+                    names.add(path.relative_to(root).as_posix())
             dirs[:] = sorted(name for name in dirs if name not in ignored_dirs)
             for name in files:
                 names.add((Path(base) / name).relative_to(root).as_posix())
+    explicit = set(extra_paths)
+    names.update(explicit)
     result = {}
     for name in sorted(names):
         relative = Path(name)
-        if relative.is_absolute() or ".." in relative.parts or any(part in ignored_dirs for part in relative.parts):
+        if relative.is_absolute() or ".." in relative.parts:
+            if name in explicit:
+                raise ValueError("Explicit source paths must stay inside the repository")
+            continue
+        # SDC/Git bookkeeping has separate snapshots; tracked product files do not
+        # become disposable merely because an ancestor resembles a cache directory.
+        if relative.parts[0] in {".sdc", ".git"}:
+            continue
+        if (name not in explicit and name not in tracked
+                and not (root / relative).is_symlink()
+                and any(part in ignored_dirs for part in relative.parts)):
             continue
         path = root / relative
+        linked_parent = None
+        parent = root
+        for part in relative.parts[:-1]:
+            parent /= part
+            if parent.is_symlink():
+                linked_parent = parent
+                break
+        if linked_parent is not None:
+            # Bind the first link's routing without probing any of its descendants.
+            result[name] = digest_bytes(json.dumps({
+                "symlink_parent": linked_parent.relative_to(root).as_posix(),
+                "target": os.readlink(linked_parent),
+            }, sort_keys=True).encode())
+            continue
         if path.is_symlink():
             result[name] = digest_bytes(os.fsencode(os.readlink(path)))
         elif path.is_file():
-            # Do not follow a symlinked parent, even if git still tracks its old children.
-            if any(parent.is_symlink() for parent in path.parents if parent != root and root in parent.parents):
-                result[name] = "symlink-parent"
-            else:
-                mode = stat.S_IMODE(path.stat().st_mode)
-                result[name] = digest_bytes(str(mode).encode() + b"\0" + path.read_bytes())
+            mode = stat.S_IMODE(path.stat().st_mode)
+            result[name] = digest_bytes(str(mode).encode() + b"\0" + path.read_bytes())
         elif not path.exists():
             result[name] = None
     return result
@@ -201,7 +261,7 @@ def change_support_snapshot(root, directory):
     artifacts = {
         "discovery.md", "spec.md", "impact.md", "design.md", "tasks.md", "context-pack.md",
         "notes.md", "proposal.md", "knowledge-candidates.md", "state.json",
-        "apply-context.jsonl", "check-context.jsonl",
+        "apply-context.jsonl", "check-context.jsonl", "compact.json", "findings.json",
     }
     result = {}
     pending = [directory]
@@ -223,20 +283,43 @@ def change_support_snapshot(root, directory):
 
 
 def verification_snapshot(root, directory):
-    return {"inputs": input_snapshot(root, directory, plan=True), "sources": source_snapshot(root),
+    return {"inputs": input_snapshot(root, directory, plan=True), "sources": change_source_snapshot(root, directory),
             "change_support": change_support_snapshot(root, directory)}
 
 
+def change_source_snapshot(root, directory):
+    from sdc_compact import is_compact, load
+    paths = load(root, directory)["paths"] if is_compact(directory) else ()
+    return source_snapshot(root, extra_paths=paths)
+
+
 def review_snapshot(root, directory):
+    from sdc_compact import is_compact
     result = verification_snapshot(root, directory)
+    names = ("compact.json",) if is_compact(directory) else ("tasks.md", "notes.md")
     result["review_artifacts"] = {
         name: digest_bytes((directory / name).read_bytes())
-        for name in ("tasks.md", "notes.md")
+        for name in names
     }
+    findings = directory / "findings.json"
+    if findings.is_symlink():
+        raise ValueError("Finding evidence must not be a symlink")
+    if findings.is_file():
+        result["review_artifacts"]["findings.json"] = digest_bytes(findings.read_bytes())
+    if is_compact(directory):
+        notes = directory / "notes.md"
+        if notes.is_symlink():
+            raise ValueError("Compact notes must not be a symlink")
+        result["review_artifacts"]["notes.md"] = digest_bytes(notes.read_bytes()) if notes.is_file() else None
     return result
 
 
 def task_verifications(directory):
+    from sdc_compact import is_compact, load
+    if is_compact(directory):
+        root = directory.parents[3]
+        task = load(root, directory)["task"]
+        return {task["id"]: {"complete": task.get("complete") is True, "argv": task["verify"]}}
     lines = (directory / "tasks.md").read_text().splitlines()
     checkbox_indexes = [
         index for index, line in enumerate(lines)

@@ -29,6 +29,7 @@ SDC 在真实项目共建中持续接受检验。以下仅展示部分公开项�
 - Context runtime：`plan` 生成确定性的 `apply-context.jsonl` 和 `check-context.jsonl`；memory recall 只读、本地且全部标记为 `Candidate`，research 继续由现有阶段内部路由。
 - Client adapters：Claude 支持 `SessionStart`；Codex 默认通过 skill 恢复上下文，支持的客户端可显式启用原生 hook，失败时回退。
 - 风险分级：内部按 light / standard / strict 调整阅读、任务与检查范围；高影响决策仍需确认，不增加公开命令。
+- 轻量变更：已确认的纯文字修正可用一份 `compact.json`，不必先生成完整工作区；仍需真实验证和独立审查，旧变更不自动降级。
 - 可验证交付：实际测试结果和独立评审绑定需求、代码快照与变更版本，失败或过期证据不能用于归档。
 - Brownfield impact gate：存量项目在需求确认后做当前变更影响面分析。
 - 追溯链：`SCN-* -> REQ-* -> AC-* -> T### -> validation evidence`。
@@ -99,6 +100,8 @@ node bin/install.js
 ```
 
 安装器会替换旧插件 cache、清理旧版重复 skills，并生成 Claude Code 与 Codex 各自需要的目录结构；正常更新不需要先卸载。
+
+命令缺失、重复或更新未生效时，在客户端使用 `/sdc:check installation`，或让 Codex“用 SDC 检查安装”。源码目录也可运行 `node bin/sdc.js check installation --json`。检查只读，会核对实际安装位置、内容指纹和重复入口；版本号相同不代表文件一致，不会自动删除配置或重装。
 
 ### 更新客户端和已有项目
 
@@ -211,6 +214,8 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 
 ## `.sdc/` 工作区
 
+上面是标准流程。仅改已确认的拼写、说明文字且不改变业务规则时，AI 可在同样的 `change/plan/apply/check/archive` 入口内使用轻量格式：一份变更记录，加状态、上下文清单和执行/审查证据。权限、数据、接口、架构或发布变化必须走完整流程；发现范围扩大时保留历史并回到需求确认。详见 [轻量流程](sdc-references/compact-workflow.md)。
+
 `/sdc:init` 会创建：
 
 ```text
@@ -253,6 +258,7 @@ SDC_CODEX_DIRECT_SKILLS=1 npx sdc-spec@latest
 - 常用入口是 `.sdc/knowledge/product/`、`.sdc/knowledge/technical/` 和每次 plan 生成的 `context-pack.md`。
 - 每条长期知识应记录 `Status / Source / Verified At / Verified Against / Scope`。
 - 缺证据时写 Knowledge Gap，不允许把推断写成事实。
+- 领域词义有歧义时，复用 `knowledge/product/domain.md` 记录术语、边界例子与来源；先由业务负责人确认，不另造一套词典或自动改写知识。
 
 ### Artifact Output Contract
 
@@ -286,6 +292,8 @@ AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关
 
 ## 关键规则
 
+以下文档字段约束描述标准格式；轻量格式使用其对应内容门禁，不要求补齐一套空文档。两种格式的确认、影响边界和新鲜证据要求相同。
+
 - Open Questions 未闭合时，只能生成 Draft，不允许生成 Confirmed spec/design/tasks。
 - OPEN Common Ground 不能进入 final spec/design/tasks/context-pack/apply/archive。
 - 专家路由只能提出问题、检查和 investigation task，不能替用户确认产品规则、架构、数据模型、权限或发布策略。
@@ -302,6 +310,7 @@ AI 应先读 `.sdc/standards/company/README.md`，再按当前任务读取相关
 - `Assumed / Proposed / TBD / Conflict / Stale` 不能进入 final spec/design/tasks/context-pack/apply/archive。
 - 存量项目的技术事实必须有代码、配置、测试、构建或运行证据。
 - `archive` 可以写必需归档资产；更新 common-ground、expert-routing、knowledge、memory、standards、decisions、AGENTS.md 等长期资产前必须等待用户确认。
+- 问题按依赖顺序讨论，只问当前可回答的阻塞项；测试必须证明业务行为，不能用“命令成功”代替有效测试。同一审查问题保留稳定 ID，重复修复失败需裁决，不能换 ID 或把接受风险写成通过。
 
 ## 公开命令
 

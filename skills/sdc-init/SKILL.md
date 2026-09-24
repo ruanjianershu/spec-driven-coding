@@ -17,6 +17,7 @@ In Claude Code, `/sdc:init` is the single project-level entry. Run the bundled i
 Run the SDC init workflow:
 
 - Resolve `SDC_PLUGIN_ROOT` to the installed SDC root containing `sdc-cli.py`, using the current command or skill file's location: above `commands/`, or two levels above `skills/<skill>/`. Verify that the CLI exists; do not guess a home-directory checkout.
+- If helpers are missing, payloads are stale, or skills appear twice, load `../../sdc-references/installation-diagnostics.md` and perform read-only diagnosis before initialization. Normal init does not require scanning every client or repairing installs.
 - For legacy direct skills and Hermes layouts, if that root lacks `sdc-cli.py`, use its `sdc-runtime/` child after verifying the CLI and runtime helper exist there.
 - From the target project's working directory, run `python3 "$SDC_PLUGIN_ROOT/sdc-cli.py" init` to create or repair `.sdc/` idempotently. If Python 3 or the bundled CLI is unavailable, report that blocker; do not silently claim initialization succeeded.
 - Do not install or update clients, clone repositories, or run private bootstrap scripts during project initialization.

@@ -2,6 +2,8 @@
 
 This reference defines stage-level input and output contracts for SDC. It turns enterprise delivery expectations into explicit artifacts without adding public commands.
 
+The standard document layout below has a narrow alternative in `compact-workflow.md`: confirmed prose-only changes keep output non-applicability evidence and the SCN/REQ/AC/task/Verify mapping in one record. Triggered richer outputs disqualify compact; never manufacture empty diagrams or treat file extensions as non-applicability evidence.
+
 ## Principle
 
 SDC keeps the public workflow small:

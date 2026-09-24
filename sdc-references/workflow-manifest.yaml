@@ -27,6 +27,14 @@ shared_references:
   - runtime-context.md
   - artifact-schemas.md
   - delivery-gates.md
+  - compact-workflow.md
+  - installation-diagnostics.md
+  - domain-knowledge.md
+  - test-quality.md
+  - review-findings.md
+artifact_formats:
+  standard: "Existing Markdown artifact package; no automatic downgrade."
+  compact: "sdc.compact/v1; new confirmed behavior-neutral prose only, same evidence gates."
 runtime_contract:
   helper: scripts/sdc-runtime-context.py
   states:

@@ -535,6 +535,11 @@ See knowledge-candidates.md.
         root = change.parents[3]
         if change != root / ".sdc" / "changes" / "active" / change.name or not (root / ".sdc").is_dir():
             return
+        # Final task/review artifacts changed; refresh derived context before delivery.
+        for role in ("apply", "check"):
+            code, output = run_runtime(root, "manifest", "generate", "--change", change.name, "--role", role)
+            if code != 0:
+                raise AssertionError(output)
         code, output = run_runtime(root, "evidence", "run", "--change", change.name,
                                    "--stage", "check", "--task", "T001", "--task", "T900",
                                    "--", "python3", "-c", "assert 1 + 1 == 2")

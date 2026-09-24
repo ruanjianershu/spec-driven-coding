@@ -20,7 +20,11 @@ from grading import aggregate_outcome, check, classify_execution, parse_transcri
 from scenarios import SAFETY, SCENARIOS, advance_revision, seed_project
 
 
-SOURCE_FILES = ("sdc-cli.py", "scripts/sdc-runtime-context.py", "scripts/sdc-task-brief.py", "scripts/sdc-review-package.py", "scripts/sdc_evidence.py")
+SOURCE_FILES = (
+    "sdc-cli.py", "scripts/sdc-runtime-context.py", "scripts/sdc-task-brief.py",
+    "scripts/sdc-review-package.py", "scripts/sdc_evidence.py", "scripts/sdc_compact.py",
+    "scripts/sdc_findings.py", "scripts/sdc-doctor.mjs",
+)
 SOURCE_DIRS = ("commands", "sdc-references")
 MAX_SOURCE_BYTES = 10_000_000
 
@@ -69,7 +73,8 @@ def install_source(source, project):
         if not path.is_file():
             raise ValueError("Non-regular source file: " + str(relative))
         # No arbitrary bundled binary/config payloads, hooks, or plugin manifests.
-        if path.suffix not in {".py", ".md", ".yaml", ".yml", ".json", ".txt"}:
+        # Only explicitly named helpers bypass the extension filter (doctor.mjs).
+        if relative.as_posix() not in SOURCE_FILES and path.suffix not in {".py", ".md", ".yaml", ".yml", ".json", ".txt"}:
             continue
         total += path.stat().st_size
         if total > MAX_SOURCE_BYTES or len(manifest) >= 2000:

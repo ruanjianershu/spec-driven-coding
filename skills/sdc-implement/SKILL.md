@@ -24,6 +24,9 @@ description: "Use when a confirmed SDC change needs detailed implementation cont
 
 Load only what is needed:
 
+- For `compact.json`, follow `../../sdc-references/compact-workflow.md` instead of requiring the standard artifact/brief package below; use the same scope, verification, and review gates.
+- Behavior tests and bug reproduction: `../../sdc-references/test-quality.md`.
+
 - Role contract: `../../sdc-references/role-contracts.md`, section `sdc-implement`.
 - Apply rules: `../../sdc-references/workflow-standards.md` and `../../sdc-references/artifact-schemas.md`.
 - Expert routing: `../../sdc-references/expert-routing.md`.

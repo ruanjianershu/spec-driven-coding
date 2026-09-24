@@ -19,9 +19,12 @@ Use this command as the unified SDC entry. Interpret "$ARGUMENTS" as the user's 
 - new requirement/change -> read knowledge index, `/sdc:change`, then confirmed specification and `/sdc:plan`
 - implement current change -> `/sdc:apply`
 - delivery check -> `/sdc:check`
+- missing/duplicate/stale installed commands or skills -> `/sdc:check installation` (read-only diagnostics, no active change required)
 - archive completed work -> `/sdc:archive`
 - generate project AI rules -> `/sdc:harness`
 
 Keep the six lifecycle entries `init/change/plan/apply/check/archive`; `sdc` is the router and `harness` is an existing optional guardrail utility, not another lifecycle stage. Use internal expert routing instead of adding public commands or a multi-agent swarm.
+
+For a new confirmed prose correction, assess `../../sdc-references/compact-workflow.md` before routing through full init or standard planning. Existing project rules win; unknown scope stays in discovery. Compact is a format within the same stages, not a new public command.
 
 At the chosen stage, load only relevant sources and reuse cited current confirmations. Consult `../../sdc-references/workflow-standards.md` for risk selection, authorization boundaries, or freshness/reopen decisions. Internal `light` / `standard` / `strict` policies vary effort, never semantic acceptance. Ask only missing blocking questions; unknown business requirements remain in discovery, and high-impact actions require authoritative confirmation or bounded explicit delegation.

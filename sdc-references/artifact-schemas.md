@@ -2,6 +2,8 @@
 
 This reference defines durable SDC files. Use it when creating, repairing, validating, planning, archiving, or explaining `.sdc/` artifacts.
 
+The following structures describe the standard format. New confirmed prose-only changes may use `compact-workflow.md` and its executable `sdc.compact/v1` schema instead. Never validate a compact change against the standard template package, or use compact to weaken a standard change's gates.
+
 ## Workspace Structure
 
 ```text

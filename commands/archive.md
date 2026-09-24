@@ -11,6 +11,8 @@ This also applies to optional product knowledge, technical knowledge, and memory
 
 Run the SDC archive workflow:
 
+For `compact.json`, follow `sdc-references/compact-workflow.md`: preserve the canonical record and current evidence without inventing a stable business spec or promoting knowledge. The standard spec-promotion list below applies only to standard changes.
+
 - Require a final confirmed spec, completed tasks, traceability, approved final whole-change review, and check evidence tied to the delivered source snapshot. Do not repeat unchanged checks or bypass stale/missing evidence.
 - Resolve exactly one active change and require lifecycle state `archivable`; do not archive from `checking` merely because the latest report looks successful.
 - Promote the final spec to `.sdc/specs/<change-id>.md`.

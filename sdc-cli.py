@@ -37,6 +37,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
 from sdc_evidence import change_lock
+import sdc_compact
+from sdc_findings import assert_clear
 
 SDC_DIR = Path(".sdc")
 SAFE_CHANGE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -321,6 +323,8 @@ Record an evidence-backed light/standard/strict risk level in the existing conte
 ## 5. Artifact Output Contract Discipline
 
 Every confirmed change must record an Artifact Output Contract before final plan/apply/check.
+
+For new confirmed behavior-neutral prose edits only, the compact format may keep intake, risk, impact, governing sources, output assessment, SCN/REQ/AC/task mapping, and verification in one compact.json. Its referenced sources retain exact constraints. Standard artifact requirements below apply to standard changes; compact uses equivalent content gates and current command/review receipts. Existing standard changes cannot silently downgrade, and project-specific stricter rules remain binding.
 
 Triggered outputs include process/state diagrams, sequence/integration diagrams, API/contract specifications, data/migration contracts, UX flow/states, Test Matrix, deploy/release checklist, and AI involvement note.
 
@@ -3679,6 +3683,19 @@ def cmd_validate(target="current", require_delivery_evidence=False):
     errors = []
     warnings = []
 
+    if target != "current" and sdc_compact.is_compact(change_path(target)):
+        try:
+            sdc_compact.validate(Path.cwd().resolve(), change_path(target).resolve(), delivery=require_delivery_evidence)
+            print("Compact contract validated; delivery additionally requires current execution and review receipts.")
+            if require_delivery_evidence:
+                helper = Path(__file__).resolve().parent / "scripts/sdc-runtime-context.py"
+                result = subprocess.run([sys.executable, str(helper), "evidence", "verify", "--change", target])
+                return result.returncode == 0
+            return True
+        except (ValueError, OSError, KeyError, TypeError) as exc:
+            print(f"Compact validation blocked: {exc}")
+            return False
+
     validate_file(errors, warnings, SDC_DIR / "constitution.md", [
         "Governance Priority",
         "Fact Priority",
@@ -3787,6 +3804,19 @@ def cmd_lifecycle_gate(change_id, state):
     if not base.is_dir():
         print_color(RED, f"❌ 需求迭代不存在: {base}")
         return False
+    if state in {"checking", "archivable", "reviewed"}:
+        try:
+            assert_clear(Path.cwd().resolve(), change_id)
+        except (ValueError, OSError) as exc:
+            print(f"Review findings block delivery: {exc}")
+            return False
+    if sdc_compact.is_compact(base):
+        try:
+            sdc_compact.validate(Path.cwd().resolve(), base.resolve(), delivery=state in {"checking", "archivable", "reviewed"})
+            return True
+        except (ValueError, OSError, KeyError, TypeError) as exc:
+            print(f"Compact lifecycle gate blocked: {exc}")
+            return False
     errors = []
     warnings = []
     validate_file(errors, warnings, base / "discovery.md", ["Current Understanding", "Decision Ledger", "Open Questions", "Exit Criteria"])
@@ -4019,6 +4049,31 @@ def archive_change_locked(change_id):
         print_color(RED, "❌ 归档前校验未通过，已停止归档")
         return False
 
+    if sdc_compact.is_compact(source):
+        archived_dir = archive_change_path(change_id)
+        if archived_dir.exists():
+            print("Archive destination already exists; nothing overwritten.")
+            return False
+        data = sdc_compact.validate(Path.cwd().resolve(), source.resolve(), delivery=True)
+        archive_file = source / "archive.md"
+        if archive_file.exists() or archive_file.is_symlink():
+            print("Compact archive report already exists; refusing to overwrite.")
+            return False
+        archive_file.write_text(
+            f"# Archive: {change_id}\n\n## Delivery\n"
+            f"{data['intake']['request']}\n\n"
+            f"- Trace: {data['task']['scenario']} -> {data['task']['requirement']} -> {data['task']['acceptance']} -> {data['task']['id']}\n"
+            "- Contract and confirmation: compact.json\n- Current execution and review receipts: evidence/\n"
+            "- Stable requirement is preserved in compact.json; no new business spec was introduced.\n\n"
+            "## Knowledge Compact Gate\n"
+            "N/A: behavior-neutral documentation change. No knowledge, memory, standards, or governance promotion.\n"
+            "New reusable facts require a separate confirmed promotion; risk acceptance is not a pass.\n"
+        )
+        archived_dir.parent.mkdir(parents=True, exist_ok=True)
+        source.rename(archived_dir)
+        print(f"Compact change archived: {archived_dir}")
+        return True
+
     spec = source / "spec.md"
     if not spec.exists():
         print_color(RED, f"❌ 缺少 spec.md，不能归档: {spec}")
@@ -4132,6 +4187,13 @@ def archive_change_locked(change_id):
 
 def cmd_check(target="current"):
     """综合检查入口：CLI 层先执行结构校验，并提示后续人工/AI 检查。"""
+    if target == "installation":
+        helper = Path(__file__).resolve().parent / "scripts/sdc-doctor.mjs"
+        try:
+            return subprocess.run(["node", str(helper), *sys.argv[3:]]).returncode == 0
+        except OSError as exc:
+            print(f"Installation diagnostics require Node.js: {exc}")
+            return False
     ok = cmd_validate(target, require_delivery_evidence=True)
     print_color(HEADER, "🔎 后续检查")
     print("  - delivery: validate + review + test + quality")
@@ -4236,7 +4298,20 @@ def main():
         if len(sys.argv) < 3:
             print_color(RED, "❌ 用法: sdc change <short-name> [--confirmed-intake]")
             return
-        cmd_change(sys.argv[2], confirmed_intake="--confirmed-intake" in sys.argv[3:])
+        if "--compact" in sys.argv[3:]:
+            try:
+                record_path = option_value(sys.argv[3:], "--record")
+                if not record_path:
+                    raise ValueError("--compact requires --record <confirmed-intake.json>; never infer missing decisions")
+                record = json.load(sys.stdin) if record_path == "-" else json.loads(Path(record_path).read_text())
+                change_id = f"{date.today().isoformat()}-{slugify(sys.argv[2])}"
+                directory = sdc_compact.create(Path.cwd().resolve(), change_id, record)
+                print(f"Compact change created: {directory}\nState: discovery; validate and confirm before planning.")
+            except (ValueError, OSError, KeyError, TypeError) as exc:
+                print(f"Compact creation blocked: {exc}")
+                sys.exit(1)
+        else:
+            cmd_change(sys.argv[2], confirmed_intake="--confirmed-intake" in sys.argv[3:])
     elif cmd == "validate":
         target = sys.argv[2] if len(sys.argv) >= 3 else "current"
         if not cmd_validate(target):

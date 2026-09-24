@@ -19,6 +19,7 @@ HOOK_COMMAND = 'python3 "${PLUGIN_ROOT}/hooks/codex-session-start.py"'
 DIRECT_RUNTIME_FILES = {
     "sdc-cli.py", "scripts/sdc-runtime-context.py", "scripts/sdc_evidence.py",
     "scripts/sdc-task-brief.py", "scripts/sdc-review-package.py",
+    "scripts/sdc_compact.py", "scripts/sdc_findings.py", "scripts/sdc-doctor.mjs",
 }
 
 

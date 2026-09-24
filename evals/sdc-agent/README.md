@@ -29,7 +29,7 @@ python3 -B evals/sdc-agent/run_agent_evals.py --agent codex --auth-mode host \
 python3 -B evals/sdc-agent/run_agent_evals.py --agent claude --auth-mode host \
   --baseline --scenario vague-intake --timeout 45 --output /tmp/sdc-agent-claude-new
 
-# Fake subprocesses test harness mechanics only, never model behavior.
+# Local helper and fake-agent regressions; no auth probes or model calls.
 python3 -B -m unittest discover -s evals -p test_agent_evals.py -v
 ```
 
@@ -44,9 +44,17 @@ across all arms; observed model IDs are recorded only when the CLI exposes them.
 - Every trial gets a fresh temporary project, home, cache and environment. Each
   supplied source is frozen once and content-hashed before running the matrix.
   Only `sdc-cli.py`, `commands/`, `sdc-references/`, and the named local runtime
-  helpers (including `scripts/sdc_evidence.py` when present) are copied. Symlinks
-  are rejected. No installer, hooks, plugin metadata, generated `skills/`, or
-  source `.sdc/` state is installed.
+  helpers are copied: `scripts/sdc-runtime-context.py`, `scripts/sdc-task-brief.py`,
+  `scripts/sdc-review-package.py`, `scripts/sdc_evidence.py`,
+  `scripts/sdc_compact.py`, `scripts/sdc_findings.py`, and `scripts/sdc-doctor.mjs`.
+  These helpers are copied when present so supplied older snapshots remain
+  supported. The current CLI/runtime require the compact and findings modules;
+  the doctor sidecar supports `sdc-cli.py check installation` and is the only
+  explicitly allowed `.mjs` file. Nothing recursively copies `scripts/` or resolves
+  dependencies from the host. Both the initial freeze and the per-trial copy
+  enforce the 10,000,000-byte / 2,000-file source bounds and reject selected
+  symlinks (including linked ancestors). No installer, hooks, plugin metadata,
+  generated `skills/`, or source `.sdc/` state is installed.
 - The **selected local `commands/sdc.md` is injected directly**. Stage instructions
   come from that snapshot's `commands/<stage>.md`, never the host's older installed
   SDC plugin. Baseline receives the identical task, fixture and safety instructions,
@@ -78,6 +86,15 @@ across all arms; observed model IDs are recorded only when the CLI exposes them.
   agent error/retry events abort the process. Unreported CLI-internal retries cannot
   be disabled/count-guaranteed. **No hard token/dollar ceiling** is claimed: usage and
   cost are recorded only if reported, otherwise `null`, never estimated or zero-filled.
+
+The local regression suite freezes the real current repository, then copies that
+snapshot into a fresh project exactly as the runner does. It checks identical
+manifests/hashes and executes the copied CLI/helper entrypoints there with an
+isolated home and no `PYTHONPATH`. When Node.js is available, it also invokes the
+doctor directly and through the copied CLI using only the empty temporary home;
+the expected result is `NO_INSTALLATIONS` (exit 1), not an import/module failure.
+Older snapshots, byte bounds, selected symlinks, and excluded payloads are covered
+separately. These checks do not install anything, read host auth, or call models.
 
 ## Scenarios
 

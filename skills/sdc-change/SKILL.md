@@ -14,6 +14,8 @@ Use "$ARGUMENTS" as the requirement or change name.
 
 Run the evidence-backed Change Intake Gate:
 
+For a new, confirmed behavior-neutral prose correction, assess the compact format in `../../sdc-references/compact-workflow.md` before invoking full init or generating standard artifacts. Unknown requirements stay in discovery; existing standard changes never silently become compact. For compact changes use that format's canonical record and lifecycle steps instead of the standard artifact list below.
+
 1. Cover four categories: project context, core scope, technical preferences, and constraints/acceptance. Cite current user instructions or still-valid prior user/project confirmation for each; ask only missing blocking questions, with no fixed question count or repeated approval ritual. Use `../../sdc-references/discovery-gate.md` for intake and discovery details.
 2. Start with the knowledge index and relevant Common Ground/routing entries. Load only affected sources; `ESTABLISHED` must still be current, and personal/native/project memory recall remains `Candidate`, not confirmation.
 3. Make authorization and the internal `light` / `standard` / `strict` risk rationale visible. Use `../../sdc-references/workflow-standards.md` for risk selection, delegation boundaries, or stale-source handling. Risk level never resolves unknown business requirements.

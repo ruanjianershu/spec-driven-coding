@@ -22,6 +22,8 @@ description: "Use when an SDC change needs its final cross-cutting delivery qual
 
 Load only what is needed:
 
+- For `compact.json`, use `../../sdc-references/compact-workflow.md` for corresponding artifact and evidence requirements instead of demanding standard spec/design/tasks files.
+
 - Role contract: `../../sdc-references/role-contracts.md`, section `sdc-quality`.
 - Quality gate: `../../sdc-references/delivery-gates.md`.
 - Evidence and stop-line rules: `../../sdc-references/workflow-standards.md`.

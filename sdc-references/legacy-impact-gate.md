@@ -2,6 +2,8 @@
 
 Legacy Impact Gate protects existing systems from accidental change. It applies to Brownfield/Legacy projects after the requirement is confirmed and before final planning or implementation.
 
+For a new confirmed behavior-neutral prose change eligible under `compact-workflow.md`, the canonical record's `impact`, declared paths, source baseline, and independent diff review carry the focused impact assessment. Do not generate a separate impact.md just to restate them. Any behavior, policy, interface, or broader impact requires escalation to the standard gate below.
+
 ## Timing
 
 Correct sequence:

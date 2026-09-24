@@ -30,6 +30,9 @@ SCN-* -> REQ-* -> AC-* -> T### -> validation evidence
 
 Load only what is needed:
 
+- For an existing `compact.json`, use `../../sdc-references/compact-workflow.md` for confirmation and traceability instead of generating a second spec. Wider requirements require explicit escalation, not implicit format conversion.
+- Domain meanings or glossary conflicts: `../../sdc-references/domain-knowledge.md`.
+
 - Role contract: `../../sdc-references/role-contracts.md`, section `sdc-spec`.
 - Decision, traceability, and stop-line rules: `../../sdc-references/workflow-standards.md`.
 - Common Ground rules: `../../sdc-references/common-ground.md`.

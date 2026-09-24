@@ -1,5 +1,7 @@
 # SDC Runtime Context Contract
 
+For a change with `compact.json`, first read `compact-workflow.md`. The same lifecycle, manifests, receipts, and freshness checks apply, but each state cites `compact.json` rather than the standard Markdown artifact set. Never invent missing standard documents for a compact change.
+
 Resolve `SDC_PLUGIN_ROOT` to the installed plugin root (the parent of `sdc-references/`); do not assume this variable is already set. Verify the helper exists and invoke it from the target project root, not the plugin directory. For legacy direct skills and Hermes layouts, if the derived root lacks `sdc-cli.py`, use its `sdc-runtime/` child after verifying both the CLI and runtime helper exist there. Missing helpers are an installation blocker, not permission to guess another checkout.
 
 This reference defines the internal local runtime helper used by existing SDC stages. It does not add public slash commands.
@@ -53,6 +55,15 @@ Evidence must be a real top-level file of the selected active change. Missing fi
 `confirmed` checks a closed discovery, explicit Confirmed spec, and acceptance/traceability structure. `planned` and `applying` also check design, task interfaces, preflight, context, and current manifests. Delivery checks require actual task execution and independent-review receipts, not only Markdown claims.
 
 State records bind a snapshot of governing inputs. Planning additionally binds design, context, and task contracts; ordinary task checkbox/review/evidence updates are excluded from the task-contract hash. Checking and archival additionally bind repository sources, including dirty and untracked non-ignored files. File source digests include permission modes as well as bytes; compare snapshots through the helper, not against a plain file SHA-256. Explicitly cited knowledge/standards files are included, not an indiscriminate copy of every knowledge document. An invalid or changed snapshot blocks continuation.
+
+Tracked product files remain bound even beneath cache-like directory names.
+Root `.sdc` and `.git` bookkeeping remains separate. Without Git, known generated
+directories are excluded, but directory symlink entries are recorded without
+following them. Link destinations are bound as paths, not as external content;
+external dependencies still require their own verification boundary.
+When the Git index still lists a child below a replaced directory, the snapshot
+binds the first symbolic-link ancestor and its destination, including dangling
+destinations, without following that ancestor to inspect the child.
 
 Git submodules/gitlinks are not recursively snapshotted by this implementation. Source-bound verification stops with an unsupported-submodule error instead of silently omitting their contents. Use a separately reviewed verification boundary; do not claim whole-project delivery evidence while tracked gitlinks remain unsupported.
 
@@ -200,3 +211,10 @@ Extra durable scripts and fixtures inside the active change are also snapshotted
 Every completed task needs a latest passing receipt for the current snapshot and revision whose argv exactly matches that task's Verify command. A single run can name multiple tasks with identical verification. A later failure cannot fall back to an earlier pass. After implementation changes, rerun affected planned verification before delivery; the current conservative source snapshot can require broader reruns when dependency scope is not proven.
 
 Finish task/notes updates and the actual read-only whole-change review before recording `evidence review`. This records attribution and binds the approved review to exact task/notes and source content; it does not perform the review, authenticate the reviewer, or prevent a local user from tampering with files. Preserve independent reviewer execution in the host and use CI attestations for stronger organizational assurance. Structural `validate` alone is not evidence of tested behavior.
+
+An absent findings ledger adds no field to the review snapshot, preserving
+unchanged standard approvals created before ledger support. An actual ledger
+is hashed, so adding, changing, or removing it invalidates the bound review.
+Prefer readable reviewer labels. Bounded lowercase review labels with an ISO
+date are checked as descriptive words; explicit credential patterns and opaque
+high-entropy values are still rejected. This does not authenticate attribution.

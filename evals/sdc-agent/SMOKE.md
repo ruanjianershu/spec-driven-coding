@@ -53,6 +53,48 @@ They are narrow workflow observations, not a blinded model or client comparison.
   or efficiency claim. The agent's suspected README digest mismatch was checked
   using the actual snapshot helper: the receipt and current source map matched;
   source digests include permission modes, not just file bytes.
-- Follow-up: the light risk policy reduces repetition, not the current workspace
+- Follow-up at the time of this initial probe: the light risk policy reduced repetition, not the then-current workspace
   and artifact schema minimum. A compact cold-start path remains future work and
   must not be advertised as delivered or token-saving based on this probe.
+
+## Compact Upgrade Probes: 2026-09-24
+
+Two fresh native Codex subagents read the selected source skills and references.
+They did not load a released plugin or run a Codex/Claude CLI model comparison.
+The experiments used disposable fixtures, not a user's product or home settings.
+
+- **Unsettled meeting-room approval:** the user authorized discussion only and
+  had not decided which reservations need approval. The agent distinguished
+  Proposed alternatives from facts, asked one prerequisite question about the
+  business problem and example, and created/modified **zero files**. It did not
+  invent approvers, timeouts, reservation policies, or a technical stack. This
+  tests one initial reply, not a complete multi-turn discovery process.
+- **Confirmed README spelling:** the agent used the compact format without a
+  full init or spec/design/tasks package and asked no redundant questions. It
+  stopped at `applying` when independent review was unavailable rather than
+  marking its own work approved. The parent then independently checked the full
+  before/after text, exact resulting bytes and file mode, scoped inventory, and
+  CLI validation. Both review verdicts passed with attributed evidence.
+- The same agent resumed, reran the exact recorded Verify command, bound the
+  actual parent review, refreshed both role manifests, verified receipts,
+  advanced through `checking` and `archivable`, and archived successfully.
+  The active change was absent afterward; its persisted state remains
+  `archivable` inside the archive, not an invented `archived` lifecycle state.
+- The completed fixture contains **12 project files**, including README and
+  machine evidence/runtime bookkeeping, plus **7 transport/report files**.
+  The single canonical compact record does not mean a one-file installation or
+  a one-file final archive. No business spec, knowledge, or memory was promoted.
+- One initial attempt was preserved and restarted once after the in-development
+  baseline format changed. Both attempts together retained **31 files**. Earlier
+  helper changes were recorded; fresh final verification was run. This was a
+  collaborative probe during implementation, **not an immutable end-to-end
+  benchmark**. No token/cost savings or client-wide success rate was measured.
+
+Separate deterministic tests exercise cold start, real failing/passing commands,
+full archive, unknown scope, missing authority/review, receipt and manifest
+freshness, ignored/filtered targets, transitive governance, preserved revisions,
+and baseline integrity. Windows baseline translation is simulated, not a native
+Windows client run. Installation tests use real Node/installer subprocesses in
+isolated homes, with Claude registration stubbed; they do not prove a running
+client's command palette. Historical connectivity/authentication blockers above
+remain historical blockers, not overwritten as passing results.

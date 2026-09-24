@@ -290,6 +290,7 @@ function writeCompleteAgentSkillLayout(targetRoot) {
   fs.rmSync(runtimeRoot, { recursive: true, force: true });
   for (const entry of [
     'sdc-cli.py', 'scripts/sdc-runtime-context.py', 'scripts/sdc_evidence.py',
+    'scripts/sdc_compact.py', 'scripts/sdc_findings.py', 'scripts/sdc-doctor.mjs',
     'scripts/sdc-task-brief.py', 'scripts/sdc-review-package.py'
   ]) {
     const target = path.join(runtimeRoot, entry);

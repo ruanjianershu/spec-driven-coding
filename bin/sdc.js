@@ -17,6 +17,13 @@ function exitWithChildStatus(result, command) {
   process.exit(typeof result.status === 'number' ? result.status : 1);
 }
 
+if (args[0] === 'check' && args[1] === 'installation') {
+  exitWithChildStatus(
+    spawnSync(process.execPath, [path.join(__dirname, '..', 'scripts', 'sdc-doctor.mjs'), ...args.slice(2)], { stdio: 'inherit' }),
+    'SDC installation diagnostics',
+  );
+}
+
 if (args[0] === 'validate') {
   if (args.length !== 2 || !args[1] || args[1].startsWith('-')) {
     console.error('❌ 用法: sdc validate <change>');

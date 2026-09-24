@@ -1,0 +1,11 @@
+# Knowledge Candidates
+
+These observations are Candidate only. They do not add requirements, prove execution outcomes or authorize promotion. No root knowledge or memory is updated by this artifact assignment.
+
+| Candidate | Type | Scope | Source | Status | Target | Evidence Needed | Promotion Gate |
+|---|---|---|---|---|---|---|---|
+| Frozen evaluation source needs the transitive runtime helper set across both copy stages, not merely the top-level CLI | Technical | Evaluator staging and client adapters | impact.md; evals/sdc-agent/run_agent_evals.py; T001 | Candidate | .sdc/knowledge/technical/testing.md | AC-01 current subprocess results, older-source compatibility and independent review | Explicit approval of content and destination after delivery evidence |
+| Matching payload bytes cannot establish effective Claude skill registration | Technical | Supported on-disk installation diagnosis | scripts/sdc-doctor.mjs; T002; AC-02 | Candidate | .sdc/knowledge/technical/operations.md | Read-only subset/equivalence/additive fixtures and independent contract review | Explicit approval of content and destination after verification |
+| Optional absent finding ledgers must preserve old STANDARD snapshot shape while real ledger transitions invalidate review | Technical | Persisted review compatibility | scripts/sdc_evidence.py; T003; AC-06 | Candidate | .sdc/knowledge/technical/data-and-interfaces.md | Old-shaped state/receipt verification plus ledger creation/edit/removal evidence | Explicit approval after compatibility and safety review |
+| Source freshness must not exclude tracked product code because directory names resemble disposable caches, or omit directory-link identity | Technical | Compact and shared evidence | scripts/sdc_evidence.py; T004; AC-04, AC-05 | Candidate | .sdc/knowledge/technical/testing.md | Final tracked-path and non-Git link regressions without external traversal | Explicit approval after path-boundary review |
+| Retrospective reconciliation records current authority and missing historical evidence without inventing past gates | Procedure | Artifact integrity | discovery.md A-01; existing SDC policy; notes.md | Candidate | .sdc/memory/procedures.md | Reviewed final artifact history and clearly attributed execution limits | Explicit user approval of content and destination; never automatic promotion |

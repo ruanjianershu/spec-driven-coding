@@ -93,6 +93,17 @@ class EvidenceWorkflowTests(unittest.TestCase):
         self.state("confirmed", ok=False)
         self.assertEqual(before, (self.change / "state.json").read_bytes())
 
+    def test_open_finding_blocks_review_and_delivery_even_with_approved_markdown(self):
+        self.applying()
+        self.run_evidence()
+        command = [sys.executable, str(REPO / "scripts/sdc_findings.py"), "record", "--change", self.change.name,
+                   "--id", "F-001", "--summary", "Missing regression", "--source", "source-digest",
+                   "--evidence", "failure-digest", "--actor", "independent-reviewer"]
+        result = subprocess.run(command, cwd=self.root, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.runtime("evidence", "review", "--reviewer", "independent-reviewer", ok=False)
+        self.state("checking", ok=False)
+
     def test_open_question_blocks_confirmation_even_with_checked_exit(self):
         path = self.change / "discovery.md"
         path.write_text(path.read_text().replace("## Open Questions", "## Open Questions\n\n- Who may approve a booking?"))
@@ -174,6 +185,56 @@ class EvidenceWorkflowTests(unittest.TestCase):
         self.archivable()
         (self.root / "new-source.py").write_text("new_behavior = True\n")
         self.runtime("state", "get", ok=False)
+
+    def test_legacy_absent_findings_key_preserves_unchanged_approval(self):
+        self.archivable()
+        # Prior standard receipts/states omitted an absent findings ledger entirely.
+        def legacy(value):
+            if isinstance(value, dict):
+                if value.get("findings.json") is None:
+                    value.pop("findings.json", None)
+                for child in value.values():
+                    legacy(child)
+            elif isinstance(value, list):
+                for child in value:
+                    legacy(child)
+        for path in [self.change / "state.json", *self.change.glob("evidence/*.json")]:
+            data = json.loads(path.read_text())
+            legacy(data)
+            path.write_text(json.dumps(data))
+        self.runtime("state", "get")
+        self.runtime("evidence", "verify")
+        code, output = fixtures.run_sdc(self.root, "archive", self.change.name)
+        self.assertEqual(code, 0, output)
+
+    def test_findings_appearance_and_removal_invalidate_review(self):
+        self.archivable()
+        ledger = self.change / "findings.json"
+        ledger.write_text(json.dumps({"schema": 1, "change_id": self.change.name, "history": []}))
+        self.runtime("evidence", "verify", ok=False)
+        self.review()
+        self.runtime("evidence", "verify")
+        ledger.write_text(json.dumps(json.loads(ledger.read_text()), indent=2) + "\n")
+        self.runtime("evidence", "verify", ok=False)
+        self.review()
+        self.runtime("evidence", "verify")
+        ledger.unlink()
+        self.runtime("evidence", "verify", ok=False)
+
+    def test_dated_descriptive_reviewer_label_is_not_a_secret(self):
+        self.applying()
+        self.run_evidence()
+        result = self.runtime("evidence", "review", "--reviewer",
+                              "parent-independent-review-2026-09-24-frozen-portable")
+        self.assertEqual(result["status"], "approved")
+
+    def test_reviewer_secret_screening_is_preserved(self):
+        for label in ("sk-proj-abcdefghijklmnopqrstuvwxyz0123456789",
+                      "parent-review-2026-09-24-AKIA1234567890ABCDEF",
+                      "authorization: bearer opaque-credential",
+                      "r4T9yW2uI7oP0aS5dF8gH3jK6lZ1xC4vB9nM2qE7"):
+            result = self.runtime("evidence", "review", "--reviewer", label, ok=False)
+            self.assertEqual(result["error"], "invalid-reviewer")
 
     def test_latest_failed_run_cannot_reuse_earlier_pass(self):
         self.applying()
@@ -474,6 +535,73 @@ class EvidenceWorkflowTests(unittest.TestCase):
                     os.killpg(pids[0], signal.SIGKILL)
                 except ProcessLookupError:
                     pass
+
+
+    def cite_default_ai_policy(self):
+        ai = self.root / ".sdc/standards/ai.md"
+        self.assertIn("`.sdc/standards/company/README.md`", ai.read_text())
+        company = self.root / ".sdc/standards/company/README.md"
+        company.unlink(missing_ok=True)
+        spec = self.change / "spec.md"
+        spec.write_text(spec.read_text() + "\nSource: `.sdc/standards/ai.md`\n")
+        return company
+
+    def test_f011_default_ai_allows_absent_company_and_binds_appearance(self):
+        company = self.cite_default_ai_policy()
+        self.archivable()
+        from unittest.mock import patch
+        from scripts.sdc_evidence import input_snapshot
+        with patch.object(sys, "path", [str(REPO / "scripts"), *sys.path]):
+            self.assertIsNone(input_snapshot(self.root, self.change, plan=True)[
+                ".sdc/standards/company/README.md"])
+        self.assertTrue(self.runtime("evidence", "verify")["valid"])
+        company.parent.mkdir(parents=True, exist_ok=True)
+        company.write_text("# Company standards\n")
+        result = self.runtime("state", "get", ok=False)
+        self.assertIn("stale", json.dumps(result).lower())
+        self.runtime("evidence", "verify", ok=False)
+
+    def test_f011_governing_root_requirement_overrides_optional_policy(self):
+        self.cite_default_ai_policy()
+        constitution = self.root / ".sdc/constitution.md"
+        constitution.write_text(constitution.read_text() +
+                                "\nRequired: `.sdc/standards/company/README.md`\n")
+        result = self.state("confirmed", ok=False)
+        self.assertIn("company/README.md", json.dumps(result))
+
+    def test_f011_provided_company_citations_are_recursively_required_and_bound(self):
+        company = self.cite_default_ai_policy()
+        company.parent.mkdir(parents=True, exist_ok=True)
+        company.write_text("Follow `.sdc/standards/company/review.md`.\n")
+        result = self.state("confirmed", ok=False)
+        self.assertIn("company/review.md", json.dumps(result))
+        review = company.parent / "review.md"
+        review.write_text("Follow `.sdc/standards/company/testing.md`.\n")
+        result = self.state("confirmed", ok=False)
+        self.assertIn("company/testing.md", json.dumps(result))
+        testing = company.parent / "testing.md"
+        testing.write_text("Run targeted tests.\n")
+        self.archivable()
+        testing.write_text("Run full regression tests.\n")
+        self.runtime("state", "get", ok=False)
+        self.runtime("evidence", "verify", ok=False)
+
+    def test_f011_optional_company_symlinks_are_rejected_even_if_dangling(self):
+        from unittest.mock import patch
+        from scripts.sdc_evidence import input_snapshot
+        company = self.cite_default_ai_policy()
+        company.parent.mkdir(parents=True, exist_ok=True)
+        for target in (company, company.parent):
+            with self.subTest(target=target.name):
+                if target.is_dir():
+                    target.rename(target.with_name("company-original"))
+                target.symlink_to(self.root / "missing-external", target_is_directory=target == company.parent)
+                with patch.object(sys, "path", [str(REPO / "scripts"), *sys.path]):
+                    with self.assertRaisesRegex(ValueError, "symlink"):
+                        input_snapshot(self.root, self.change)
+                result = self.state("confirmed", ok=False)
+                self.assertRegex(json.dumps(result).lower(), "symlink|symbolic link")
+                target.unlink()
 
 
 if __name__ == "__main__":

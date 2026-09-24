@@ -14,6 +14,8 @@ Use "$ARGUMENTS" as extra planning context. Ensure the plan is based on current 
 
 Run the SDC plan workflow:
 
+If the selected change uses `compact.json`, load `../../sdc-references/compact-workflow.md` and follow its single-record plan/manifest gates instead of generating the standard artifacts below. The compact contract is the authority; state/manifests are derived evidence, not additional policy sources.
+
 - Plan only from confirmed requirements and confirmed impact analysis when required.
 - Read the knowledge index and relevant Common Ground, routing, and confirmed source sections; reuse still-current context rather than rereading the repository. Do not plan final execution from OPEN or high-impact WORKING items.
 - Read `.sdc/expert-routing.md`; select the smallest relevant expert profiles internally.
@@ -37,4 +39,5 @@ Run the SDC plan workflow:
 - Every task must declare exact `Files`, `Consumes`, `Produces`, `Verify`, `Expected`, `Review`, `Evidence`, and `Source` fields.
 - Choose executable `Verify` argv that proves the task's ACs; final delivery requires its exact matching run receipt. Manual observations can supplement that check, not replace a required receipt. Use explicit `sh -c` for shell pipelines.
 - Keep tasks thin, dependency ordered, and sized only `S` or `M`. For meaningful behavior tests use test-first work within the same coherent task; do not split a tiny change into artificial test/implementation/review loops.
+- Consult `../../sdc-references/test-quality.md` when selecting tests and independent expected results. Use meaningful behavior slices and explicit task dependencies as defined in `execution-orchestration.md`, not separate database/API/UI tickets by default.
 - Unknown business requirements belong only in discovery, not spec/design/tasks. Resolve technical uncertainties by focused investigation within confirmed scope before finalizing dependent implementation tasks.
